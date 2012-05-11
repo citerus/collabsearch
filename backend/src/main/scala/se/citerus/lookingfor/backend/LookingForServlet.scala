@@ -17,7 +17,7 @@ class LookingForServlet extends ScalatraServlet with UrlSupport {
     </html>
   }
 
-  get("/:object/:user/footprints") {
+  post("/:object/:user/footprints") {
     val lat: String = params.getOrElse("lat", halt(400))
     val lon: String = params.getOrElse("lon", halt(400))
     val accuracy : String = params.getOrElse("accuracy", halt(400))

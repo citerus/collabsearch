@@ -20,6 +20,7 @@ class LookingForServlet extends ScalatraServlet with UrlSupport {
   get("/:object/:user/footprints") {
     val lat: String = params.getOrElse("lat", halt(400))
     val lon: String = params.getOrElse("lon", halt(400))
+    val accuracy : String = params.getOrElse("accuracy", halt(400))
     val hash: String = params.getOrElse("verhash", halt(400))
     val timestamp = System.currentTimeMillis();
     val objectId = params("object")
@@ -32,9 +33,10 @@ class LookingForServlet extends ScalatraServlet with UrlSupport {
         "$push" -> MongoDBObject(
     	    "footprints" -> MongoDBObject(
     		    "timestamp" -> timestamp, 
+    		    "accuracy" -> accuracy,
     			"loc" -> MongoDBObject(
-    			    "lat" -> lat, 
-    			    "lon" -> lon))));
+    			    "lon" -> lon, 
+    			    "lat" -> lat))));
 
     footprints.update(query, footprint, true, false)
 

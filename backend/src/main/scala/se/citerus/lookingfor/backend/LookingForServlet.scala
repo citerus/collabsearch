@@ -43,13 +43,4 @@ class LookingForServlet extends ScalatraServlet with UrlSupport {
     """{ "response" : "success" }"""
   }
 
-  /*
-
-
-	{ object : "hattar", "user" : "my user", footprints : [{lat, lon, timestamp}] }
-
-
-  * 
-  */
-
 }

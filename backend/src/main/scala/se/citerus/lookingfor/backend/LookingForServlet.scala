@@ -3,8 +3,9 @@ package se.citerus.lookingfor.backend
 import org.scalatra._
 import com.mongodb.casbah.MongoConnection
 import com.mongodb.casbah.commons.MongoDBObject
+import org.scalatra.scalate.ScalateSupport
 
-class LookingForServlet extends ScalatraServlet with UrlSupport {
+class LookingForServlet extends ScalatraServlet with ScalateSupport {
 
   get("/") {
     <html>
@@ -18,7 +19,10 @@ class LookingForServlet extends ScalatraServlet with UrlSupport {
   }
 
   post("/:object/:user/footprints") {
+    println("start")
+    println(params)
     val lat: String = params.getOrElse("lat", halt(400))
+    println(lat)
     val lon: String = params.getOrElse("lon", halt(400))
     val accuracy : String = params.getOrElse("accuracy", halt(400))
     val hash: String = params.getOrElse("verhash", halt(400))
@@ -41,6 +45,15 @@ class LookingForServlet extends ScalatraServlet with UrlSupport {
     footprints.update(query, footprint, true, false)
 
     """{ "response" : "success" }"""
+  }
+
+  
+    notFound {
+    // Try to render a ScalateTemplate if no route matched
+    findTemplate(requestPath) map { path =>
+      contentType = "text/html"
+      layoutTemplate(path)
+    } orElse serveStaticResource() getOrElse resourceNotFound() 
   }
 
 }

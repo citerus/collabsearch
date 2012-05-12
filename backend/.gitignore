@@ -1,7 +1,7 @@
+
+target/
+
 # Eclipse
-.metadata
+.project
 .cache
 .classpath
-.project
-.settings/
-target/

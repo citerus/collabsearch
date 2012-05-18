@@ -15,7 +15,10 @@ libraryDependencies ++= Seq(
   "ch.qos.logback" % "logback-classic" % "1.0.0" % "runtime",
   "org.eclipse.jetty" % "jetty-webapp" % "7.6.0.v20120127" % "container",
   "javax.servlet" % "servlet-api" % "2.5" % "provided",
-  "com.mongodb.casbah" % "casbah-core_2.9.0-1" % "2.1.5.0"
+  "com.mongodb.casbah" % "casbah-core_2.9.0-1" % "2.1.5.0",
+  "cc.spray" %%  "spray-json" % "1.1.1"
 )
 
 resolvers += "Sonatype OSS Snapshots" at "http://oss.sonatype.org/content/repositories/snapshots/"
+
+resolvers += "Spray repository" at "http://repo.spray.cc/"

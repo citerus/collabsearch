@@ -6,8 +6,8 @@ import org.scalatra.test.specs2._
 class LookingForServletSpec extends ScalatraSpec { def is =
   "GET / on LookingForServlet"                     ^
     "should return status 200"                  ! root200^
-   "Post footprints with valid arguments"			^
-    "should return status 200"					! postFootprints^
+   "Post footprints with non-existing object"			^
+    "should return status 404"					! postFootprintsWithWrongObject^
                                                 end
     
   addServlet(classOf[LookingForServlet], "/*")
@@ -16,7 +16,7 @@ class LookingForServletSpec extends ScalatraSpec { def is =
     status must_== 200
   }
 
-  def postFootprints = post("/abc/1234/footprints", "lat" -> "12.05", "lon" -> "18.50", "accuracy" -> "15.0", "verhash" -> "xyz") {
-    status must_== 200
+  def postFootprintsWithWrongObject = post("/objects/4fb63aec797e907a5700a224/someuser/footprints", "fixtime" -> "1239104014", "lat" -> "12.05", "lon" -> "18.50", "accuracy" -> "15.0", "authhash" -> "xyz") {
+    status must_== 404
   }
 }

@@ -39,7 +39,7 @@ public class LookingForActivity extends Activity implements View.OnClickListener
 		mPositionView = findView(R.id.textViewPosition);
 		mStartButton = findView(R.id.buttonStart);
 		mStopButton = findView(R.id.buttonStop);
-		mRestClient = new LookingForRest("http://192.168.1.176:8080/");
+		mRestClient = new LookingForRest("http://192.168.80.144:8080/");
 		mStartButton.setOnClickListener(this);
 		mStopButton.setOnClickListener(this);
 		
@@ -74,7 +74,7 @@ public class LookingForActivity extends Activity implements View.OnClickListener
 			    @Override
 			    public void run() {
 			    	if(mCurrentLocation != null) {
-						Response<VoidData> response = mRestClient.postFootprint("aaa", "bbb", mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude(), mCurrentLocation.getAccuracy(), "some hash");
+						Response<VoidData> response = mRestClient.postFootprint("aaa", "bbb", mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude(), mCurrentLocation.getAccuracy(), mCurrentLocation.getTime(), "some hash");
 						Log.d("lookingfor", "Response: " + response.getHttpResult());
 					}
 			         }

@@ -27,7 +27,7 @@ public class UserDAL {
 	}
 	
 	public boolean findUser(String username, char[] password) {
-		BasicDBObject query = new BasicDBObject("username", username).append("password", password);
+		BasicDBObject query = new BasicDBObject("username", username).append("password", password.toString());
 		DBObject result = userColl.findOne(query);
 		if (result != null) {
 			return true; //auth successful
@@ -38,6 +38,15 @@ public class UserDAL {
 	
 	public void disconnect() {
 		mongo.close();
+	}
+
+	public boolean findUserWithRole(String username, String role) {
+		BasicDBObject query = new BasicDBObject("username",username).append("role", role);
+		DBObject result = userColl.findOne(query);
+		if (result != null) {
+			return true;
+		}
+		return false;
 	}
 
 }

@@ -26,6 +26,7 @@ import com.vaadin.ui.Window;
 public class LookingForApp extends Application {
 	private Window window;
 	private static LookingForApp APP;
+	private String user;
 	
 	@Override
 	public void init() {
@@ -36,6 +37,14 @@ public class LookingForApp extends Application {
 
 	public static LookingForApp get() {
 		return APP;
+	}
+
+	public String getUser() {
+		return user;
+	}
+
+	public void setUser(String user) {
+		this.user = user;
 	}
 
 }

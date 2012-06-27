@@ -8,7 +8,10 @@ public interface ViewSwitchListener {
 	
 	public void switchToUserMgmtView();
 	
-	public void switchToLoginView();
+	/**
+	 * Logs out the user and reloads the application, switching view to the login screen.
+	 */
+	public void logoutAndReload();
 	
 	public void switchToSearchMissionView();
 }

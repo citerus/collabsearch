@@ -2,6 +2,8 @@ package se.citerus.lookingfor.DAL;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import se.citerus.lookingfor.logic.User;
@@ -9,6 +11,7 @@ import se.citerus.lookingfor.logic.User;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
@@ -39,10 +42,12 @@ public class UserDAL { //TODO break out into interface with in-memory and MongoD
 	}
 	
 	public boolean findUser(String username, char[] password) {
-		BasicDBObject query = new BasicDBObject("username", username).append("password", String.valueOf(password));
+		BasicDBObject query = new BasicDBObject("username", username).
+				append("password", String.valueOf(password));
 		DBObject result = userColl.findOne(query);
 		if (result != null) {
-			if (username.equals(result.get("username")) && String.valueOf(password).equals(result.get("password"))) {
+			if (username.equals(result.get("username")) && 
+					String.valueOf(password).equals(result.get("password"))) {
 				return true; //auth successful
 			}
 		}
@@ -96,6 +101,21 @@ public class UserDAL { //TODO break out into interface with in-memory and MongoD
 		if (result.getLastError().ok() == false) {
 			throw new IOException("Database write failure");
 		}
+	}
+
+	public List<String> getAllUsers() {
+		DBObject query = new BasicDBObject();
+		DBObject limit = new BasicDBObject("username", 1).append("role", 1).append("_id", 0);
+		DBCursor cursor = userColl.find(query, limit);
+		List<String> list = null;
+		if (cursor != null) {
+			list = new ArrayList<String>();
+			while (cursor.hasNext()) {
+				BasicDBObject result = (BasicDBObject) cursor.next();
+				list.add(result.getString("username") + ":" + result.getString("role"));
+			}
+		}
+		return list;
 	}
 
 }

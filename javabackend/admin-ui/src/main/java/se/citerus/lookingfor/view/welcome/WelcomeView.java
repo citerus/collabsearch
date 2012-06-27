@@ -31,8 +31,7 @@ public class WelcomeView extends CustomComponent {
 		Button logoutButton = new Button("Logga ut");
 		logoutButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				LookingForApp.get().close();
-				listener.switchToLoginView();
+				listener.logoutAndReload();
 			}
 		});
 		Button searchMissionButton = new Button("Sökuppdrag");

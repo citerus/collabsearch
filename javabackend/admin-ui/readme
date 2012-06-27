@@ -1,4 +1,9 @@
 Installation
-Make sure you have installed Tomcat and MongoDB, as they are required by the application. The application WAR can then be deployed and run on the server, and is accessible through http://localhost:8080/admin-ui (name subject to change).
 
-No setup of MongoDB databases or users is required, as this is handled by the application.
+1. Ensure that Tomcat and MongoDB are installed.
+2. Copy the MongoDB java driver to the Tomcat lib folder
+3. Start MongoDB and Tomcat
+4. Deploy the .war to Tomcats webapps
+5. Browse to localhost:8080/admin-ui (name is subject to change)
+
+No setup of MongoDB databases or users is required, as this is handled by the application and database management system.

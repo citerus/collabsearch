@@ -3,6 +3,7 @@ package se.citerus.lookingfor;
 import se.citerus.lookingfor.logic.Authenticator;
 import se.citerus.lookingfor.view.login.LoginView;
 import se.citerus.lookingfor.view.usermgmt.UserEditView;
+import se.citerus.lookingfor.view.usermgmt.UserListView;
 import se.citerus.lookingfor.view.welcome.WelcomeView;
 
 import com.vaadin.ui.LoginForm.LoginEvent;
@@ -31,7 +32,7 @@ public class MainWindow extends Window implements LoginListener, ViewSwitchListe
         	showNotification("Error");
         }
 	}
-	
+
 	public void displayNotification(String caption, String message) {
 		showNotification(caption, message);
 	}
@@ -39,17 +40,20 @@ public class MainWindow extends Window implements LoginListener, ViewSwitchListe
 	public void switchToWelcomeView() {
 		setContent(new WelcomeView(this));
 	}
-	
+
 	public void switchToUserMgmtView() {
-		setContent(new UserEditView(this));
+		setContent(new UserListView(this));
 	}
 
-	public void switchToLoginView() {
-		setContent(new LoginView(this).getView());
+	public void logoutAndReload() {
+		//setContent(new LoginView(this).getView());
+		LookingForApp lookingForApp = LookingForApp.get();
+		//lookingForApp.setUser(null);
+		lookingForApp.close();
 	}
 
 	public void switchToSearchMissionView() {
 		//setContent(new SearchMissionView(this));
 	}
-	
+
 }

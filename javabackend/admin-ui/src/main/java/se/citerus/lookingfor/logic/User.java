@@ -4,11 +4,11 @@ import java.util.Map;
 
 public class User {
 
-	private final String name;
-	private final String pass;
-	private final String email;
-	private final String tele;
-	private final String role;
+	private String name;
+	private String pass;
+	private String email;
+	private String tele;
+	private String role;
 
 	public User(String name, String pass, String email, String tele, String role) {
 		this.name = name;
@@ -16,6 +16,11 @@ public class User {
 		this.email = email;
 		this.tele = tele;
 		this.role = role;
+	}
+
+	public User(String username, String password) {
+		this.name = username;
+		this.pass = password;
 	}
 
 	public String getName() {

@@ -14,7 +14,7 @@ import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 import com.mongodb.WriteResult;
 
-public class UserDAL {
+public class UserDAL { //TODO break out into interface with in-memory and MongoDB impl
 
 	private Mongo mongo;
 	private DBCollection userColl;
@@ -88,10 +88,10 @@ public class UserDAL {
 		DBObject query = new BasicDBObject("username",user.getName());
 		DBObject updateObj = new BasicDBObject();
 		updateObj.put("username", user.getName());
-		updateObj.put("password", user.getName());
-		updateObj.put("email", user.getName());
-		updateObj.put("tele", user.getName());
-		updateObj.put("role", user.getName());
+		updateObj.put("password", user.getPass());
+		updateObj.put("email", user.getEmail());
+		updateObj.put("tele", user.getTele());
+		updateObj.put("role", user.getRole());
 		WriteResult result = userColl.update(query, updateObj, ENABLEUPSERT, DISABLEMULTIUPDATE);
 		if (result.getLastError().ok() == false) {
 			throw new IOException("Database write failure");

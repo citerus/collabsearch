@@ -25,7 +25,6 @@ import com.vaadin.ui.Window;
 @SuppressWarnings("serial")
 public class LookingForApp extends Application {
 	private Window window;
-	private String user;
 	private static LookingForApp APP;
 	
 	@Override
@@ -33,14 +32,6 @@ public class LookingForApp extends Application {
 		APP = this;
 		window = new MainWindow("Missing People - Login");
 		setMainWindow(window);
-	}
-
-	public String getUser() {
-		return user;
-	}
-
-	public void setUser(String user) {
-		this.user = user;
 	}
 
 	public static LookingForApp get() {

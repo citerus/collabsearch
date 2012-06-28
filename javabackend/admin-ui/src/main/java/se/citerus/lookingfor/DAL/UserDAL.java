@@ -90,10 +90,10 @@ public class UserDAL { //TODO break out into interface with in-memory and MongoD
 	}
 
 	public void addOrModifyUser(User user) throws IOException {
-		DBObject query = new BasicDBObject("username",user.getName());
+		DBObject query = new BasicDBObject("username",user.getUsername());
 		DBObject updateObj = new BasicDBObject();
-		updateObj.put("username", user.getName());
-		updateObj.put("password", user.getPass());
+		updateObj.put("username", user.getUsername());
+		updateObj.put("password", user.getPassword());
 		updateObj.put("email", user.getEmail());
 		updateObj.put("tele", user.getTele());
 		updateObj.put("role", user.getRole());
@@ -103,19 +103,36 @@ public class UserDAL { //TODO break out into interface with in-memory and MongoD
 		}
 	}
 
-	public List<String> getAllUsers() {
+	public List<User> getAllUsers() {
 		DBObject query = new BasicDBObject();
 		DBObject limit = new BasicDBObject("username", 1).append("role", 1).append("_id", 0);
 		DBCursor cursor = userColl.find(query, limit);
-		List<String> list = null;
+		List<User> list = null;
 		if (cursor != null) {
-			list = new ArrayList<String>();
+			list = new ArrayList<User>();
 			while (cursor.hasNext()) {
 				BasicDBObject result = (BasicDBObject) cursor.next();
-				list.add(result.getString("username") + ":" + result.getString("role"));
+				User user = new User(result.getString("username"),result.getString("role"));
+				list.add(user);
 			}
 		}
 		return list;
+	}
+
+	public User getUserByUsername(String username) throws Exception {
+		BasicDBObject query = new BasicDBObject("username",username);
+		BasicDBObject result = (BasicDBObject) userColl.findOne(query);
+		if (result == null) {
+			throw new Exception("User not found");
+		}
+		User user = new User(
+			result.getString("username"), 
+			result.getString("password"), 
+			result.getString("email"), 
+			result.getString("tele"), 
+			result.getString("role")
+		);
+		return user;
 	}
 
 }

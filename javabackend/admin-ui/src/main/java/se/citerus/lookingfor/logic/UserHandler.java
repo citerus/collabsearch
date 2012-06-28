@@ -14,7 +14,7 @@ public class UserHandler {
 		userDAL = new UserDAL();		
 	}
 
-	public List<String> getListOfUsers() {
+	public List<User> getListOfUsers() {
 		return userDAL.getAllUsers();
 	}
 
@@ -26,6 +26,10 @@ public class UserHandler {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public User getUserData(User selectedUser) throws Exception {
+		return userDAL.getUserByUsername(selectedUser.getUsername());
 	}
 
 }

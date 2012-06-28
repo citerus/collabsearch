@@ -1,34 +1,46 @@
 package se.citerus.lookingfor.logic;
 
+import java.io.Serializable;
 import java.util.Map;
 
-public class User {
+public class User implements Serializable {
 
-	private String name;
-	private String pass;
+	private static final long serialVersionUID = 8232887479981262455L;
+	
+	private String username;
+	private String password;
 	private String email;
 	private String tele;
 	private String role;
+	
+	public User() {
+		//intentionally left empty
+	}
 
-	public User(String name, String pass, String email, String tele, String role) {
-		this.name = name;
-		this.pass = pass;
+	public User(String username, String password, String email, String tele, String role) {
+		this.username = username;
+		this.password = password;
 		this.email = email;
 		this.tele = tele;
 		this.role = role;
 	}
 
-	public User(String username, String password) {
-		this.name = username;
-		this.pass = password;
+	public User(String username, char[] password) {
+		this.username = username;
+		this.password = String.valueOf(password);
 	}
 
-	public String getName() {
-		return name;
+	public User(String username, String role) {
+		this.username = username;
+		this.role = role;
 	}
 
-	public String getPass() {
-		return pass;
+	public String getUsername() {
+		return username;
+	}
+
+	public String getPassword() {
+		return password;
 	}
 
 	public String getEmail() {

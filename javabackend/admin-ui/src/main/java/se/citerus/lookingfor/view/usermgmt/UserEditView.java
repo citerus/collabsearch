@@ -1,6 +1,7 @@
 package se.citerus.lookingfor.view.usermgmt;
 
 import se.citerus.lookingfor.ViewSwitchListener;
+import se.citerus.lookingfor.logic.User;
 import se.citerus.lookingfor.logic.UserHandler;
 
 import com.vaadin.ui.Button;
@@ -16,39 +17,31 @@ import com.vaadin.ui.Button.ClickEvent;
 
 public class UserEditView extends CustomComponent {
 	
-	public UserEditView(final ViewSwitchListener listener) {
-		Layout layout = new VerticalLayout();
-		layout.addComponent(new Label("Användare"));
+	private Layout mainLayout;
+	private TextField nameField;
+	private PasswordField passwordField;
+	private TextField emailField;
+	private TextField teleField;
+	private TextField roleField;
+	private Button cancelButton;
+	private Button saveButton;
+	private Label saveResultLabel;
+	private final ViewSwitchListener listener;
+
+	public UserEditView(final ViewSwitchListener listener, User selectedUser) {
+		this.listener = listener;
+		buildMainLayout();
+		setCompositionRoot(mainLayout);
 		
-		layout.addComponent(new Label("Namn"));
-		final TextField nameField = new TextField();
-		layout.addComponent(nameField);
+		if (selectedUser != null) {
+			populateForms(selectedUser);
+		}
 		
-		layout.addComponent(new Label("Lösenord"));
-		final PasswordField passwordField = new PasswordField();
-		layout.addComponent(passwordField);
-		
-		layout.addComponent(new Label("Epost"));
-		final TextField emailField = new TextField();
-		layout.addComponent(emailField);
-		
-		layout.addComponent(new Label("Telefon"));
-		final TextField teleField = new TextField();
-		layout.addComponent(teleField);
-		
-		layout.addComponent(new Label("Roll"));
-		final TextField roleField = new TextField();
-		layout.addComponent(roleField);
-		
-		Layout subLayout = new HorizontalLayout();
-		Button cancelButton = new Button("Avbryt");
 		cancelButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
 				listener.displayNotification("Användarredigering", "Avbruten");
 			}
 		});
-		subLayout.addComponent(cancelButton);
-		Button saveButton = new Button("Spara");
 		saveButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
 				new UserHandler().editUser((String)nameField.getValue(), (String)passwordField.getValue(),
@@ -56,13 +49,53 @@ public class UserEditView extends CustomComponent {
 				listener.displayNotification("Användarredigering", "Sparat!");
 			}
 		});
+		
+	}
+
+	private void populateForms(User selectedUser) {
+		try {
+			User userData = new UserHandler().getUserData(selectedUser);
+		} catch (Exception e) {
+			listener.displayError("Error: User not found", "User " + selectedUser + " not found.");
+		}
+	}
+
+	private void buildMainLayout() {
+		mainLayout = new VerticalLayout();
+		mainLayout.addComponent(new Label("Användare"));
+		
+		mainLayout.addComponent(new Label("Namn"));
+		nameField = new TextField();
+		mainLayout.addComponent(nameField);
+		
+		mainLayout.addComponent(new Label("Lösenord"));
+		passwordField = new PasswordField();
+		mainLayout.addComponent(passwordField);
+		
+		mainLayout.addComponent(new Label("Epost"));
+		emailField = new TextField();
+		mainLayout.addComponent(emailField);
+		
+		mainLayout.addComponent(new Label("Telefon"));
+		teleField = new TextField();
+		mainLayout.addComponent(teleField);
+		
+		mainLayout.addComponent(new Label("Roll"));
+		roleField = new TextField();
+		mainLayout.addComponent(roleField);
+		
+		Layout subLayout = new HorizontalLayout();
+		
+		cancelButton = new Button("Avbryt");
+		subLayout.addComponent(cancelButton);
+		
+		saveButton = new Button("Spara");
 		subLayout.addComponent(saveButton);
-		layout.addComponent(subLayout);
 		
-		Label saveResultLabel = new Label("");
+		mainLayout.addComponent(subLayout);
+		
+		saveResultLabel = new Label("");
 		saveResultLabel.setVisible(false);
-		layout.addComponent(saveResultLabel);
-		
-		setCompositionRoot(layout);
+		mainLayout.addComponent(saveResultLabel);
 	}
 }

@@ -47,7 +47,7 @@ public class UserTests {
 	@Test
 	public void testCreateAndFindUser() {
 		try {
-			userDAL.addOrModifyUser(new User("test","test"));
+			userDAL.addOrModifyUser(new User("test","test".toCharArray()));
 		} catch (IOException e) {
 			e.printStackTrace();
 			fail("IOException on user creation");

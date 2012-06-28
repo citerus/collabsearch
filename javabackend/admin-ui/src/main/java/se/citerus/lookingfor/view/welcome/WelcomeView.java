@@ -25,7 +25,7 @@ public class WelcomeView extends CustomComponent {
 		Button userButton = new Button("Användare");
 		userButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				listener.switchToUserMgmtView();
+				listener.switchToUserListView();
 			}
 		});
 		Button logoutButton = new Button("Logga ut");

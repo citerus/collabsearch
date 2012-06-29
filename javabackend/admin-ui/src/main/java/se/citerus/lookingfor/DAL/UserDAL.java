@@ -9,6 +9,7 @@ import java.util.Random;
 import se.citerus.lookingfor.logic.User;
 
 import com.mongodb.BasicDBObject;
+import com.mongodb.CommandResult;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
@@ -133,6 +134,21 @@ public class UserDAL { //TODO break out into interface with in-memory and MongoD
 			result.getString("role")
 		);
 		return user;
+	}
+
+	public Boolean deleteUserByUsername(String username) throws IOException {
+		BasicDBObject query = new BasicDBObject("username", username);
+		WriteResult result = userColl.remove(query);
+		CommandResult lastError = result.getLastError();
+		if (!lastError.ok()) {
+			throw new IOException("Error: Database write failure on User document deletion");
+		}
+		result = authColl.remove(query);
+		lastError = result.getLastError();
+		if (!lastError.ok()) {
+			throw new IOException("Error: Database write failure on Salt document deletion");
+		}
+		return true;
 	}
 
 }

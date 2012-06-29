@@ -24,9 +24,9 @@ public interface ViewSwitchListener {
 	
 	/**
 	 * Switches to the user management view, loading the data of the included user.
-	 * @param selectedUser
+	 * @param selectedUserName
 	 */
-	public void switchToUserMgmtView(User selectedUser);
+	public void switchToUserMgmtView(String selectedUserName);
 
 	public void displayError(String caption, String message);
 }

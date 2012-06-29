@@ -3,6 +3,7 @@ package se.citerus.lookingfor;
 import se.citerus.lookingfor.logic.Authenticator;
 import se.citerus.lookingfor.logic.User;
 import se.citerus.lookingfor.view.login.LoginView;
+import se.citerus.lookingfor.view.searchmission.SearchMissionListView;
 import se.citerus.lookingfor.view.usermgmt.UserEditView;
 import se.citerus.lookingfor.view.usermgmt.UserListView;
 import se.citerus.lookingfor.view.welcome.WelcomeView;
@@ -52,15 +53,15 @@ public class MainWindow extends Window implements LoginListener, ViewSwitchListe
 	}
 
 	public void switchToSearchMissionView() {
-		//setContent(new SearchMissionView(this));
+		setContent(new SearchMissionListView(this));
 	}
 
-	public void switchToUserMgmtView(User selectedUser) {
-		setContent(new UserEditView(this, selectedUser));
+	public void switchToUserMgmtView(String selectedUsername) {
+		setContent(new UserEditView(this, selectedUsername));
 	}
 
 	public void displayError(String caption, String message) {
-		//show
+		showNotification(caption, message, Notification.TYPE_ERROR_MESSAGE);
 	}
 
 }

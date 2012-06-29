@@ -28,7 +28,7 @@ public class UserEditView extends CustomComponent {
 	private Label saveResultLabel;
 	private final ViewSwitchListener listener;
 
-	public UserEditView(final ViewSwitchListener listener, User selectedUser) {
+	public UserEditView(final ViewSwitchListener listener, String selectedUser) {
 		this.listener = listener;
 		buildMainLayout();
 		setCompositionRoot(mainLayout);
@@ -39,7 +39,7 @@ public class UserEditView extends CustomComponent {
 		
 		cancelButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				listener.displayNotification("Användarredigering", "Avbruten");
+				listener.switchToUserListView();
 			}
 		});
 		saveButton.addListener(new ClickListener() {
@@ -47,16 +47,22 @@ public class UserEditView extends CustomComponent {
 				new UserHandler().editUser((String)nameField.getValue(), (String)passwordField.getValue(),
 						(String)emailField.getValue(), (String)teleField.getValue(), (String)roleField.getValue());
 				listener.displayNotification("Användarredigering", "Sparat!");
+				//TODO popup with back-button?
 			}
 		});
-		
 	}
 
-	private void populateForms(User selectedUser) {
+	private void populateForms(String selectedUser) {
 		try {
 			User userData = new UserHandler().getUserData(selectedUser);
+			
+			nameField.setValue(userData.getUsername());
+			passwordField.setValue(userData.getPassword());
+			emailField.setValue(userData.getEmail());
+			teleField.setValue(userData.getTele());
+			roleField.setValue(userData.getRole());
 		} catch (Exception e) {
-			listener.displayError("Error: User not found", "User " + selectedUser + " not found.");
+			listener.displayError("Fel: Användare ej funnen", "Användare " + selectedUser + " ej funnen.");
 		}
 	}
 

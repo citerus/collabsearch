@@ -28,8 +28,17 @@ public class UserHandler {
 		}
 	}
 
-	public User getUserData(User selectedUser) throws Exception {
-		return userDAL.getUserByUsername(selectedUser.getUsername());
+	public User getUserData(String selectedUser) throws Exception {
+		return userDAL.getUserByUsername(selectedUser);
+	}
+
+	public Boolean removeUser(String username) {
+		try {
+			return userDAL.deleteUserByUsername(username);
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
 
 }

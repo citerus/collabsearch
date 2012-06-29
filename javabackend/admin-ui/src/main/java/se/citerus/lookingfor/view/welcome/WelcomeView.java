@@ -1,17 +1,15 @@
 package se.citerus.lookingfor.view.welcome;
 
-import se.citerus.lookingfor.LookingForApp;
 import se.citerus.lookingfor.ViewSwitchListener;
 
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
+import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.Window;
-import com.vaadin.ui.Button.ClickEvent;
 
 public class WelcomeView extends CustomComponent {
 	
@@ -22,6 +20,7 @@ public class WelcomeView extends CustomComponent {
 		layout.addComponent(loginSuccessLabel);
 		layout.setComponentAlignment(loginSuccessLabel, Alignment.MIDDLE_CENTER);
 		HorizontalLayout subLayout = new HorizontalLayout();
+		subLayout.setSpacing(true);
 		Button userButton = new Button("Användare");
 		userButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
@@ -29,6 +28,7 @@ public class WelcomeView extends CustomComponent {
 			}
 		});
 		Button logoutButton = new Button("Logga ut");
+		
 		logoutButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
 				listener.logoutAndReload();

@@ -18,6 +18,9 @@ public class UserHandler {
 		return userDAL.getAllUsers();
 	}
 
+	/**
+	 * Edits user (if existing) or adds a new one with the included attributes.
+	 */
 	public void editUser(String name, String pass, String email,
 			String tele, String role) {
 		User user = new User(name,pass,email,tele,role);

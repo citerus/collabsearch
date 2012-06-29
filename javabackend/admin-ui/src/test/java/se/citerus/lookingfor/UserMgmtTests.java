@@ -17,10 +17,10 @@ import se.citerus.lookingfor.DAL.UserDAL;
 import se.citerus.lookingfor.logic.User;
 
 /**
- * 
- * @author ola
+ * Unit tests for the user management.
+ * @author Ola Rende
  */
-public class UserTests {
+public class UserMgmtTests {
 
 	private static UserDAL userDAL;
 
@@ -61,5 +61,35 @@ public class UserTests {
 		boolean userFound = userDAL.findUser("user12345", "test".toCharArray());
 		assertTrue("User \"user12345\" found in database, should be missing", userFound == false);
 	}
+	
+	@Test
+	public void testUserAuthFailure() {
+		boolean userAuthResult = userDAL.findUser("test", "wrongpassword".toCharArray());
+		assertTrue("User \"test\" authenticated with wrong password, should throw error", userAuthResult == false);
+	}
+	
+	@Test
+	public void testDeleteUser() {
+		//create user
+		
+		//delete user
+		
+		//search for deleted user
+			//find nothing or fail
+	}
+	
+	@Test
+	public void testDeleteNonExistentUser() {
+		
+	}
 
+	@Test
+	public void testEditUser() {
+		//create user
+		
+		//edit user
+		
+		//edit user with non-allowed values
+			//get expected error or fail
+	}
 }

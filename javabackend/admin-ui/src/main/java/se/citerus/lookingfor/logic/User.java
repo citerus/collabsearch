@@ -1,7 +1,6 @@
 package se.citerus.lookingfor.logic;
 
 import java.io.Serializable;
-import java.util.Map;
 
 public class User implements Serializable {
 

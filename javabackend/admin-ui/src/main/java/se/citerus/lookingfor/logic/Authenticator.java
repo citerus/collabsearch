@@ -36,16 +36,12 @@ public class Authenticator {
 	private String hashPassword(String username, String password) {		
 		try {
 			Long hash = Hash.hashBackwardLong(password);
-			Long salt = getSaltByUsername(username);
+			Long salt = userDAL.retrieveSaltForUser(username);
 			return hash.toString() + salt.toString(); 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return null;
-	}
-	
-	private long getSaltByUsername(String username) throws Exception {
-		return userDAL.getSaltForUser(username);
 	}
 
 	private void generateSaltForUser(String username) {

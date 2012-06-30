@@ -30,7 +30,7 @@ public class LookingForApp extends Application {
 	@Override
 	public void init() {
 		APP = this;
-		window = new MainWindow("Missing People - Login");
+		window = new MainWindow();
 		setMainWindow(window);
 	}
 

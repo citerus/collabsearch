@@ -36,6 +36,7 @@ public class UserEditView extends CustomComponent {
 		this.listener = listener;
 		buildMainLayout();
 		setCompositionRoot(mainLayout);
+		listener.setMainWindowCaption("Missing People - Användarredigering");
 		
 		if (selectedUser != null) {
 			populateForms(selectedUser);
@@ -71,7 +72,6 @@ public class UserEditView extends CustomComponent {
             	listener.switchToUserListView();
             }
         });
-		
 	}
 
 	private void populateForms(String selectedUser) {

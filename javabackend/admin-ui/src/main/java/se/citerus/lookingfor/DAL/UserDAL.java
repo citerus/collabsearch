@@ -79,7 +79,7 @@ public class UserDAL { //TODO break out into interface with in-memory and MongoD
 		}
 	}
 
-	public long getSaltForUser(String username) throws Exception {
+	public long retrieveSaltForUser(String username) throws Exception {
 		BasicDBObject query = new BasicDBObject("username", username);
 		BasicDBObject limit = new BasicDBObject("salt",1);
 		BasicDBObject result = (BasicDBObject) authColl.findOne(query,limit);

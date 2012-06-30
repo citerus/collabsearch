@@ -13,37 +13,47 @@ import com.vaadin.ui.VerticalLayout;
 
 public class WelcomeView extends CustomComponent {
 	
+	private VerticalLayout mainLayout;
+	private Button userButton;
+	private Button logoutButton;
+	private Button searchMissionButton;
+
 	public WelcomeView(final ViewSwitchListener listener) {
-		setCaption("Välkommen!");
-		VerticalLayout layout = new VerticalLayout();
-		Label loginSuccessLabel = new Label("Inloggningen lyckades");
-		layout.addComponent(loginSuccessLabel);
-		layout.setComponentAlignment(loginSuccessLabel, Alignment.MIDDLE_CENTER);
-		HorizontalLayout subLayout = new HorizontalLayout();
-		subLayout.setSpacing(true);
-		Button userButton = new Button("Användare");
+		buildMainLayout();
+		setCompositionRoot(mainLayout);
+		listener.setMainWindowCaption("Missing People - Välkommen");
+		
 		userButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
 				listener.switchToUserListView();
 			}
 		});
-		Button logoutButton = new Button("Logga ut");
-		
 		logoutButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
 				listener.logoutAndReload();
 			}
 		});
-		Button searchMissionButton = new Button("Sökuppdrag");
 		searchMissionButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
 				listener.switchToSearchMissionView();
 			}
 		});
+	}
+
+	private void buildMainLayout() {
+		mainLayout = new VerticalLayout();
+		Label loginSuccessLabel = new Label("Inloggningen lyckades");
+		mainLayout.addComponent(loginSuccessLabel);
+		mainLayout.setComponentAlignment(loginSuccessLabel, Alignment.MIDDLE_CENTER);
+		HorizontalLayout subLayout = new HorizontalLayout();
+		subLayout.setSpacing(true);
+		userButton = new Button("Användare");
+		logoutButton = new Button("Logga ut");
+		
+		searchMissionButton = new Button("Sökuppdrag");
 		subLayout.addComponent(userButton);
 		subLayout.addComponent(logoutButton);
 		subLayout.addComponent(searchMissionButton);
-		layout.addComponent(subLayout);
-		setCompositionRoot(layout);
+		mainLayout.addComponent(subLayout);
 	}
 }

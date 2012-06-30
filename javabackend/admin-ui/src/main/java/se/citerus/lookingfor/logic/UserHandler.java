@@ -1,7 +1,6 @@
 package se.citerus.lookingfor.logic;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import se.citerus.lookingfor.DAL.UserDAL;
@@ -11,7 +10,7 @@ public class UserHandler {
 	private UserDAL userDAL;
 
 	public UserHandler() {
-		userDAL = new UserDAL();		
+		userDAL = new UserDAL();
 	}
 
 	public List<User> getListOfUsers() {

@@ -3,7 +3,9 @@
  */
 package se.citerus.lookingfor;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 
@@ -13,8 +15,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import se.citerus.lookingfor.DAL.UserDAL;
+import se.citerus.lookingfor.logic.Authenticator;
 import se.citerus.lookingfor.logic.User;
+import se.citerus.lookingfor.logic.UserHandler;
 
 /**
  * Unit tests for the user management.
@@ -22,74 +25,83 @@ import se.citerus.lookingfor.logic.User;
  */
 public class UserMgmtTests {
 
-	private static UserDAL userDAL;
+	private UserHandler handler;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		userDAL = new UserDAL();		
 	}
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
-		userDAL.disconnect();
 	}
 
 	@Before
 	public void setUp() throws Exception {
-		
+		handler = new UserHandler();
 	}
 
 	@After
 	public void tearDown() throws Exception {
-		
+		handler.cleanUp();
 	}
 
 	@Test
 	public void testCreateAndFindUser() {
 		try {
-			userDAL.addOrModifyUser(new User("test","test".toCharArray()));
-		} catch (IOException e) {
+			handler.editUser(new User("test","test".toCharArray()));
+		} catch (Exception e) {
 			e.printStackTrace();
 			fail("IOException on user creation");
 		}
-		boolean userFound = userDAL.findUser("test", "test".toCharArray());
-		assertTrue("User \"test\" not found in database", userFound == true);
+		try {
+			boolean userFound = handler.getUserData("test") != null;
+			assertTrue("User \"test\" not found in database", userFound == true);
+		} catch (Exception e) {
+			fail("Exception throw on user search");
+		}
 	}
 	
 	@Test
 	public void testFindNonExistentUser() {
-		boolean userFound = userDAL.findUser("user12345", "test".toCharArray());
-		assertTrue("User \"user12345\" found in database, should be missing", userFound == false);
+		User user = null;
+		try {
+			user = handler.getUserData("test");
+			fail("Did not throw exception");
+		} catch (Exception e) {
+			//expected
+		}
+		assertTrue("User \"user12345\" found in database, should be missing", user == null);
 	}
 	
 	@Test
-	public void testUserAuthFailure() {
-		boolean userAuthResult = userDAL.findUser("test", "wrongpassword".toCharArray());
+	public void testUserAuthFailure() throws Exception {
+		boolean userAuthResult;
+		Authenticator auth = new Authenticator();
+		userAuthResult = auth.login("test", "wrongpassword".toCharArray());
 		assertTrue("User \"test\" authenticated with wrong password, should throw error", userAuthResult == false);
 	}
 	
 	@Test
 	public void testDeleteUser() {
 		//create user
+		handler.editUser(new User("testuser123","password"));
 		
 		//delete user
+		Boolean removeUserResult = handler.removeUser("testuser123");
+		assertTrue("Removal of testuser123 returned false, should be true", removeUserResult);
 		
 		//search for deleted user
-			//find nothing or fail
+		try {
+			handler.getUserData("testuser123");
+			fail("Did not throw exception");
+		} catch (Exception e) {
+			//expected
+		}
 	}
 	
 	@Test
 	public void testDeleteNonExistentUser() {
-		
-	}
-
-	@Test
-	public void testEditUser() {
-		//create user
-		
-		//edit user
-		
-		//edit user with non-allowed values
-			//get expected error or fail
+		Boolean removeUserResult = handler.removeUser("unknown");
+		assertFalse("Removal of nonexistent user \"unknown\" returned true, should be false", removeUserResult);
 	}
 }

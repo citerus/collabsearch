@@ -6,13 +6,15 @@ import com.mongodb.MongoException;
 import com.mongodb.util.Hash;
 
 import se.citerus.lookingfor.DAL.UserDAL;
+import se.citerus.lookingfor.DAL.UserDALMongoDB;
 
 public class Authenticator {
+	
 	private UserDAL userDAL;
 
 	public Authenticator() {
 		try {
-			userDAL = new UserDAL();
+			userDAL = new UserDALMongoDB();
 		} catch (MongoException e) {
 			e.printStackTrace();
 		}
@@ -21,15 +23,16 @@ public class Authenticator {
 	/**
 	 * Looks up a user by username and password.
 	 * @return true if username and password are matched, else false.
+	 * @throws IOException 
 	 */
-	public boolean login(String username, char[] password) {
+	public boolean login(String username, char[] password) throws IOException {
 		if (username == null || password == null) {
 			return false;
 		}
 		return userDAL.findUser(username, password);
 	}
 	
-	public boolean isAuthorized(String username, String role) {
+	public boolean isAuthorized(String username, String role) throws IOException {
 		return userDAL.findUserWithRole(username, role);
 	}
 	

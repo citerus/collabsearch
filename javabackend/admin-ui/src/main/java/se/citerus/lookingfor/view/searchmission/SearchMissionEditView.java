@@ -7,6 +7,7 @@ import com.vaadin.ui.Label;
 import com.vaadin.ui.Layout;
 import com.vaadin.ui.VerticalLayout;
 
+@SuppressWarnings("serial")
 public class SearchMissionEditView extends CustomComponent {
 	
 	public SearchMissionEditView(final ViewSwitchListener listener, String selectedSearchMissionName) {

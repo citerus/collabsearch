@@ -1,36 +1,44 @@
 package se.citerus.lookingfor.view.usermgmt;
 
+import java.util.List;
+
 import se.citerus.lookingfor.ViewSwitchListener;
+import se.citerus.lookingfor.logic.PhoneNumberValidator;
 import se.citerus.lookingfor.logic.User;
 import se.citerus.lookingfor.logic.UserHandler;
 
+import com.vaadin.data.validator.EmailValidator;
+import com.vaadin.data.validator.StringLengthValidator;
+import com.vaadin.ui.AbstractField;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
+import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
+import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.Layout;
 import com.vaadin.ui.PasswordField;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Window;
 import com.vaadin.ui.Window.CloseEvent;
 
+@SuppressWarnings("serial")
 public class UserEditView extends CustomComponent {
 	
-	private Layout mainLayout;
+	private VerticalLayout mainLayout;
 	private TextField nameField;
 	private PasswordField passwordField;
 	private TextField emailField;
 	private TextField teleField;
-	private TextField roleField;
+	private ComboBox roleField;
 	private Button cancelButton;
 	private Button saveButton;
 	private final ViewSwitchListener listener;
 	private Window popupWindow;
 	private Button closePopupButton;
+	private Label popupMessage;
 
 	public UserEditView(final ViewSwitchListener listener, String selectedUser) {
 		this.listener = listener;
@@ -40,6 +48,9 @@ public class UserEditView extends CustomComponent {
 		
 		if (selectedUser != null) {
 			populateForms(selectedUser);
+			popupMessage.setValue("Ny användare skapad.");
+		} else {
+			popupMessage.setValue("Användare redigerad.");
 		}
 		
 		cancelButton.addListener(new ClickListener() {
@@ -49,15 +60,26 @@ public class UserEditView extends CustomComponent {
 		});
 		saveButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				new UserHandler().editUser((String)nameField.getValue(), (String)passwordField.getValue(),
-						(String)emailField.getValue(), (String)teleField.getValue(), (String)roleField.getValue());
-
-				//display popup with button leading back to user list
-				if (popupWindow.getParent() != null) {
-                    getWindow().showNotification("Window is already open");
-                } else {
-                    getWindow().addWindow(popupWindow);
-                }
+				if (areAllFieldsValid()) {
+					User user = new User(
+							(String)nameField.getValue(), 
+							(String)passwordField.getValue(), 
+							(String)emailField.getValue(), 
+							(String)teleField.getValue(), 
+							(String)roleField.getValue());
+					UserHandler userHandler = new UserHandler();
+					userHandler.editUser(user);
+					userHandler.cleanUp();
+					
+					//display popup with button leading back to user list
+					if (popupWindow.getParent() != null) {
+	                    listener.displayNotification("Fel", "Fönstret är redan öppnat");
+	                } else {
+	                    getWindow().addWindow(popupWindow);
+	                }
+				} else {
+					listener.displayNotification("Fel", "Vissa fält innehåller fel");
+				}
 			}
 		});
 		
@@ -73,10 +95,22 @@ public class UserEditView extends CustomComponent {
             }
         });
 	}
+	
+	private boolean areAllFieldsValid() {
+		AbstractField[] fields = {nameField, passwordField, teleField, emailField, roleField};
+		for (AbstractField field : fields) {
+			if (!field.isValid()) {
+				return false;
+			}
+		}
+		return true;
+	}
 
 	private void populateForms(String selectedUser) {
 		try {
-			User userData = new UserHandler().getUserData(selectedUser);
+			UserHandler userHandler = new UserHandler();
+			User userData = userHandler.getUserData(selectedUser);
+			userHandler.cleanUp();
 			
 			nameField.setValue(userData.getUsername());
 			passwordField.setValue(userData.getPassword());
@@ -95,22 +129,39 @@ public class UserEditView extends CustomComponent {
 		mainLayout.addComponent(new Label("Namn"));
 		nameField = new TextField();
 		mainLayout.addComponent(nameField);
+		nameField.addValidator(new StringLengthValidator(
+				"Invalid username, must be between 1-99 characters", 1, 99, false));
+		nameField.setRequired(true);
+		nameField.setImmediate(true);
 		
 		mainLayout.addComponent(new Label("Lösenord"));
 		passwordField = new PasswordField();
 		mainLayout.addComponent(passwordField);
+		passwordField.addValidator(new StringLengthValidator(
+				"Invalid password, must be between 1-99 characters", 1, 99, false));
+		passwordField.setRequired(true);
+		passwordField.setImmediate(true);
 		
 		mainLayout.addComponent(new Label("Epost"));
 		emailField = new TextField();
 		mainLayout.addComponent(emailField);
+		emailField.addValidator(new EmailValidator("Invalid email address"));
+		emailField.setRequired(true);
+		emailField.setImmediate(true);
 		
 		mainLayout.addComponent(new Label("Telefon"));
 		teleField = new TextField();
 		mainLayout.addComponent(teleField);
+		teleField.addValidator(new PhoneNumberValidator("Invalid phone number, may only contain digits"));
+		teleField.setRequired(true);
+		teleField.setImmediate(true);
 		
 		mainLayout.addComponent(new Label("Roll"));
-		roleField = new TextField();
+		roleField = new ComboBox(null, getRolesDataSource());
 		mainLayout.addComponent(roleField);
+		roleField.setNullSelectionAllowed(false);
+		roleField.setRequired(true);
+		roleField.setImmediate(true);
 		
 		HorizontalLayout subLayout = new HorizontalLayout();
 		subLayout.setSpacing(true);
@@ -122,8 +173,16 @@ public class UserEditView extends CustomComponent {
 		subLayout.addComponent(saveButton);
 		
 		mainLayout.addComponent(subLayout);
+//		mainLayout.setComponentAlignment(subLayout, Alignment.TOP_RIGHT);
 		
 		buildPopupWindow();
+	}
+
+	private List<String> getRolesDataSource() {
+		UserHandler handler = new UserHandler();
+		List<String> listOfRoles = handler.getListOfRoles();
+		handler.cleanUp();
+		return listOfRoles;
 	}
 
 	private void buildPopupWindow() {
@@ -135,8 +194,8 @@ public class UserEditView extends CustomComponent {
         layout.setMargin(true);
         layout.setSpacing(true);
         
-        Label message = new Label("Ny användare skapad.");
-        popupWindow.addComponent(message);
+        popupMessage = new Label("...");
+        popupWindow.addComponent(popupMessage);
         
         HorizontalLayout buttonLayout = new HorizontalLayout();
         closePopupButton = new Button("Tillbaka");

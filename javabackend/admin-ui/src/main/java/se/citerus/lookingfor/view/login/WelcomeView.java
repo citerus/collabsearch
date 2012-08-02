@@ -1,7 +1,8 @@
-package se.citerus.lookingfor.view.welcome;
+package se.citerus.lookingfor.view.login;
 
 import se.citerus.lookingfor.ViewSwitchListener;
 
+import com.vaadin.terminal.gwt.client.ui.AlignmentInfo.Bits;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
@@ -42,18 +43,34 @@ public class WelcomeView extends CustomComponent {
 
 	private void buildMainLayout() {
 		mainLayout = new VerticalLayout();
-		Label loginSuccessLabel = new Label("Inloggningen lyckades");
-		mainLayout.addComponent(loginSuccessLabel);
-		mainLayout.setComponentAlignment(loginSuccessLabel, Alignment.MIDDLE_CENTER);
-		HorizontalLayout subLayout = new HorizontalLayout();
-		subLayout.setSpacing(true);
+//		mainLayout.setWidth("300px");
+//		mainLayout.setHeight("300px");
+		mainLayout.setSizeFull();
+		
+		VerticalLayout outerLayout = new VerticalLayout();
+		outerLayout.setWidth("100%");
+		
+		Label loginSuccessLabel = new Label("Inloggningen lyckades!");
+		outerLayout.addComponent(loginSuccessLabel);
+		outerLayout.setComponentAlignment(loginSuccessLabel, Alignment.TOP_CENTER);
+//		outerLayout.setExpandRatio(loginSuccessLabel, 1f);
+		
+		HorizontalLayout innerLayout = new HorizontalLayout();
+		innerLayout.setSpacing(true);
 		userButton = new Button("Användare");
 		logoutButton = new Button("Logga ut");
 		
 		searchMissionButton = new Button("Sökuppdrag");
-		subLayout.addComponent(userButton);
-		subLayout.addComponent(logoutButton);
-		subLayout.addComponent(searchMissionButton);
-		mainLayout.addComponent(subLayout);
+		innerLayout.addComponent(userButton);
+		innerLayout.addComponent(logoutButton);
+		innerLayout.addComponent(searchMissionButton);
+		outerLayout.addComponent(innerLayout);
+		outerLayout.setComponentAlignment(innerLayout, Alignment.TOP_CENTER);
+		
+		mainLayout.addComponent(outerLayout);
+		mainLayout.setComponentAlignment(outerLayout, Alignment.TOP_CENTER);
+		mainLayout.setExpandRatio(outerLayout, UNITS_PERCENTAGE);
+		mainLayout.setMargin(true);
+		mainLayout.setExpandRatio(outerLayout, 1f);
 	}
 }

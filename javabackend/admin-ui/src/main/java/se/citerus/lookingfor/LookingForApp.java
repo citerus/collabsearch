@@ -15,27 +15,35 @@
  */
 package se.citerus.lookingfor;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.Application;
+import com.vaadin.terminal.gwt.server.HttpServletRequestListener;
 import com.vaadin.ui.Window;
 
 /**
  * The Application's "main" class
  */
 @SuppressWarnings("serial")
-public class LookingForApp extends Application {
+public class LookingForApp extends Application implements HttpServletRequestListener {
 	private Window window;
-	private static LookingForApp APP;
+	
+	private static ThreadLocal<LookingForApp> threadLocal = new ThreadLocal<LookingForApp>();
 	
 	@Override
 	public void init() {
-		APP = this;
+		setInstance(this);
 		window = new MainWindow();
 		setMainWindow(window);
 	}
+	
+	public static LookingForApp getInstance() {
+		return threadLocal.get();
+	}
 
-	public static LookingForApp get() {
-		return APP;
+	public static void setInstance(LookingForApp lookingForApp) {
+		threadLocal.set(lookingForApp);
 	}
 
 	@Override
@@ -43,8 +51,17 @@ public class LookingForApp extends Application {
 		return (String)super.getUser();
 	}
 
-	public void setUser(String user) {
-		super.setUser(user);
+	@Override
+	public void setUser(Object user) {
+		super.setUser((String)user);
+	}
+
+	public void onRequestStart(HttpServletRequest request, HttpServletResponse response) {
+		LookingForApp.setInstance(this);
+	}
+
+	public void onRequestEnd(HttpServletRequest request, HttpServletResponse response) {
+		threadLocal.remove();
 	}
 
 }

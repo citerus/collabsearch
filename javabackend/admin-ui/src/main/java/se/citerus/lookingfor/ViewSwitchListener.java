@@ -38,7 +38,7 @@ public interface ViewSwitchListener {
 	 * Switches to the user management view, loading the data of the included user.
 	 * @param selectedUserName the username with which to query the database.
 	 */
-	public void switchToUserMgmtView(String selectedUserName);
+	public void switchToUserEditView(String selectedUserName);
 
 	/**
 	 * Switches to the search mission management view, loading the data of the included search mission.

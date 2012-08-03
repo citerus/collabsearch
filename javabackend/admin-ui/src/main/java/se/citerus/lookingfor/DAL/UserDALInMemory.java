@@ -92,4 +92,14 @@ public class UserDALInMemory implements UserDAL {
 		return allRoles;
 	}
 
+	public boolean checkForDuplicateUserData(String username, String tele, String email) {
+		boolean result = false;
+		for (User user : allUsers) {
+			if (user.getUsername().equals(username) || user.getTele().equals(tele) || user.getEmail().equals(email)) {
+				result = true;
+			}
+		}
+		return result;
+	}
+
 }

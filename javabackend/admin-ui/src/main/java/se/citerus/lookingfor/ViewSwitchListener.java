@@ -32,7 +32,7 @@ public interface ViewSwitchListener {
 	
 	public void switchToUserListView();
 	
-	public void switchToSearchMissionView();
+	public void switchToSearchMissionListView();
 	
 	/**
 	 * Switches to the user management view, loading the data of the included user.

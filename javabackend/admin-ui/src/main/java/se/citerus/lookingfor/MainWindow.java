@@ -64,13 +64,13 @@ public class MainWindow extends Window implements LoginListener, ViewSwitchListe
 	public void switchToUserListView() {
 		setContent(new UserListView(this));
 	}
-
-	public void switchToSearchMissionView() {
-		setContent(new SearchMissionListView(this));
-	}
-
+	
 	public void switchToUserEditView(String selectedUsername) {
 		setContent(new UserEditView(this, selectedUsername));
+	}
+
+	public void switchToSearchMissionListView() {
+		setContent(new SearchMissionListView(this));
 	}
 
 	public void switchToSearchMissionEditView(String selectedSearchMissionName) {

@@ -8,6 +8,7 @@ import java.util.Random;
 
 import se.citerus.lookingfor.logic.User;
 
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.CommandResult;
 import com.mongodb.DB;
@@ -205,6 +206,28 @@ public class UserDALMongoDB implements UserDAL { //TODO break out into interface
 			throw new IOException("No database connectivity");
 		}
 		return list;
+	}
+
+	/**
+	 * Finds users matching the included username or telephone number or email address.
+	 * @return true if dups are found, else false
+	 */
+	public boolean checkForDuplicateUserData(String username, String tele, String email) throws IOException {
+		try {
+			BasicDBList basicDBList = new BasicDBList();
+			basicDBList.add(new BasicDBObject("username", username));
+			basicDBList.add(new BasicDBObject("tele", tele));
+			basicDBList.add(new BasicDBObject("email", email));
+			BasicDBObject query = new BasicDBObject("$or", basicDBList);
+			BasicDBObject filter = new BasicDBObject("_id", 1);
+			DBCursor cursor = userColl.find(query, filter);
+			if (cursor.hasNext()) {
+				return true;
+			}
+			return false;
+		} catch (MongoException e) {
+			throw new IOException("No database connectivity");
+		}
 	}
 
 }

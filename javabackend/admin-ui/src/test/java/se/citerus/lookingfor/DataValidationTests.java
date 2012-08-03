@@ -1,28 +1,30 @@
 package se.citerus.lookingfor;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.springframework.validation.Errors;
-import org.springframework.validation.FieldError;
 
-import se.citerus.lookingfor.logic.User;
-import se.citerus.lookingfor.logic.UserValidator;
+import se.citerus.lookingfor.logic.PhoneNumberValidator;
+
+import com.vaadin.data.Validator;
+import com.vaadin.data.Validator.InvalidValueException;
+import com.vaadin.data.validator.EmailValidator;
+import com.vaadin.data.validator.StringLengthValidator;
 
 public class DataValidationTests {
 
-	private UserValidator uv;
-
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
+		
 	}
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
+		
 	}
 
 	@Before
@@ -37,9 +39,7 @@ public class DataValidationTests {
 
 	@Test
 	public void testUserValidator() {
-		uv = new UserValidator();
-		User user = null;
-		Errors errors = null; //TODO implement Errors?
+		Validator validator;
 		
 		final String okUsername = "user123";
 		final String okPassword = "password";
@@ -47,53 +47,59 @@ public class DataValidationTests {
 		final String okTele = "123456789";
 		final String okRole = "admin";
 		
-		user = new User(okUsername, okPassword, okEmail, okTele, okRole);
-		uv.validate(user, errors);
-		if (errors.hasErrors()) {
-			fail("Failed to validate acceptable user data");
+		//testing username validation
+		generalValidationChecks(new StringLengthValidator(
+			"Name validation error", 1, 99, false), "username", okUsername);
+		
+		//testing password validation
+		validator = new StringLengthValidator(
+				"Password validation error", 1, 99, false);
+		generalValidationChecks(validator, "password", okPassword);
+		
+		//testing email validation
+		validator = new EmailValidator("");
+		generalValidationChecks(validator, "email", okEmail);
+		try {
+			validator.validate("mail_at_mail.com");
+		} catch (InvalidValueException e) {
+			//ok
 		}
 		
-		user = new User(null, okPassword, okEmail, okTele, okRole);
-		uv.validate(user, errors);
-		if (!errors.hasErrors()) {
-			fail("Validated unacceptable username: " + null);
-		} else {
-			assertNotNull("Did not get username validation error", errors.getFieldError("username"));
+		//testing phone number validation
+		validator = new PhoneNumberValidator("");
+		generalValidationChecks(validator, "phone number", okTele);
+		try {
+			validator.validate("555-HEJSAN");
+			fail("Failed to invalidate invalid phone number");
+		} catch (InvalidValueException e) {
+			//ok
 		}
 		
-		user = new User(okUsername, null, okEmail, okTele, okRole);
-		uv.validate(user, errors);
-		if (!errors.hasErrors()) {
-			fail("Validated unacceptable password: " + null);
-		} else {
-			assertNotNull("Did not get password validation error", errors.getFieldError("password"));
-		}
-		
-		user = new User(okUsername, okPassword, "user_at_email.test", okTele, okRole);
-		uv.validate(user, errors);
-		if (!errors.hasErrors()) {
-			fail("Validated unacceptable email: " + "user_at_email.test");
-		} else {
-			assertNotNull("Did not get email validation error", errors.getFieldError("email"));
-		}
-		
-		user = new User(okUsername, okPassword, okEmail, "error", okRole);
-		uv.validate(user, errors);
-		if (!errors.hasErrors()) {
-			fail("Validated unacceptable telephone number: " + null);
-		} else {
-			assertNotNull("Did not get telephone number validation error", errors.getFieldError("tele"));
-		}
-		
-		user = new User(okUsername, okPassword, okEmail, okTele, "unknown");
-		uv.validate(user, errors);
-		if (!errors.hasErrors()) {
-			fail("Validated unacceptable role: " + "unknown");
-		} else {
-			assertNotNull("Did not get role validation error", errors.getFieldError("role"));
-		}
+		//testing role validation
+		validator = new StringLengthValidator("", 1, 99, false);
+		generalValidationChecks(validator, "role", okRole);
 	}
 	
+	private void generalValidationChecks(Validator validator, String msg, String validData) {
+		try {
+			validator.validate(validData);
+		} catch (InvalidValueException e) {
+			fail("Failed to validate valid " + msg);
+		}
+		try {
+			validator.validate(null);
+			fail("Failed to invalidate null " + msg);
+		} catch (InvalidValueException e) {
+			//ok
+		}
+		try {
+			validator.validate("");
+			fail("Failed to invalidate empty " + msg);
+		} catch (InvalidValueException e) {
+			//ok
+		}
+	}
+
 	@Test
 	public void testSearchMissionValidator() {
 		fail("Not yet implemented");

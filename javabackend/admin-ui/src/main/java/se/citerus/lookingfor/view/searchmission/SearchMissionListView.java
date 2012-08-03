@@ -39,12 +39,12 @@ public class SearchMissionListView extends CustomComponent {
 		});
 		addButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				//listener.switchToSearchMissionEditView(null);
+				listener.switchToSearchMissionEditView(null);
 			}
 		});
 		editButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				//listener.switchToSearchMissionEditView(selectedRow);
+				listener.switchToSearchMissionEditView(selectedRow);
 			}
 		});
 		endMissionButton.addListener(new ClickListener() {

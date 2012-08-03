@@ -7,7 +7,7 @@ import se.citerus.lookingfor.DAL.UserDAL;
 import se.citerus.lookingfor.DAL.UserDALMongoDB;
 
 public class UserHandler {
-	
+
 	private UserDAL userDAL;
 
 	public UserHandler() {
@@ -53,6 +53,20 @@ public class UserHandler {
 
 	public void cleanUp() {
 		userDAL.disconnect();
+	}
+
+	/**
+	 * Searches for duplicate users by username or telephone number or email.
+	 * @return true if duplicates were found, else false.
+	 */
+	public boolean lookForDuplicates(String username, String tele, String email) { //TODO throw exception here, no error hiding
+		boolean result = false;
+		try {
+			result = userDAL.checkForDuplicateUserData(username, tele, email);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return result;
 	}
 
 }

@@ -48,9 +48,9 @@ public class UserEditView extends CustomComponent {
 		
 		if (selectedUser != null) {
 			populateForms(selectedUser);
-			popupMessage.setValue("Ny användare skapad.");
-		} else {
 			popupMessage.setValue("Användare redigerad.");
+		} else {
+			popupMessage.setValue("Ny användare skapad.");
 		}
 		
 		cancelButton.addListener(new ClickListener() {
@@ -78,7 +78,7 @@ public class UserEditView extends CustomComponent {
 	                    getWindow().addWindow(popupWindow);
 	                }
 				} else {
-					listener.displayNotification("Fel", "Vissa fält innehåller fel");
+					listener.displayNotification("Fel", "Ett eller flera fält innehåller fel");
 				}
 			}
 		});
@@ -118,7 +118,8 @@ public class UserEditView extends CustomComponent {
 			teleField.setValue(userData.getTele());
 			roleField.setValue(userData.getRole());
 		} catch (Exception e) {
-			listener.displayError("Fel: Användare ej funnen", "Användare " + selectedUser + " ej funnen.");
+			listener.displayError("Fel: Användare ej funnen", 
+					"Användare " + selectedUser + " ej funnen.");
 		}
 	}
 
@@ -138,21 +139,22 @@ public class UserEditView extends CustomComponent {
 		passwordField = new PasswordField();
 		mainLayout.addComponent(passwordField);
 		passwordField.addValidator(new StringLengthValidator(
-				"Invalid password, must be between 1-99 characters", 1, 99, false));
+				"Ogiltigt lösenord, måste vara mellan 1-99 tecken", 1, 99, false));
 		passwordField.setRequired(true);
 		passwordField.setImmediate(true);
 		
 		mainLayout.addComponent(new Label("Epost"));
 		emailField = new TextField();
 		mainLayout.addComponent(emailField);
-		emailField.addValidator(new EmailValidator("Invalid email address"));
+		emailField.addValidator(new EmailValidator("Ogiltig mailadress"));
 		emailField.setRequired(true);
 		emailField.setImmediate(true);
 		
 		mainLayout.addComponent(new Label("Telefon"));
 		teleField = new TextField();
 		mainLayout.addComponent(teleField);
-		teleField.addValidator(new PhoneNumberValidator("Invalid phone number, may only contain digits"));
+		teleField.addValidator(new PhoneNumberValidator(
+				"Ogiltigt telefonnummer, får bara innehålla siffror"));
 		teleField.setRequired(true);
 		teleField.setImmediate(true);
 		

@@ -36,7 +36,7 @@ public class WelcomeView extends CustomComponent {
 		});
 		searchMissionButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				listener.switchToSearchMissionView();
+				listener.switchToSearchMissionListView();
 			}
 		});
 	}
@@ -47,13 +47,19 @@ public class WelcomeView extends CustomComponent {
 //		mainLayout.setHeight("300px");
 		mainLayout.setSizeFull();
 		
+		Label sizer1 = new Label("");
+		sizer1.setHeight("100%");
+		mainLayout.addComponent(sizer1);
+		
 		VerticalLayout outerLayout = new VerticalLayout();
 		outerLayout.setWidth("100%");
+		outerLayout.setHeight("100%");
+		outerLayout.setSpacing(true);
 		
 		Label loginSuccessLabel = new Label("Inloggningen lyckades!");
+		loginSuccessLabel.setWidth(null);
 		outerLayout.addComponent(loginSuccessLabel);
-		outerLayout.setComponentAlignment(loginSuccessLabel, Alignment.TOP_CENTER);
-//		outerLayout.setExpandRatio(loginSuccessLabel, 1f);
+		outerLayout.setComponentAlignment(loginSuccessLabel, Alignment.MIDDLE_CENTER);
 		
 		HorizontalLayout innerLayout = new HorizontalLayout();
 		innerLayout.setSpacing(true);
@@ -65,12 +71,19 @@ public class WelcomeView extends CustomComponent {
 		innerLayout.addComponent(logoutButton);
 		innerLayout.addComponent(searchMissionButton);
 		outerLayout.addComponent(innerLayout);
-		outerLayout.setComponentAlignment(innerLayout, Alignment.TOP_CENTER);
+		outerLayout.setComponentAlignment(innerLayout, Alignment.MIDDLE_CENTER);
 		
 		mainLayout.addComponent(outerLayout);
-		mainLayout.setComponentAlignment(outerLayout, Alignment.TOP_CENTER);
+		mainLayout.setComponentAlignment(outerLayout, Alignment.MIDDLE_CENTER);
 		mainLayout.setExpandRatio(outerLayout, UNITS_PERCENTAGE);
 		mainLayout.setMargin(true);
-		mainLayout.setExpandRatio(outerLayout, 1f);
+		
+		Label sizer2 = new Label("");
+		sizer2.setWidth("100%");
+		mainLayout.addComponent(sizer2);
+		
+		mainLayout.setExpandRatio(sizer1, 0.5f);
+		mainLayout.setExpandRatio(outerLayout, 2f);
+		mainLayout.setExpandRatio(sizer2, 0.5f);
 	}
 }

@@ -5,6 +5,10 @@ import java.util.List;
 
 import se.citerus.lookingfor.logic.User;
 
+/**
+ * A facade for separating the higher levels from the db specific code.
+ * @author Ola Rende
+ */
 public interface UserDAL {
 	
 	public boolean findUser(String username, char[] password) throws IOException;
@@ -26,5 +30,7 @@ public interface UserDAL {
 	public Boolean deleteUserByUsername(String username) throws IOException;
 	
 	public List<String> getAllRoles() throws IOException;
+
+	public boolean checkForDuplicateUserData(String username, String tele, String email) throws IOException;
 	
 }

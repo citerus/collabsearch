@@ -2,7 +2,7 @@ package se.citerus.lookingfor.view.searchmission;
 
 import java.util.List;
 
-import se.citerus.lookingfor.ViewSwitchListener;
+import se.citerus.lookingfor.ViewSwitchController;
 import se.citerus.lookingfor.logic.SearchMission;
 import se.citerus.lookingfor.logic.SearchMissionHandler;
 
@@ -27,7 +27,7 @@ public class SearchMissionListView extends CustomComponent {
 	
 	private String selectedRow;
 	
-	public SearchMissionListView(final ViewSwitchListener listener) {
+	public SearchMissionListView(final ViewSwitchController listener) {
 		VerticalLayout mainLayout = buildMainLayout();
 		setCompositionRoot(mainLayout);
 		listener.setMainWindowCaption("Missing People - Sökuppdrag");
@@ -49,7 +49,7 @@ public class SearchMissionListView extends CustomComponent {
 		});
 		endMissionButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				//change status or remove?
+				//TODO should this be change status or remove?
 			}
 		});
 		
@@ -65,6 +65,7 @@ public class SearchMissionListView extends CustomComponent {
 	private void populateTable() {
 		SearchMissionHandler handler = new SearchMissionHandler();
 		final List<SearchMission> list = handler.getListOfSearchMissions();
+		handler.cleanUp();
 		
 		BeanContainer<String, SearchMission> beans = new BeanContainer<String, SearchMission>(SearchMission.class);
 		beans.setBeanIdProperty("name");

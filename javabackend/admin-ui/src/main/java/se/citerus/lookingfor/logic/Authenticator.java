@@ -29,7 +29,9 @@ public class Authenticator {
 		if (username == null || password == null) {
 			return false;
 		}
-		return userDAL.findUser(username, password);
+		boolean userFound = userDAL.findUser(username, password);
+		userDAL.disconnect();
+		return userFound;
 	}
 	
 	public boolean isAuthorized(String username, String role) throws IOException {

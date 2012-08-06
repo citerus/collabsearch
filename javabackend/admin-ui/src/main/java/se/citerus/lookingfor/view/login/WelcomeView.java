@@ -1,6 +1,6 @@
 package se.citerus.lookingfor.view.login;
 
-import se.citerus.lookingfor.ViewSwitchListener;
+import se.citerus.lookingfor.ViewSwitchController;
 
 import com.vaadin.terminal.gwt.client.ui.AlignmentInfo.Bits;
 import com.vaadin.ui.Alignment;
@@ -19,7 +19,7 @@ public class WelcomeView extends CustomComponent {
 	private Button logoutButton;
 	private Button searchMissionButton;
 
-	public WelcomeView(final ViewSwitchListener listener) {
+	public WelcomeView(final ViewSwitchController listener) {
 		buildMainLayout();
 		setCompositionRoot(mainLayout);
 		listener.setMainWindowCaption("Missing People - Välkommen");

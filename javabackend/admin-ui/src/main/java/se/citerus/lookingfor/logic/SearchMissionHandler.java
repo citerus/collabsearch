@@ -14,4 +14,8 @@ public class SearchMissionHandler {
 	public List<SearchMission> getListOfSearchMissions() {
 		return searchMissionDAL.getAllSearchMissions();
 	}
+
+	public void cleanUp() {
+		searchMissionDAL.disconnect();
+	}
 }

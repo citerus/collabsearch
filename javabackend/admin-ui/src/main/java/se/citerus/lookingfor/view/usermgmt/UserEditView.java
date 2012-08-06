@@ -2,7 +2,7 @@ package se.citerus.lookingfor.view.usermgmt;
 
 import java.util.List;
 
-import se.citerus.lookingfor.ViewSwitchListener;
+import se.citerus.lookingfor.ViewSwitchController;
 import se.citerus.lookingfor.logic.PhoneNumberValidator;
 import se.citerus.lookingfor.logic.User;
 import se.citerus.lookingfor.logic.UserHandler;
@@ -35,12 +35,12 @@ public class UserEditView extends CustomComponent {
 	private ComboBox roleField;
 	private Button cancelButton;
 	private Button saveButton;
-	private final ViewSwitchListener listener;
+	private final ViewSwitchController listener;
 	private Window popupWindow;
 	private Button closePopupButton;
 	private Label popupMessage;
 
-	public UserEditView(final ViewSwitchListener listener, String selectedUser) {
+	public UserEditView(final ViewSwitchController listener, String selectedUser) {
 		this.listener = listener;
 		buildMainLayout();
 		setCompositionRoot(mainLayout);

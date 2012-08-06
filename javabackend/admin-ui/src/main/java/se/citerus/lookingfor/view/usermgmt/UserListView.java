@@ -3,7 +3,7 @@ package se.citerus.lookingfor.view.usermgmt;
 import java.io.IOException;
 import java.util.List;
 
-import se.citerus.lookingfor.ViewSwitchListener;
+import se.citerus.lookingfor.ViewSwitchController;
 import se.citerus.lookingfor.logic.User;
 import se.citerus.lookingfor.logic.UserHandler;
 
@@ -55,7 +55,7 @@ public class UserListView extends CustomComponent {
 	 * visual editor.
 	 * @param listener 
 	 */
-	public UserListView(final ViewSwitchListener listener) {
+	public UserListView(final ViewSwitchController listener) {
 		buildMainLayout();
 		setCompositionRoot(mainLayout);
 		listener.setMainWindowCaption("Missing People - Användare");
@@ -109,12 +109,15 @@ public class UserListView extends CustomComponent {
 	}
 
 	private void populateTable() {
-		UserHandler handler = new UserHandler();
 		List<User> list = null;
+		UserHandler handler = null;
 		try {
+			handler = new UserHandler();
 			list = handler.getListOfUsers();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} finally {
+			handler.cleanUp();
 		}
 		
 		BeanContainer<String, User> beans = new BeanContainer<String, User>(User.class);

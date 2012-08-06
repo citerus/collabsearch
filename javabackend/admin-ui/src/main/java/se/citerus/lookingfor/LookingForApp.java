@@ -18,6 +18,7 @@ package se.citerus.lookingfor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.mongodb.Mongo;
 import com.vaadin.Application;
 import com.vaadin.terminal.gwt.server.HttpServletRequestListener;
 import com.vaadin.ui.Window;
@@ -34,6 +35,7 @@ public class LookingForApp extends Application implements HttpServletRequestList
 	@Override
 	public void init() {
 		setInstance(this);
+		//Mongo mongo = new Mongo(); //TODO refactor to use single connector
 		window = new MainWindow();
 		setMainWindow(window);
 	}

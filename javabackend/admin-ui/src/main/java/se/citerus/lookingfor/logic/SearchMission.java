@@ -3,6 +3,7 @@ package se.citerus.lookingfor.logic;
 public class SearchMission {
 	private String name;
 	private String description;
+	private int prio;
 	private int status;
 	
 	private String humanReadableStatus;
@@ -28,6 +29,14 @@ public class SearchMission {
 	public void setDescription(String description) {
 		this.description = description;
 	}
+	
+	public int getPrio() {
+		return prio;
+	}
+	
+	public void setPrio(int prio) {
+		this.prio = prio;
+	}
 
 	public int getStatus() {
 		return status;
@@ -49,6 +58,11 @@ public class SearchMission {
 			statusMessage = "Okänd status";
 		}
 		return statusMessage;
+	}
+	
+	@Override
+	public String toString() {
+		return name + ", " + description + ", " + status;
 	}
 	
 }

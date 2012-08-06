@@ -15,7 +15,8 @@ import com.vaadin.ui.LoginForm.LoginListener;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.Window;
 
-public class MainWindow extends Window implements LoginListener, ViewSwitchListener {
+@SuppressWarnings("serial")
+public class MainWindow extends Window implements LoginListener, ViewSwitchController {
 
 	public MainWindow() {
 		setCaption("Missing People - Login");
@@ -43,16 +44,16 @@ public class MainWindow extends Window implements LoginListener, ViewSwitchListe
 	public void displayNotification(String caption, String message) {
 		showNotification(caption, message);
 	}
-	
+
 	public void logoutAndReload() {
 		LookingForApp.getInstance().setUser(null);
 		getApplication().close();
 	}
-	
+
 	public void displayError(String caption, String message) {
 		showNotification(caption, message, Notification.TYPE_ERROR_MESSAGE);
 	}
-	
+
 	public void setMainWindowCaption(String caption) {
 		setCaption(caption);
 	}

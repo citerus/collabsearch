@@ -2,7 +2,7 @@ package se.citerus.lookingfor;
 
 import se.citerus.lookingfor.logic.User;
 
-public interface ViewSwitchListener {
+public interface ViewSwitchController {
 	
 	/**
 	 * Displays a toast-like notification to the user.

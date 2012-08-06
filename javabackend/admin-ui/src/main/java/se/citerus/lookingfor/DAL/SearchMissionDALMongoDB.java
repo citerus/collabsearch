@@ -46,4 +46,8 @@ public class SearchMissionDALMongoDB implements SearchMissionDAL {
 		return new ArrayList<SearchMission>(0);
 	}
 
+	public void disconnect() {
+		mongo.close();
+	}
+
 }

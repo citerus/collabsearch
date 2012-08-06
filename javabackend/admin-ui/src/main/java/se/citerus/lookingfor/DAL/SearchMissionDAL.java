@@ -9,4 +9,6 @@ public interface SearchMissionDAL {
 
 	public List<SearchMission> getAllSearchMissions() throws IOException;
 	
+	public void disconnect();
+	
 }

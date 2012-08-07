@@ -1,5 +1,6 @@
 package se.citerus.lookingfor.DAL;
 
+import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,6 +49,10 @@ public class SearchMissionDALMongoDB implements SearchMissionDAL {
 
 	public void disconnect() {
 		mongo.close();
+	}
+
+	public void endMission(String name) throws IOException {
+		
 	}
 
 }

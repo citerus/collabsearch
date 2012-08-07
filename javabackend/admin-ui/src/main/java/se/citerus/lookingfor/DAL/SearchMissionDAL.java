@@ -10,5 +10,7 @@ public interface SearchMissionDAL {
 	public List<SearchMission> getAllSearchMissions() throws IOException;
 	
 	public void disconnect();
+
+	public void endMission(String name) throws IOException;
 	
 }

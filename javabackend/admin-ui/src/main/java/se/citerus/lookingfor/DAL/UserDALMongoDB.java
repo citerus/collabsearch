@@ -19,7 +19,7 @@ import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 import com.mongodb.WriteResult;
 
-public class UserDALMongoDB implements UserDAL { //TODO break out into interface with in-memory and MongoDB impl
+public class UserDALMongoDB implements UserDAL {
 
 	private Mongo mongo;
 	private DBCollection userColl;

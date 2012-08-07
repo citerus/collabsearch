@@ -1,5 +1,6 @@
 package se.citerus.lookingfor.view.searchmission;
 
+import java.io.IOException;
 import java.util.List;
 
 import se.citerus.lookingfor.ViewSwitchController;
@@ -24,9 +25,7 @@ public class SearchMissionListView extends CustomComponent {
 	private Button addButton;
 	private Table table;
 	private Button homeButton;
-	
-	private String selectedRow;
-	
+		
 	public SearchMissionListView(final ViewSwitchController listener) {
 		VerticalLayout mainLayout = buildMainLayout();
 		setCompositionRoot(mainLayout);
@@ -44,18 +43,25 @@ public class SearchMissionListView extends CustomComponent {
 		});
 		editButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				listener.switchToSearchMissionEditView(selectedRow);
+				listener.switchToSearchMissionEditView((String) table.getValue());
 			}
 		});
 		endMissionButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
 				//TODO should this be change status or remove?
-			}
-		});
-		
-		table.addListener(new Property.ValueChangeListener() {
-			public void valueChange(ValueChangeEvent event) {
-				selectedRow = (String) event.getProperty().getValue();
+				SearchMissionHandler handler = null;
+				String itemId = (String) table.getValue();
+				try {
+					handler = new SearchMissionHandler();
+					handler.endMission(itemId);
+					table.removeItem(itemId);
+				} catch (Exception e) {
+					e.printStackTrace();
+				} finally {
+					if (handler != null) {
+						handler.cleanUp();
+					}
+				}
 			}
 		});
 		
@@ -64,8 +70,14 @@ public class SearchMissionListView extends CustomComponent {
 
 	private void populateTable() {
 		SearchMissionHandler handler = new SearchMissionHandler();
-		final List<SearchMission> list = handler.getListOfSearchMissions();
-		handler.cleanUp();
+		List<SearchMission> list = null;
+		try {
+			list = handler.getListOfSearchMissions();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			handler.cleanUp();
+		}
 		
 		BeanContainer<String, SearchMission> beans = new BeanContainer<String, SearchMission>(SearchMission.class);
 		beans.setBeanIdProperty("name");
@@ -80,6 +92,7 @@ public class SearchMissionListView extends CustomComponent {
 		VerticalLayout mainLayout = new VerticalLayout();
 		mainLayout.setMargin(true);
 
+		
 		homeButton = new Button("Tillbaka");
 		mainLayout.addComponent(homeButton);
 		

@@ -35,7 +35,7 @@ public class LookingForApp extends Application implements HttpServletRequestList
 	@Override
 	public void init() {
 		setInstance(this);
-		//Mongo mongo = new Mongo(); //TODO refactor to use single connector
+		//Mongo mongo = new Mongo(); //TODO refactor to use single connector (spring service!)
 		window = new MainWindow();
 		setMainWindow(window);
 	}

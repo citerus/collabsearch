@@ -2,17 +2,24 @@ package se.citerus.lookingfor.view.searchmission;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import se.citerus.lookingfor.ViewSwitchController;
-import se.citerus.lookingfor.logic.FileWrapper;
+import se.citerus.lookingfor.logic.FileMetadata;
+import se.citerus.lookingfor.logic.SearchMission;
+import se.citerus.lookingfor.logic.SearchMissionHandler;
 import se.citerus.lookingfor.logic.SearchOperation;
+import se.citerus.lookingfor.logic.Status;
 
 import com.vaadin.data.Container;
 import com.vaadin.data.util.BeanContainer;
 import com.vaadin.data.util.BeanItemContainer;
+import com.vaadin.data.validator.IntegerValidator;
+import com.vaadin.data.validator.StringLengthValidator;
 import com.vaadin.ui.AbstractField;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
@@ -45,13 +52,13 @@ public class SearchMissionEditView extends CustomComponent {
 	private Button cancelButton;
 	private Button saveButton;
 	private Table filesTable;
-	private BeanContainer<String,FileWrapper> fileBeanContainer;
+	private BeanContainer<String,FileMetadata> fileBeanContainer;
 	private Upload fileUpload;
 	private TextField titleField;
 	private TextArea descrField;
 	private TextField prioField;
 	private ComboBox statusField;
-	private BeanContainer<String, String> statusBeanContainer;
+	private BeanContainer<String, Status> statusBeanContainer;
 	private Receiver uploadReceiver;
 	private BeanItemContainer<SearchOperation> opsBeanContainer;
 	private ListSelect opsList;
@@ -65,8 +72,54 @@ public class SearchMissionEditView extends CustomComponent {
 		setCompositionRoot(mainLayout);
 		listener.setMainWindowCaption("Missing People - Redigera sökuppdrag");
 		
-		populateMissionTable();
-		populateOpsTable();
+		if (selectedSearchMissionName != null) {
+			populateForms(selectedSearchMissionName);
+		}
+	}
+
+	private void populateForms(String missionName) {
+		SearchMission mission = null;
+		SearchMissionHandler handler = null;
+		try {
+			handler = new SearchMissionHandler();
+			mission = handler.getSearchMissionData(missionName);
+			if (mission == null) {
+				listener.displayError("Fel", "Uppdraget " + missionName + " kunde ej hittas");
+				return;
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			if (handler != null) {
+				handler.cleanUp();
+			}
+		}
+		
+		titleField.setValue(mission.getName());
+		descrField.setValue(mission.getDescription());
+		prioField.setValue(mission.getPrio());
+		statusField.setValue(mission.getStatus().getName());
+		
+		fileBeanContainer.removeAllItems();
+		List<FileMetadata> fileList = mission.getFileList();
+		for (FileMetadata fileMetadata : fileList) {
+			fileBeanContainer.addBean(fileMetadata);
+		}
+		
+		opsBeanContainer.removeAllItems();
+		List<SearchOperation> opsList2 = mission.getOpsList();
+		for (SearchOperation searchOp : opsList2) {
+			opsBeanContainer.addItem(searchOp);
+		}
+	}
+
+	private void setupValidators() {
+		titleField.addValidator(new StringLengthValidator(
+				"Titeln måste vara mellan 1-99 tecken", 1, 99, false));
+		descrField.addValidator(new StringLengthValidator(
+				"Beskrivningen måste vara mellan 1-99 tecken", 1, 99, false));
+		prioField.addValidator(new IntegerValidator("Prioriteringstalet måste vara ett heltal"));
+		statusField.setRequired(true);
 	}
 
 	public void resetView() {
@@ -80,6 +133,8 @@ public class SearchMissionEditView extends CustomComponent {
 	private void buildMainLayout() {
 		mainLayout = new VerticalLayout();
 		mainLayout.setSizeFull();
+		mainLayout.setMargin(false, false, false, true);
+		mainLayout.setSpacing(true);
 		
 		Label headlineLabel = new Label("<h1><b>Redigera sökuppdrag</b></h1>");
 		headlineLabel.setContentMode(Label.CONTENT_XHTML);
@@ -87,69 +142,82 @@ public class SearchMissionEditView extends CustomComponent {
 		
 		HorizontalLayout outerLayout = new HorizontalLayout();
 		outerLayout.setWidth("66%");
+		outerLayout.setHeight("75%");
 		
-		VerticalLayout formLayout = new VerticalLayout();
-		formLayout.setWidth("100%");
-		formLayout.setMargin(false, true, false, false);
+		VerticalLayout leftFormLayout = new VerticalLayout();
+		leftFormLayout.setWidth("100%");
+		leftFormLayout.setMargin(false, true, false, false);
+		leftFormLayout.setSpacing(true);
 		
 		Label titleLabel = new Label("Titel");
 		titleField = new TextField();
-		makeFormItem(formLayout, titleLabel, titleField, Alignment.MIDDLE_LEFT);
+		makeFormItem(leftFormLayout, titleLabel, titleField, Alignment.MIDDLE_LEFT);
 		
 		Label descrLabel = new Label("Beskrivning");
 		descrField = new TextArea();
-		makeFormItem(formLayout, descrLabel, descrField, Alignment.TOP_LEFT);
+		makeFormItem(leftFormLayout, descrLabel, descrField, Alignment.TOP_LEFT);
 		
 		Label prioLabel = new Label("Prio");
 		prioField = new TextField();
-		makeFormItem(formLayout, prioLabel, prioField, Alignment.MIDDLE_LEFT);
+		makeFormItem(leftFormLayout, prioLabel, prioField, Alignment.MIDDLE_LEFT);
 		
-		Label statusLabel = new Label("Status");
-		statusBeanContainer = new BeanContainer<String, String>(String.class);
+		Label statusLabel = new Label("Process/Status");
+		statusBeanContainer = new BeanContainer<String, Status>(Status.class);
+		statusBeanContainer.setBeanIdProperty("name");
 		statusField = new ComboBox(null, statusBeanContainer);
-		makeFormItem(formLayout, statusLabel, statusField, Alignment.MIDDLE_LEFT);
+		makeFormItem(leftFormLayout, statusLabel, statusField, Alignment.MIDDLE_LEFT);
+		statusField.setNullSelectionAllowed(false);
+		
+		populateStatusField();
 		
 		VerticalLayout filesListLayout = new VerticalLayout();
 		filesListLayout.setWidth("100%");
+		
+		fileBeanContainer = new BeanContainer<String, FileMetadata>(FileMetadata.class);
+		fileBeanContainer.setBeanIdProperty("fileName");
+		
+//		fileBeanContainer.addBean(new FileMetadata("fil1.pdf","",""));
+		
 		filesTable = new Table("Bifogade filer");
+		filesTable.setHeight("150px");
+		filesTable.setWidth("100%");
+		filesTable.setContainerDataSource(fileBeanContainer);
+		filesTable.setVisibleColumns(new Object[]{"fileName"});
+		filesTable.setColumnHeaders(new String[]{"Filnamn"});
+		filesTable.addGeneratedColumn("", new ColumnGenerator() {
+			public Object generateCell(final Table source, final Object itemId, Object columnId) {
+				Button deleteButton = new Button("Ta bort");
+				deleteButton.addListener(new ClickListener() {
+					public void buttonClick(ClickEvent event) {
+						removeFile(source.getContainerDataSource(), itemId);
+					}
+				});
+				return deleteButton;
+			}
+		});
+		filesTable.setColumnExpandRatio("fileName", 2f);
 		filesListLayout.addComponent(filesTable);
+		
 		uploadReceiver = createUploadReceiver();
 		fileUpload = new Upload("", uploadReceiver);
-//		fileUpload.setWidth("100%");
 		filesListLayout.addComponent(fileUpload);
 		filesListLayout.setComponentAlignment(fileUpload, Alignment.TOP_RIGHT);
 		filesListLayout.setExpandRatio(fileUpload, 1f);
-		formLayout.addComponent(filesListLayout);
+		leftFormLayout.addComponent(filesListLayout);
 		
 		setupUploadListeners();
 		
-		HorizontalLayout buttonLayout = new HorizontalLayout();
-//		buttonLayout.setWidth("100%");
-		buttonLayout.setSpacing(true);
-		cancelButton = new Button("Avbryt");
-		cancelButton.addListener(new ClickListener() {
-			public void buttonClick(ClickEvent event) {
-				listener.switchToSearchMissionListView();
-			}
-		});
-		buttonLayout.addComponent(cancelButton);
-		saveButton = new Button("Spara");
-		buttonLayout.addComponent(saveButton);
+		outerLayout.addComponent(leftFormLayout);
 		
-		formLayout.addComponent(buttonLayout);
-		formLayout.setComponentAlignment(buttonLayout, Alignment.MIDDLE_CENTER);
-		formLayout.setSpacing(true);
-		
-		outerLayout.addComponent(formLayout);
-		
-		VerticalLayout opsLayout = new VerticalLayout();
-		opsLayout.setWidth("75%");
+		VerticalLayout rightFormLayout = new VerticalLayout();
+		rightFormLayout.setWidth("75%");
+		rightFormLayout.setHeight("100%");
 		
 		opsBeanContainer = new BeanItemContainer<SearchOperation>(SearchOperation.class);
 		opsList = new ListSelect("Operationer", opsBeanContainer);
 		opsList.setWidth("100%");
 		opsList.setNullSelectionAllowed(false);
-		opsLayout.addComponent(opsList);
+		rightFormLayout.addComponent(opsList);
 		
 		HorizontalLayout opsButtons = new HorizontalLayout();
 		opsButtons.setSpacing(true);
@@ -164,16 +232,49 @@ public class SearchMissionEditView extends CustomComponent {
 		addButton = new Button("Lägg till");
 		opsButtons.addComponent(addButton);
 		
-		opsLayout.addComponent(opsButtons);
-		opsLayout.setComponentAlignment(opsButtons, Alignment.TOP_CENTER);
-		outerLayout.addComponent(opsLayout);
+		rightFormLayout.addComponent(opsButtons);
+		rightFormLayout.setComponentAlignment(opsButtons, Alignment.TOP_CENTER);
+		outerLayout.addComponent(rightFormLayout);
+		
+//		Label sizer = new Label(" ");
+//		sizer.setHeight("50px");
+//		rightFormLayout.addComponent(sizer);
+//		rightFormLayout.setExpandRatio(sizer, 2f);
+		
+		HorizontalLayout buttonLayout = new HorizontalLayout();
+		buttonLayout.setSpacing(true);
+		cancelButton = new Button("Avbryt");
+		cancelButton.addListener(new ClickListener() {
+			public void buttonClick(ClickEvent event) {
+				listener.switchToSearchMissionListView();
+			}
+		});
+		buttonLayout.addComponent(cancelButton);
+		
+		saveButton = new Button("Spara");
+		buttonLayout.addComponent(saveButton);
+		
+		rightFormLayout.addComponent(buttonLayout);
+		rightFormLayout.setComponentAlignment(buttonLayout, Alignment.BOTTOM_RIGHT);
+		rightFormLayout.setSpacing(true);
 		
 		mainLayout.addComponent(outerLayout);
 		
-		mainLayout.setMargin(true);
-		mainLayout.setSpacing(true);
+		setupValidators();
 	}
 	
+	private void populateStatusField() {
+		statusBeanContainer.removeAllItems();
+		SearchMissionHandler handler = new SearchMissionHandler();
+		List<Status> listOfStatuses = null;
+		try {
+			listOfStatuses = handler.getListOfStatuses();
+			statusBeanContainer.addAll(listOfStatuses);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 	private void makeFormItem(VerticalLayout formLayout, Label label, AbstractField field, Alignment labelAlignment) {
 		HorizontalLayout layout = new HorizontalLayout();
 		layout.setWidth("100%");
@@ -223,42 +324,10 @@ public class SearchMissionEditView extends CustomComponent {
 			}
 		});
 	}
-
-	private void populateMissionTable() {
-		fileBeanContainer = new BeanContainer<String, FileWrapper>(FileWrapper.class);
-		
-		fileBeanContainer.setBeanIdProperty("fileName");
-		fileBeanContainer.addBean(new FileWrapper("fil1.pdf","",""));
-		fileBeanContainer.addBean(new FileWrapper("fil2.png","",""));
-		
-		filesTable.setHeight("150px");
-		filesTable.setWidth("100%");
-		filesTable.setContainerDataSource(fileBeanContainer);
-		filesTable.setVisibleColumns(new Object[]{"fileName"});
-		filesTable.setColumnHeaders(new String[]{"Filnamn"});
-		filesTable.addGeneratedColumn("", new ColumnGenerator() {
-			public Object generateCell(final Table source, final Object itemId, Object columnId) {
-				Button deleteButton = new Button("Ta bort");
-				deleteButton.addListener(new ClickListener() {
-					public void buttonClick(ClickEvent event) {
-						removeFile(source.getContainerDataSource(), itemId);
-					}
-				});
-				return deleteButton;
-			}
-		});
-		filesTable.setColumnExpandRatio("fileName", 2f);
-	}
 	
 	private void removeFile(Container container, Object itemId) {
 		System.out.println("Delete clicked for item: " + itemId);
 		//container.removeItem(itemId);
 	}
-	
-	private void populateOpsTable() {
-		Date date = Calendar.getInstance().getTime();
-		opsBeanContainer.addItem(new SearchOperation("Operation 1", "beskrivning här", date));
-		opsBeanContainer.addItem(new SearchOperation("Operation 2", "beskrivning här", date));
-		opsBeanContainer.addItem(new SearchOperation("Operation 3", "beskrivning här", date));
-	}
+
 }

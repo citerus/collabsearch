@@ -1,12 +1,12 @@
 package se.citerus.lookingfor.logic;
 
-public class FileWrapper {
+public class FileMetadata {
 	
 	String fileName;
 	String mimeType;
 	String filePath;
 	
-	public FileWrapper(String fileName, String mimeType, String filePath) {
+	public FileMetadata(String fileName, String mimeType, String filePath) {
 		super();
 		this.fileName = fileName;
 		this.mimeType = mimeType;

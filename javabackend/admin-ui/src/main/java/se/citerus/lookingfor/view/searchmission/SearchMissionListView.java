@@ -12,8 +12,10 @@ import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.util.BeanContainer;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickListener;
+import com.vaadin.ui.Alignment;
 import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.Label;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Button.ClickEvent;
@@ -54,7 +56,7 @@ public class SearchMissionListView extends CustomComponent {
 				try {
 					handler = new SearchMissionHandler();
 					handler.endMission(itemId);
-					table.removeItem(itemId);
+					//table.removeItem(itemId);
 				} catch (Exception e) {
 					e.printStackTrace();
 				} finally {
@@ -69,50 +71,70 @@ public class SearchMissionListView extends CustomComponent {
 	}
 
 	private void populateTable() {
+		BeanContainer<String, SearchMission> beans = new BeanContainer<String, SearchMission>(SearchMission.class);
+		beans.setBeanIdProperty("name");
+		
 		SearchMissionHandler handler = new SearchMissionHandler();
-		List<SearchMission> list = null;
 		try {
-			list = handler.getListOfSearchMissions();
+			List<SearchMission> list = handler.getListOfSearchMissions();
+			if (list != null) {
+				beans.addAll(list);
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
 			handler.cleanUp();
 		}
 		
-		BeanContainer<String, SearchMission> beans = new BeanContainer<String, SearchMission>(SearchMission.class);
-		beans.setBeanIdProperty("name");
-		
-		beans.addAll(list);
 		table.setContainerDataSource(beans);
-		table.setVisibleColumns(new Object[]{"name","description","humanReadableStatus"});
+		table.setVisibleColumns(new Object[]{"name","description","status"});
 		table.setColumnHeaders(new String[]{"Namn","Beskrivning","Status"});
 	}
 
 	private VerticalLayout buildMainLayout() {
 		VerticalLayout mainLayout = new VerticalLayout();
-		mainLayout.setMargin(true);
-
+		mainLayout.setSizeFull();
+		mainLayout.setMargin(false, false, false, true);
+		mainLayout.setSpacing(true);
+		
+		VerticalLayout innerLayout = new VerticalLayout();
+		innerLayout.setWidth("33%");
+		
+		HorizontalLayout headerLayout = new HorizontalLayout();
+		headerLayout.setSpacing(true);
 		
 		homeButton = new Button("Tillbaka");
-		mainLayout.addComponent(homeButton);
+		headerLayout.addComponent(homeButton);
+		headerLayout.setComponentAlignment(homeButton, Alignment.MIDDLE_LEFT);
 		
-		table = new Table("Sökuppdrag");
+		Label headerLabel = new Label("<h1><b>Sökuppdrag</b></h1>");
+		headerLabel.setContentMode(Label.CONTENT_XHTML);
+		headerLayout.addComponent(headerLabel);
+		
+		innerLayout.addComponent(headerLayout);
+		
+		table = new Table();
 		table.setSelectable(true);
-		mainLayout.addComponent(table);
+		table.setWidth("100%");
+		innerLayout.addComponent(table);
 		
 		HorizontalLayout buttonLayout = new HorizontalLayout();
 		buttonLayout.setSpacing(true);
 		
-		addButton = new Button("Lägg till");
-		buttonLayout.addComponent(addButton);
+		endMissionButton = new Button("Avsluta");
+		buttonLayout.addComponent(endMissionButton);
 		
 		editButton = new Button("Redigera");
 		buttonLayout.addComponent(editButton);
 		
-		endMissionButton = new Button("Avsluta");
-		buttonLayout.addComponent(endMissionButton);
+		addButton = new Button("Lägg till");
+		buttonLayout.addComponent(addButton);
 		
-		mainLayout.addComponent(buttonLayout);
+		innerLayout.addComponent(buttonLayout);
+		innerLayout.setComponentAlignment(buttonLayout, Alignment.TOP_RIGHT);
+		
+		mainLayout.addComponent(innerLayout);
+		
 		return mainLayout;
 	}
 	

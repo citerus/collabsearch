@@ -53,11 +53,6 @@ public class UserEditView extends CustomComponent {
 			popupMessage.setValue("Ny användare skapad.");
 		}
 		
-		cancelButton.addListener(new ClickListener() {
-			public void buttonClick(ClickEvent event) {
-				listener.switchToUserListView();
-			}
-		});
 		saveButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
 				if (areAllFieldsValid()) {
@@ -83,23 +78,16 @@ public class UserEditView extends CustomComponent {
 			}
 		});
 		
-		closePopupButton.addListener(new Button.ClickListener() {
-			public void buttonClick(ClickEvent event) {
-				(popupWindow.getParent()).removeWindow(popupWindow);
-				listener.switchToUserListView();
-			}
-		});
-		popupWindow.addListener(new Window.CloseListener() {
-            public void windowClose(CloseEvent e) {
-            	listener.switchToUserListView();
-            }
-        });
 	}
 	
 	private boolean areAllFieldsValid() {
 		AbstractField[] fields = {nameField, passwordField, teleField, emailField, roleField};
 		for (AbstractField field : fields) {
-			if (!field.isValid()) {
+			if (field.getValue() != null) {
+				if (!field.isValid()) {
+					return false;
+				}
+			} else {
 				return false;
 			}
 		}
@@ -119,7 +107,7 @@ public class UserEditView extends CustomComponent {
 			roleField.setValue(userData.getRole());
 		} catch (Exception e) {
 			listener.displayError("Fel: Användare ej funnen", 
-					"Användare " + selectedUser + " ej funnen.");
+				"Användare " + selectedUser + " ej funnen.");
 		}
 	}
 
@@ -169,6 +157,11 @@ public class UserEditView extends CustomComponent {
 		subLayout.setSpacing(true);
 		
 		cancelButton = new Button("Avbryt");
+		cancelButton.addListener(new ClickListener() {
+			public void buttonClick(ClickEvent event) {
+				listener.switchToUserListView();
+			}
+		});
 		subLayout.addComponent(cancelButton);
 		
 		saveButton = new Button("Spara");
@@ -204,6 +197,19 @@ public class UserEditView extends CustomComponent {
         buttonLayout.addComponent(closePopupButton);
         buttonLayout.setWidth("100%");
         buttonLayout.setComponentAlignment(closePopupButton, Alignment.BOTTOM_CENTER);
+        
+        closePopupButton.addListener(new Button.ClickListener() {
+			public void buttonClick(ClickEvent event) {
+				(popupWindow.getParent()).removeWindow(popupWindow);
+				listener.switchToUserListView();
+			}
+		});
+        
+		popupWindow.addListener(new Window.CloseListener() {
+            public void windowClose(CloseEvent e) {
+            	listener.switchToUserListView();
+            }
+        });
         
         popupWindow.addComponent(buttonLayout);
 	}

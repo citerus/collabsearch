@@ -134,7 +134,7 @@ public class UserListView extends CustomComponent {
 		
 		outerLayout.addComponent(upperLayout);
 		
-		table = new Table("Användare");
+		table = new Table();
 		table.setWidth("100%");
 		table.setSelectable(true);
 		table.setImmediate(true);

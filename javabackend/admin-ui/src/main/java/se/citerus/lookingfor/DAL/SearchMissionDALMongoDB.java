@@ -14,17 +14,21 @@ import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 
 import se.citerus.lookingfor.logic.SearchMission;
+import se.citerus.lookingfor.logic.SearchOperation;
+import se.citerus.lookingfor.logic.Status;
 
 public class SearchMissionDALMongoDB implements SearchMissionDAL {
 
 	private Mongo mongo;
-	private DBCollection smColl;
+	private DBCollection missionColl;
+	private DBCollection statusColl;
+	private DBCollection operationsColl;
 
 	public SearchMissionDALMongoDB() {
 		try {
 			mongo = new Mongo();
 			DB db = mongo.getDB("lookingfor");
-			smColl = db.getCollection("searchmissions");
+			missionColl = db.getCollection("searchmissions");
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (MongoException e) {
@@ -35,12 +39,17 @@ public class SearchMissionDALMongoDB implements SearchMissionDAL {
 	public List<SearchMission> getAllSearchMissions() {
 		BasicDBObject query = new BasicDBObject();
 		DBObject limit = new BasicDBObject("_id",0);
-		DBCursor cursor = smColl.find(query, limit);
+		DBCursor cursor = missionColl.find(query, limit);
 		if (cursor != null) {
 			ArrayList<SearchMission> list = new ArrayList<SearchMission>();
 			while (cursor.hasNext()) {
 				BasicDBObject dbo = (BasicDBObject) cursor.next();
-				list.add(new SearchMission(dbo.getString("name"), dbo.getString("description"), dbo.getInt("status")));
+				list.add(new SearchMission(
+						dbo.getString("name"), 
+						dbo.getString("description"), 
+						dbo.getInt("prio"), 
+						null)
+				);
 			}
 			return list;
 		}
@@ -53,6 +62,22 @@ public class SearchMissionDALMongoDB implements SearchMissionDAL {
 
 	public void endMission(String name) throws IOException {
 		
+	}
+
+	public void addOrModifyMission(SearchMission mission) throws IOException {
+	}
+
+	public List<SearchOperation> getAllSearchOpsForMission(String missionName)
+			throws IOException {
+		return null;
+	}
+
+	public List<Status> getAllStatuses() throws IOException {
+		return null;
+	}
+
+	public SearchMission findMission(String missionName) {
+		return null;
 	}
 
 }

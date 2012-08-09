@@ -1,25 +1,23 @@
 package se.citerus.lookingfor.view.searchmission;
 
-import java.io.IOException;
 import java.util.List;
 
 import se.citerus.lookingfor.ViewSwitchController;
 import se.citerus.lookingfor.logic.SearchMission;
 import se.citerus.lookingfor.logic.SearchMissionHandler;
 
-import com.vaadin.data.Property;
-import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.util.BeanContainer;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.Alignment;
+import com.vaadin.ui.Button;
+import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.Button.ClickEvent;
 
+@SuppressWarnings("serial")
 public class SearchMissionListView extends CustomComponent {
 	
 	private Button endMissionButton;
@@ -27,7 +25,8 @@ public class SearchMissionListView extends CustomComponent {
 	private Button addButton;
 	private Table table;
 	private Button homeButton;
-		
+	private BeanContainer<String, SearchMission> beans;
+	
 	public SearchMissionListView(final ViewSwitchController listener) {
 		VerticalLayout mainLayout = buildMainLayout();
 		setCompositionRoot(mainLayout);
@@ -45,7 +44,13 @@ public class SearchMissionListView extends CustomComponent {
 		});
 		editButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				listener.switchToSearchMissionEditView((String) table.getValue());
+				String missionTitle = (String) table.getValue();
+				if (missionTitle != null) {
+					listener.switchToSearchMissionEditView(missionTitle);
+				} else {
+					listener.displayNotification("Inget sökuppdrag markerat", 
+							"Du måste markera ett sökuppdrag för redigering");
+				}
 			}
 		});
 		endMissionButton.addListener(new ClickListener() {
@@ -53,16 +58,21 @@ public class SearchMissionListView extends CustomComponent {
 				//TODO should this be change status or remove?
 				SearchMissionHandler handler = null;
 				String itemId = (String) table.getValue();
-				try {
-					handler = new SearchMissionHandler();
-					handler.endMission(itemId);
-					//table.removeItem(itemId);
-				} catch (Exception e) {
-					e.printStackTrace();
-				} finally {
-					if (handler != null) {
-						handler.cleanUp();
+				if (itemId != null) {
+					try {
+						handler = new SearchMissionHandler();
+						handler.endMission(itemId);
+						//table.removeItem(itemId);
+					} catch (Exception e) {
+						e.printStackTrace();
+					} finally {
+						if (handler != null) {
+							handler.cleanUp();
+						}
 					}
+				} else {
+					listener.displayNotification("Inget sökuppdrag markerat", 
+							"Du måste markera ett sökuppdrag för avslutning");
 				}
 			}
 		});
@@ -71,7 +81,7 @@ public class SearchMissionListView extends CustomComponent {
 	}
 
 	private void populateTable() {
-		BeanContainer<String, SearchMission> beans = new BeanContainer<String, SearchMission>(SearchMission.class);
+		beans = new BeanContainer<String, SearchMission>(SearchMission.class);
 		beans.setBeanIdProperty("name");
 		
 		SearchMissionHandler handler = new SearchMissionHandler();
@@ -80,7 +90,7 @@ public class SearchMissionListView extends CustomComponent {
 			if (list != null) {
 				beans.addAll(list);
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			handler.cleanUp();
@@ -136,6 +146,22 @@ public class SearchMissionListView extends CustomComponent {
 		mainLayout.addComponent(innerLayout);
 		
 		return mainLayout;
+	}
+
+	public void resetView() {
+		beans.removeAllItems();
+		
+		SearchMissionHandler handler = new SearchMissionHandler();
+		try {
+			List<SearchMission> list = handler.getListOfSearchMissions();
+			if (list != null) {
+				beans.addAll(list);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			handler.cleanUp();
+		}
 	}
 	
 }

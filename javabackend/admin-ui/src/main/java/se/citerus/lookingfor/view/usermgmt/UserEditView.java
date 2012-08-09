@@ -40,18 +40,11 @@ public class UserEditView extends CustomComponent {
 	private Button closePopupButton;
 	private Label popupMessage;
 
-	public UserEditView(final ViewSwitchController listener, String selectedUser) {
+	public UserEditView(final ViewSwitchController listener) {
 		this.listener = listener;
 		buildMainLayout();
 		setCompositionRoot(mainLayout);
 		listener.setMainWindowCaption("Missing People - Användarredigering");
-		
-		if (selectedUser != null) {
-			populateForms(selectedUser);
-			popupMessage.setValue("Användare redigerad.");
-		} else {
-			popupMessage.setValue("Ny användare skapad.");
-		}
 		
 		saveButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
@@ -63,8 +56,15 @@ public class UserEditView extends CustomComponent {
 							(String)teleField.getValue(), 
 							(String)roleField.getValue());
 					UserHandler userHandler = new UserHandler();
-					userHandler.editUser(user);
-					userHandler.cleanUp();
+					try {
+						userHandler.editUser(user);
+					} catch (Exception e) {
+						e.printStackTrace();
+					} finally {
+						if (userHandler != null) {
+							userHandler.cleanUp();
+						}
+					}
 					
 					//display popup with button leading back to user list
 					if (popupWindow.getParent() != null) {
@@ -77,9 +77,25 @@ public class UserEditView extends CustomComponent {
 				}
 			}
 		});
-		
 	}
-	
+
+	public void resetView(String selectedUsername) {
+		if (selectedUsername != null) {
+			populateForms(selectedUsername);
+			popupMessage.setValue("Användare redigerad.");
+		} else {
+			emptyForms();
+			popupMessage.setValue("Ny användare skapad.");
+		}
+	}
+
+	private void emptyForms() {
+		nameField.setValue(null);
+		passwordField.setValue(null);
+		teleField.setValue(null);
+		emailField.setValue(null);
+	}
+
 	private boolean areAllFieldsValid() {
 		AbstractField[] fields = {nameField, passwordField, teleField, emailField, roleField};
 		for (AbstractField field : fields) {

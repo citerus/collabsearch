@@ -33,9 +33,9 @@ public class UserListView extends CustomComponent {
 	private Label headerLabel;
 
 	private String selectedUsername;
+	private BeanContainer<String, User> beans;
 	
 	public UserListView(final ViewSwitchController listener) {
-		//buildMainLayout();
 		mainLayout = buildMainLayout2();
 		setCompositionRoot(mainLayout);
 		listener.setMainWindowCaption("Missing People - Användare");
@@ -56,7 +56,8 @@ public class UserListView extends CustomComponent {
 			public void buttonClick(ClickEvent event) {
 				String selectedUser = getSelectedUser();
 				if (selectedUser == null) {
-					listener.displayNotification("Ingen användare markerad", "Markera en användare för redigering");
+					listener.displayNotification("Ingen användare markerad", 
+							"Markera en användare för redigering");
 				} else {
 					listener.switchToUserEditView(selectedUser);
 				}
@@ -66,9 +67,21 @@ public class UserListView extends CustomComponent {
 			public void buttonClick(ClickEvent event) {
 				String selectedUser = getSelectedUser();
 				if (selectedUser == null) {
-					listener.displayNotification("Ingen användare markerad", "Markera en användare för borttagning");
+					listener.displayNotification("Ingen användare markerad", 
+							"Markera en användare för borttagning");
 				} else {
-					Boolean removeStatus = new UserHandler().removeUser(selectedUser);
+					Boolean removeStatus = false;
+					UserHandler userHandler = null;
+					try {
+						userHandler = new UserHandler();
+						removeStatus = userHandler.removeUser(selectedUser);
+					} catch (Exception e) {
+						e.printStackTrace();
+					} finally {
+						if (userHandler != null) {
+							userHandler.cleanUp();
+						}
+					}
 					if (removeStatus) {
 						table.removeItem(selectedUser);
 						listener.displayNotification("Användare borttagen", "Användare " + selectedUser + " borttagen");
@@ -100,7 +113,7 @@ public class UserListView extends CustomComponent {
 			handler.cleanUp();
 		}
 		
-		BeanContainer<String, User> beans = new BeanContainer<String, User>(User.class);
+		beans = new BeanContainer<String, User>(User.class);
 		beans.setBeanIdProperty("username");
 		
 		beans.addAll(list);
@@ -158,6 +171,25 @@ public class UserListView extends CustomComponent {
 		mainLayout2.addComponent(outerLayout);
 		
 		return mainLayout2;
+	}
+
+	public void resetView() {
+		beans.removeAllItems();
+		
+		UserHandler handler = null;
+		try {
+			handler = new UserHandler();
+			List<User> list = handler.getListOfUsers();
+			if (list != null) {
+				beans.addAll(list);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			handler.cleanUp();
+		}
+		
+		selectedUsername = null;
 	}
 
 }

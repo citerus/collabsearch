@@ -84,10 +84,19 @@ public class UserMgmtTests {
 	@Test
 	public void testDeleteUser() {
 		//create user
-		handler.editUser(new User("testuser123","password"));
+		try {
+			handler.editUser(new User("testuser123","password"));
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
 		
 		//delete user
-		Boolean removeUserResult = handler.removeUser("testuser123");
+		Boolean removeUserResult = false;
+		try {
+			removeUserResult = handler.removeUser("testuser123");
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
 		assertTrue("Removal of testuser123 returned false, should be true", removeUserResult);
 		
 		//search for deleted user
@@ -101,7 +110,12 @@ public class UserMgmtTests {
 	
 	@Test
 	public void testDeleteNonExistentUser() {
-		Boolean removeUserResult = handler.removeUser("unknown");
+		Boolean removeUserResult = true;
+		try {
+			removeUserResult = handler.removeUser("unknown");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		assertFalse("Removal of nonexistent user \"unknown\" returned true, should be false", removeUserResult);
 	}
 }

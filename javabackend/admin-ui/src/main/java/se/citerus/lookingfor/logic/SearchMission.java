@@ -9,7 +9,6 @@ public class SearchMission {
 	private int prio;
 	private Status status;
 	
-	//should these be associated with this class?
 	private List<FileMetadata> fileList;
 	private List<SearchOperation> opsList;
 		
@@ -54,23 +53,6 @@ public class SearchMission {
 	public void setStatus(Status status) {
 		this.status = status;
 	}
-
-//	public String getHumanReadableStatus() {
-//		return interpretStatusCode(status);
-//	}
-
-//	private String interpretStatusCode(int statusCode) {
-//		//refactor into non-hardcoded, modifiable solution
-//		String statusMessage = "";
-//		if (statusCode == 0) {
-//			statusMessage = "Avslutat";
-//		} else if (statusCode == 1) {
-//			statusMessage = "Sökande pågår";
-//		} else {
-//			statusMessage = "Okänd status";
-//		}
-//		return statusMessage;
-//	}
 	
 	@Override
 	public String toString() {

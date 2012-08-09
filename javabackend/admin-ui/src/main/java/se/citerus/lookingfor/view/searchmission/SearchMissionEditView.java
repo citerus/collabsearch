@@ -14,9 +14,11 @@ import se.citerus.lookingfor.logic.SearchMission;
 import se.citerus.lookingfor.logic.SearchMissionHandler;
 import se.citerus.lookingfor.logic.SearchOperation;
 import se.citerus.lookingfor.logic.Status;
+import se.citerus.lookingfor.logic.UserHandler;
 
 import com.vaadin.data.Container;
 import com.vaadin.data.util.BeanContainer;
+import com.vaadin.data.util.BeanItem;
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.data.validator.IntegerValidator;
 import com.vaadin.data.validator.StringLengthValidator;
@@ -66,14 +68,84 @@ public class SearchMissionEditView extends CustomComponent {
 	private Button editButton;
 	private Button addButton;
 
-	public SearchMissionEditView(final ViewSwitchController listener, String selectedSearchMissionName) {
+	public SearchMissionEditView(final ViewSwitchController listener) {
 		this.listener = listener;
 		buildMainLayout();
 		setCompositionRoot(mainLayout);
 		listener.setMainWindowCaption("Missing People - Redigera sökuppdrag");
+				
+		//save and store search mission (including files and ops) 
+		saveButton.addListener(new ClickListener() {
+			public void buttonClick(ClickEvent event) {
+				//dialogue here?
+				SearchMissionHandler handler = null;
+				try {
+					handler = new SearchMissionHandler();
+					SearchMission mission = null;
+					handler.editMission(mission);
+				} catch (Exception e) {
+					e.printStackTrace();
+					listener.displayError("Fel", "Ett fel uppstod vid sparandet " +
+							"av sökuppdraget, datat har ej sparats.");
+				} finally {
+					if (handler != null) {
+						handler.cleanUp();
+					}
+				}
+				listener.switchToSearchMissionListView();
+			}
+		});
+		//cancel actions and return to search mission list
+		cancelButton.addListener(new ClickListener() {
+			public void buttonClick(ClickEvent event) {
+				listener.switchToSearchMissionListView();
+			}
+		});
 		
+		//add new search operation
+		addButton.addListener(new ClickListener() {
+			public void buttonClick(ClickEvent event) {
+				String missionTitle = (String) titleField.getValue();
+				if (missionTitle != null) {
+					listener.switchToSearchOperationEditView(null, missionTitle);
+				} else {
+					listener.displayError("Fel", 
+							"Sökuppdraget måste namnges innan operationer kan läggas till");
+				}
+			}
+		});
+		//edit existing search operation
+		editButton.addListener(new ClickListener() {
+			public void buttonClick(ClickEvent event) {
+				String missionTitle = (String) titleField.getValue();
+				if (missionTitle != null) {
+					String selectedOp = opsList.getValue().toString();
+					listener.switchToSearchOperationEditView(selectedOp, missionTitle);
+				} else {
+					listener.displayError("Fel", 
+							"Sökuppdraget måste namnges innan operationer kan redigeras");
+				}
+			}
+		});
+		//delete search operation
+		deleteButton.addListener(new ClickListener() {
+			public void buttonClick(ClickEvent event) {
+				
+			}
+		});
+	}
+
+	public void resetView(String selectedSearchMissionName) {
 		if (selectedSearchMissionName != null) {
 			populateForms(selectedSearchMissionName);
+		} else {
+			titleField.setValue(null);
+			descrField.setValue(descrField.getNullRepresentation());
+			prioField.setValue(prioField.getNullRepresentation());
+			statusField.setValue(null);
+			
+			fileBeanContainer.removeAllItems();
+			opsBeanContainer.removeAllItems();
 		}
 	}
 
@@ -87,7 +159,7 @@ public class SearchMissionEditView extends CustomComponent {
 				listener.displayError("Fel", "Uppdraget " + missionName + " kunde ej hittas");
 				return;
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			if (handler != null) {
@@ -116,18 +188,13 @@ public class SearchMissionEditView extends CustomComponent {
 	private void setupValidators() {
 		titleField.addValidator(new StringLengthValidator(
 				"Titeln måste vara mellan 1-99 tecken", 1, 99, false));
-		descrField.addValidator(new StringLengthValidator(
-				"Beskrivningen måste vara mellan 1-99 tecken", 1, 99, false));
+		titleField.setRequired(true);
+//		descrField.addValidator(new StringLengthValidator(
+//				"Beskrivningen måste vara mellan 1-140 tecken", 1, 140, false));
+		descrField.setRequired(true);
 		prioField.addValidator(new IntegerValidator("Prioriteringstalet måste vara ett heltal"));
+		prioField.setRequired(true);
 		statusField.setRequired(true);
-	}
-
-	public void resetView() {
-		fileBeanContainer.removeAllItems();
-		//get and add files for current mission
-		
-		opsBeanContainer.removeAllItems();
-		//get and add ops for current mission
 	}
 
 	private void buildMainLayout() {
@@ -152,14 +219,20 @@ public class SearchMissionEditView extends CustomComponent {
 		Label titleLabel = new Label("Titel");
 		titleField = new TextField();
 		makeFormItem(leftFormLayout, titleLabel, titleField, Alignment.MIDDLE_LEFT);
+		titleField.setNullRepresentation("");
+		titleField.setImmediate(true);
 		
 		Label descrLabel = new Label("Beskrivning");
 		descrField = new TextArea();
 		makeFormItem(leftFormLayout, descrLabel, descrField, Alignment.TOP_LEFT);
+		descrField.setNullRepresentation("");
+		descrField.setImmediate(true);
 		
 		Label prioLabel = new Label("Prio");
 		prioField = new TextField();
 		makeFormItem(leftFormLayout, prioLabel, prioField, Alignment.MIDDLE_LEFT);
+		prioField.setNullRepresentation("");
+		prioField.setImmediate(true);
 		
 		Label statusLabel = new Label("Process/Status");
 		statusBeanContainer = new BeanContainer<String, Status>(Status.class);
@@ -175,9 +248,7 @@ public class SearchMissionEditView extends CustomComponent {
 		
 		fileBeanContainer = new BeanContainer<String, FileMetadata>(FileMetadata.class);
 		fileBeanContainer.setBeanIdProperty("fileName");
-		
-//		fileBeanContainer.addBean(new FileMetadata("fil1.pdf","",""));
-		
+				
 		filesTable = new Table("Bifogade filer");
 		filesTable.setHeight("150px");
 		filesTable.setWidth("100%");
@@ -196,6 +267,8 @@ public class SearchMissionEditView extends CustomComponent {
 			}
 		});
 		filesTable.setColumnExpandRatio("fileName", 2f);
+		filesTable.setColumnReorderingAllowed(false);
+		filesTable.setColumnCollapsingAllowed(false);
 		filesListLayout.addComponent(filesTable);
 		
 		uploadReceiver = createUploadReceiver();
@@ -244,11 +317,6 @@ public class SearchMissionEditView extends CustomComponent {
 		HorizontalLayout buttonLayout = new HorizontalLayout();
 		buttonLayout.setSpacing(true);
 		cancelButton = new Button("Avbryt");
-		cancelButton.addListener(new ClickListener() {
-			public void buttonClick(ClickEvent event) {
-				listener.switchToSearchMissionListView();
-			}
-		});
 		buttonLayout.addComponent(cancelButton);
 		
 		saveButton = new Button("Spara");
@@ -270,8 +338,9 @@ public class SearchMissionEditView extends CustomComponent {
 		try {
 			listOfStatuses = handler.getListOfStatuses();
 			statusBeanContainer.addAll(listOfStatuses);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
+			listener.displayError("Fel", "Inga statusar funna!");
 		}
 	}
 

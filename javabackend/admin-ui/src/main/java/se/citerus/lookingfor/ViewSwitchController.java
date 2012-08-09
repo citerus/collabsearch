@@ -1,5 +1,8 @@
 package se.citerus.lookingfor;
 
+import com.vaadin.data.util.BeanItemContainer;
+
+import se.citerus.lookingfor.logic.SearchOperation;
 import se.citerus.lookingfor.logic.User;
 
 public interface ViewSwitchController {
@@ -45,4 +48,9 @@ public interface ViewSwitchController {
 	 * @param selectedSearchMissionName the Search Mission name with which to query the database.
 	 */
 	public void switchToSearchMissionEditView(String selectedSearchMissionName);
+
+	public void switchToSearchOperationEditView(String selectedSearchOperationName, String missionTitle);
+
+	public void returnToSearchMissionEditView();
+
 }

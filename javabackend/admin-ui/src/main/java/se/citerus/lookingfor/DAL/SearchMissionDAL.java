@@ -22,4 +22,6 @@ public interface SearchMissionDAL {
 	public List<Status> getAllStatuses() throws IOException;
 
 	public SearchMission findMission(String missionName) throws IOException;
+
+	public SearchOperation findOperation(String name);
 }

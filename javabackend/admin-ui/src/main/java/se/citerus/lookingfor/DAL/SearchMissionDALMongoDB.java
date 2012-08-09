@@ -80,4 +80,8 @@ public class SearchMissionDALMongoDB implements SearchMissionDAL {
 		return null;
 	}
 
+	public SearchOperation findOperation(String name) {
+		return null;
+	}
+
 }

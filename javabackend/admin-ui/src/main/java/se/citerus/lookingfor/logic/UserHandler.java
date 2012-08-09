@@ -22,7 +22,7 @@ public class UserHandler {
 		return userDAL.getUserByUsername(selectedUser);
 	}
 
-	public Boolean removeUser(String username) {
+	public Boolean removeUser(String username) throws Exception {
 		try {
 			return userDAL.deleteUserByUsername(username);
 		} catch (IOException e) {
@@ -34,12 +34,8 @@ public class UserHandler {
 	/**
 	 * Edits user (if existing) or adds a new one with the included attributes.
 	 */
-	public void editUser(User user) { //TODO throw exception here, no error hiding
-		try {
-			userDAL.addOrModifyUser(user);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	public void editUser(User user) throws Exception {
+		userDAL.addOrModifyUser(user);
 	}
 
 	public List<String> getListOfRoles() {
@@ -59,14 +55,8 @@ public class UserHandler {
 	 * Searches for duplicate users by username or telephone number or email.
 	 * @return true if duplicates were found, else false.
 	 */
-	public boolean lookForDuplicates(String username, String tele, String email) { //TODO throw exception here, no error hiding
-		boolean result = false;
-		try {
-			result = userDAL.checkForDuplicateUserData(username, tele, email);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return result;
+	public boolean lookForDuplicates(String username, String tele, String email) throws Exception {
+		return userDAL.checkForDuplicateUserData(username, tele, email);
 	}
 
 }

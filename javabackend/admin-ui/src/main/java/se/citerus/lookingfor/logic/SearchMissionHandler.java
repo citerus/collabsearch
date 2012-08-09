@@ -16,7 +16,7 @@ public class SearchMissionHandler {
 		searchMissionDAL = new SearchMissionDALInMemory();
 	}
 
-	public List<SearchMission> getListOfSearchMissions() throws IOException {
+	public List<SearchMission> getListOfSearchMissions() throws Exception {
 		return searchMissionDAL.getAllSearchMissions();
 	}
 
@@ -37,11 +37,19 @@ public class SearchMissionHandler {
 		return null;
 	}
 	
-	public List<Status> getListOfStatuses() throws IOException {
+	public List<Status> getListOfStatuses() throws Exception {
 		return searchMissionDAL.getAllStatuses();
 	}
 
-	public SearchMission getSearchMissionData(String missionName) throws IOException {
+	public SearchMission getSearchMissionData(String missionName) throws Exception {
 		return searchMissionDAL.findMission(missionName);
+	}
+
+	public SearchOperation getSearchOp(String name) throws Exception {
+		return searchMissionDAL.findOperation(name);
+	}
+
+	public void editMission(SearchMission mission) throws Exception {
+		searchMissionDAL.addOrModifyMission(mission);
 	}
 }

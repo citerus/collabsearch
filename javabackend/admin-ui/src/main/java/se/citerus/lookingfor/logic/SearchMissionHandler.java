@@ -9,7 +9,7 @@ import se.citerus.lookingfor.DAL.SearchMissionDALInMemory;
 import se.citerus.lookingfor.DAL.SearchMissionDALMongoDB;
 
 public class SearchMissionHandler {
-	SearchMissionDAL searchMissionDAL;
+	private SearchMissionDAL searchMissionDAL;
 	
 	public SearchMissionHandler() {
 		//searchMissionDAL = new SearchMissionDALMongoDB();
@@ -45,11 +45,19 @@ public class SearchMissionHandler {
 		return searchMissionDAL.findMission(missionName);
 	}
 
-	public SearchOperation getSearchOp(String name) throws Exception {
-		return searchMissionDAL.findOperation(name);
+	public SearchOperation getSearchOp(String name, String missionName) throws Exception {
+		return searchMissionDAL.findOperation(name, missionName);
 	}
 
 	public void editMission(SearchMission mission) throws Exception {
 		searchMissionDAL.addOrModifyMission(mission);
+	}
+
+	public void addFileToMission(String mission, FileMetadata metadata) throws Exception {
+		searchMissionDAL.addFileMetadata(mission, metadata);
+	}
+
+	public void deleteFile(String filename, String missionName) throws Exception {
+		searchMissionDAL.deleteFileMetadata(filename, missionName);
 	}
 }

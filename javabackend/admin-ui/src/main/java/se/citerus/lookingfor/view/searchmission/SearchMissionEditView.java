@@ -1,24 +1,17 @@
 package se.citerus.lookingfor.view.searchmission;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 import se.citerus.lookingfor.ViewSwitchController;
 import se.citerus.lookingfor.logic.FileMetadata;
+import se.citerus.lookingfor.logic.FileUploadHandler;
 import se.citerus.lookingfor.logic.SearchMission;
 import se.citerus.lookingfor.logic.SearchMissionHandler;
 import se.citerus.lookingfor.logic.SearchOperation;
 import se.citerus.lookingfor.logic.Status;
-import se.citerus.lookingfor.logic.UserHandler;
 
 import com.vaadin.data.Container;
 import com.vaadin.data.util.BeanContainer;
-import com.vaadin.data.util.BeanItem;
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.data.validator.IntegerValidator;
 import com.vaadin.data.validator.StringLengthValidator;
@@ -31,19 +24,14 @@ import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.Layout.MarginInfo;
 import com.vaadin.ui.ListSelect;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.Table.ColumnGenerator;
 import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.Upload;
-import com.vaadin.ui.Upload.FailedEvent;
-import com.vaadin.ui.Upload.FinishedEvent;
-import com.vaadin.ui.Upload.Receiver;
 import com.vaadin.ui.Upload.StartedEvent;
 import com.vaadin.ui.Upload.StartedListener;
-import com.vaadin.ui.Upload.SucceededEvent;
 import com.vaadin.ui.VerticalLayout;
 
 @SuppressWarnings("serial")
@@ -61,19 +49,20 @@ public class SearchMissionEditView extends CustomComponent {
 	private TextField prioField;
 	private ComboBox statusField;
 	private BeanContainer<String, Status> statusBeanContainer;
-	private Receiver uploadReceiver;
 	private BeanItemContainer<SearchOperation> opsBeanContainer;
 	private ListSelect opsList;
 	private Button deleteButton;
 	private Button editButton;
 	private Button addButton;
+	
+	private boolean existingMission;
 
 	public SearchMissionEditView(final ViewSwitchController listener) {
 		this.listener = listener;
 		buildMainLayout();
 		setCompositionRoot(mainLayout);
 		listener.setMainWindowCaption("Missing People - Redigera sökuppdrag");
-				
+		
 		//save and store search mission (including files and ops) 
 		saveButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
@@ -109,7 +98,7 @@ public class SearchMissionEditView extends CustomComponent {
 				if (missionTitle != null) {
 					listener.switchToSearchOperationEditView(null, missionTitle);
 				} else {
-					listener.displayError("Fel", 
+					listener.displayError("Fel: Sökuppdragsnamn saknas", 
 							"Sökuppdraget måste namnges innan operationer kan läggas till");
 				}
 			}
@@ -122,7 +111,7 @@ public class SearchMissionEditView extends CustomComponent {
 					String selectedOp = opsList.getValue().toString();
 					listener.switchToSearchOperationEditView(selectedOp, missionTitle);
 				} else {
-					listener.displayError("Fel", 
+					listener.displayError("Fel: Sökuppdragsnamn saknas", 
 							"Sökuppdraget måste namnges innan operationer kan redigeras");
 				}
 			}
@@ -130,15 +119,18 @@ public class SearchMissionEditView extends CustomComponent {
 		//delete search operation
 		deleteButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				
+				//TODO add delete searchOp logic
+				Object itemId = opsList.getValue();
+				opsList.removeItem(itemId);
 			}
 		});
 	}
 
 	public void resetView(String selectedSearchMissionName) {
-		if (selectedSearchMissionName != null) {
+		if (selectedSearchMissionName != null) { //edit mission mode
 			populateForms(selectedSearchMissionName);
-		} else {
+			existingMission = true;
+		} else { //new mission mode
 			titleField.setValue(null);
 			descrField.setValue(descrField.getNullRepresentation());
 			prioField.setValue(prioField.getNullRepresentation());
@@ -146,6 +138,8 @@ public class SearchMissionEditView extends CustomComponent {
 			
 			fileBeanContainer.removeAllItems();
 			opsBeanContainer.removeAllItems();
+			
+			existingMission = true;
 		}
 	}
 
@@ -247,13 +241,13 @@ public class SearchMissionEditView extends CustomComponent {
 		filesListLayout.setWidth("100%");
 		
 		fileBeanContainer = new BeanContainer<String, FileMetadata>(FileMetadata.class);
-		fileBeanContainer.setBeanIdProperty("fileName");
-				
+		fileBeanContainer.setBeanIdProperty("filename");
+		
 		filesTable = new Table("Bifogade filer");
 		filesTable.setHeight("150px");
 		filesTable.setWidth("100%");
 		filesTable.setContainerDataSource(fileBeanContainer);
-		filesTable.setVisibleColumns(new Object[]{"fileName"});
+		filesTable.setVisibleColumns(new Object[]{"filename"});
 		filesTable.setColumnHeaders(new String[]{"Filnamn"});
 		filesTable.addGeneratedColumn("", new ColumnGenerator() {
 			public Object generateCell(final Table source, final Object itemId, Object columnId) {
@@ -266,19 +260,27 @@ public class SearchMissionEditView extends CustomComponent {
 				return deleteButton;
 			}
 		});
-		filesTable.setColumnExpandRatio("fileName", 2f);
+		filesTable.setColumnExpandRatio("filename", 2f);
 		filesTable.setColumnReorderingAllowed(false);
 		filesTable.setColumnCollapsingAllowed(false);
+		filesTable.setSelectable(true);
 		filesListLayout.addComponent(filesTable);
 		
-		uploadReceiver = createUploadReceiver();
-		fileUpload = new Upload("", uploadReceiver);
+		final FileUploadHandler fileUploadHandler = new FileUploadHandler();
+		fileUploadHandler.setTableBeanRef(fileBeanContainer);
+		fileUploadHandler.setViewRef(listener);
+		fileUpload = new Upload("", fileUploadHandler);
+		fileUpload.addListener(new StartedListener() {
+			public void uploadStarted(StartedEvent event) {
+				startFileUpload(fileUploadHandler);
+			}
+		});
+		fileUpload.addListener((Upload.SucceededListener) fileUploadHandler);
+		fileUpload.addListener((Upload.FailedListener) fileUploadHandler);
 		filesListLayout.addComponent(fileUpload);
 		filesListLayout.setComponentAlignment(fileUpload, Alignment.TOP_RIGHT);
 		filesListLayout.setExpandRatio(fileUpload, 1f);
 		leftFormLayout.addComponent(filesListLayout);
-		
-		setupUploadListeners();
 		
 		outerLayout.addComponent(leftFormLayout);
 		
@@ -294,7 +296,6 @@ public class SearchMissionEditView extends CustomComponent {
 		
 		HorizontalLayout opsButtons = new HorizontalLayout();
 		opsButtons.setSpacing(true);
-		//opsButtons.setMargin(true, false, false, false);
 		
 		deleteButton = new Button("Ta bort");
 		opsButtons.addComponent(deleteButton);
@@ -308,11 +309,6 @@ public class SearchMissionEditView extends CustomComponent {
 		rightFormLayout.addComponent(opsButtons);
 		rightFormLayout.setComponentAlignment(opsButtons, Alignment.TOP_CENTER);
 		outerLayout.addComponent(rightFormLayout);
-		
-//		Label sizer = new Label(" ");
-//		sizer.setHeight("50px");
-//		rightFormLayout.addComponent(sizer);
-//		rightFormLayout.setExpandRatio(sizer, 2f);
 		
 		HorizontalLayout buttonLayout = new HorizontalLayout();
 		buttonLayout.setSpacing(true);
@@ -357,46 +353,35 @@ public class SearchMissionEditView extends CustomComponent {
 		layout.setExpandRatio(field, 2f);
 		formLayout.addComponent(layout);
 	}
-
-	private Receiver createUploadReceiver() {
-		return new Receiver() {
-			public OutputStream receiveUpload(String filename, String mimeType) {
-				try {
-					return new FileOutputStream(filename);
-				} catch (FileNotFoundException e) {
-					e.printStackTrace();
-					return null;
-				}
-			}
-		};
-	}
-	
-	private void setupUploadListeners() {
-		fileUpload.addListener(new StartedListener() {
-			public void uploadStarted(StartedEvent event) {
-			}
-		});
-		fileUpload.addListener(new Upload.ProgressListener() {
-			public void updateProgress(long readBytes, long contentLength) {
-			}
-		});
-		fileUpload.addListener(new Upload.SucceededListener() {
-			public void uploadSucceeded(SucceededEvent event) {
-			}
-		});
-		fileUpload.addListener(new Upload.FinishedListener() {
-			public void uploadFinished(FinishedEvent event) {
-			}
-		});
-		fileUpload.addListener(new Upload.FailedListener() {
-			public void uploadFailed(FailedEvent event) {
-			}
-		});
-	}
 	
 	private void removeFile(Container container, Object itemId) {
+		String missionName = (String) titleField.getValue();
 		System.out.println("Delete clicked for item: " + itemId);
-		//container.removeItem(itemId);
+		SearchMissionHandler handler = null;
+		try {
+			handler = new SearchMissionHandler();
+			handler.deleteFile(itemId.toString(), missionName);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (handler != null) {
+				handler.cleanUp();
+			}
+		}
+		container.removeItem(itemId);
+	}
+	
+	private void startFileUpload(FileUploadHandler handler) {
+		String missionTitle = (String) titleField.getValue();
+		if (missionTitle != null) {
+			if ("".equals(missionTitle) || missionTitle.length() == 0) {
+				fileUpload.interruptUpload();
+				listener.displayError("Filuppladdning", 
+						"Sökuppdraget måste namnges innan filuppladdningar kan genomföras.");
+			} else {
+				handler.setParentMissionName(missionTitle);
+			}
+		}
 	}
 
 }

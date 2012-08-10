@@ -14,12 +14,16 @@ import se.citerus.lookingfor.logic.Status;
 
 public class SearchMissionDALInMemory implements SearchMissionDAL {
 	
-	List<SearchMission> missionsList = new ArrayList<SearchMission>();
-	List<Status> statusList = new ArrayList<Status>();
+	private static List<SearchMission> missionsList;
+	private static List<Status> statusList;
 	
 	public SearchMissionDALInMemory() {
-		addMockStatuses();
-		addMockMissions();
+		if (missionsList == null && statusList == null) {
+			missionsList = new ArrayList<SearchMission>();
+			statusList = new ArrayList<Status>();
+			addMockStatuses();
+			addMockMissions();
+		}
 	}
 
 	public List<SearchMission> getAllSearchMissions() throws IOException {
@@ -33,7 +37,7 @@ public class SearchMissionDALInMemory implements SearchMissionDAL {
 	public void endMission(String name) throws IOException {
 		SearchMission mission = findMission(name);
 		if (mission == null) {
-			throw new IOException("Sökuppdrag ej funnet");
+			throw new IOException("Sökuppdraget " + name + " ej funnet");
 		}
 		
 		mission.setStatus(findStatusByName("Avslutat"));
@@ -73,14 +77,25 @@ public class SearchMissionDALInMemory implements SearchMissionDAL {
 	}
 
 	public List<SearchOperation> getAllSearchOpsForMission(String missionName) {
-		return null;
+		SearchMission mission = findMission(missionName);
+		return mission.getOpsList();
 	}
 
 	public List<Status> getAllStatuses() throws IOException {
 		return statusList;
 	}
 
-	public SearchOperation findOperation(String name) {
+	public SearchOperation findOperation(String opName, String missionName) {
+		for (SearchMission mission : missionsList) {
+			if (mission.getName().equals(missionName)) {
+				List<SearchOperation> opsList = mission.getOpsList();
+				for (SearchOperation operation : opsList) {
+					if (operation.getTitle().equals(opName)) {
+						return operation;
+					}
+				}
+			}
+		}
 		return null;
 	}
 
@@ -106,8 +121,10 @@ public class SearchMissionDALInMemory implements SearchMissionDAL {
 	}
 
 	private void addMockMissions() {
-		List<FileMetadata> fileList = Arrays.asList(
-				new FileMetadata("fil1.pdf", "", ""), new FileMetadata("fil2.png", "", ""));
+		List<FileMetadata> fileList = new ArrayList<FileMetadata>();
+		fileList.add(new FileMetadata("fil1.pdf", "application/pdf", "/tmp/uploads/"));
+		fileList.add(new FileMetadata("fil2.png", "image/png", "/tmp/uploads/"));
+		
 		List<SearchOperation> opsList = new ArrayList<SearchOperation>();
 		addMockOps(opsList);
 		
@@ -133,5 +150,29 @@ public class SearchMissionDALInMemory implements SearchMissionDAL {
 				new Date(System.currentTimeMillis()+86400000L)));
 		opsList.add(new SearchOperation("Operation 3", "beskrivn...", 
 				new Date(System.currentTimeMillis()+(2*86400000L))));
+	}
+
+	public void addFileMetadata(String missionName, FileMetadata fileMetaData) throws IOException {
+		SearchMission mission = findMission(missionName);
+		if (mission == null) {
+			throw new IOException("Sökuppdraget " + missionName + " ej funnet");
+		}
+		
+		mission.getFileList().add(fileMetaData);
+	}
+
+	public void deleteFileMetadata(String filename, String missionName) throws IOException {
+		SearchMission mission = findMission(missionName);
+		if (mission == null) {
+			throw new IOException("Sökuppdraget " + missionName + " ej funnet");
+		}
+		
+		List<FileMetadata> fileList = mission.getFileList();
+		for (int i = 0; i < fileList.size(); i++) {
+			if (fileList.get(i).getFilename().equals(filename)) {
+				fileList.remove(i);
+				break;
+			}
+		}
 	}
 }

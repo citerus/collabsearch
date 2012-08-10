@@ -9,21 +9,23 @@ import se.citerus.lookingfor.logic.User;
 
 public class UserDALInMemory implements UserDAL {
 	
-	List<User> allUsers;
-	HashMap<String, Long> salts;
-	private List<String> allRoles;
+	private static List<User> allUsers;
+	private static HashMap<String, Long> salts;
+	private static List<String> allRoles;
 	
 	public UserDALInMemory() {
-		allUsers = new ArrayList<User>(1);
-		User testUser = new User("test","test","test@test.test","123456789","admin");
-		allUsers.add(testUser);
-		
-		salts = new HashMap<String, Long>();
-		salts.put(testUser.getUsername(), 122141581250915L);
-		
-		allRoles = new ArrayList<String>(2);
-		allRoles.add("admin");
-		allRoles.add("user");
+		if (allUsers == null) {
+			allUsers = new ArrayList<User>(1);
+			User testUser = new User("test","test","test@test.test","123456789","admin");
+			allUsers.add(testUser);
+			
+			salts = new HashMap<String, Long>();
+			salts.put(testUser.getUsername(), 122141581250915L);
+			
+			allRoles = new ArrayList<String>(2);
+			allRoles.add("admin");
+			allRoles.add("user");
+		}
 	}
 
 	public boolean findUser(String username, char[] password) {

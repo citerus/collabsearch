@@ -2,23 +2,23 @@ package se.citerus.lookingfor.logic;
 
 public class FileMetadata {
 	
-	String fileName;
+	String filename;
 	String mimeType;
 	String filePath;
 	
 	public FileMetadata(String fileName, String mimeType, String filePath) {
 		super();
-		this.fileName = fileName;
+		this.filename = fileName;
 		this.mimeType = mimeType;
 		this.filePath = filePath;
 	}
 
-	public String getFileName() {
-		return fileName;
+	public String getFilename() {
+		return filename;
 	}
 
-	public void setFileName(String fileName) {
-		this.fileName = fileName;
+	public void setFileName(String filename) {
+		this.filename = filename;
 	}
 
 	public String getMimeType() {

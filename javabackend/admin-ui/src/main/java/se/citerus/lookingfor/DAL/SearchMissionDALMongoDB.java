@@ -13,6 +13,7 @@ import com.mongodb.DBObject;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 
+import se.citerus.lookingfor.logic.FileMetadata;
 import se.citerus.lookingfor.logic.SearchMission;
 import se.citerus.lookingfor.logic.SearchOperation;
 import se.citerus.lookingfor.logic.Status;
@@ -80,7 +81,16 @@ public class SearchMissionDALMongoDB implements SearchMissionDAL {
 		return null;
 	}
 
-	public SearchOperation findOperation(String name) {
+	public void addFileMetadata(String missionName, FileMetadata metadata)
+			throws IOException {
+	}
+
+	public void deleteFileMetadata(String filename, String missionName)
+			throws IOException {
+	}
+
+	public SearchOperation findOperation(String name, String missionName)
+			throws IOException {
 		return null;
 	}
 

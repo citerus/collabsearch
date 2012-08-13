@@ -138,6 +138,7 @@ public class UserEditView extends CustomComponent {
 				"Invalid username, must be between 1-99 characters", 1, 99, false));
 		nameField.setRequired(true);
 		nameField.setImmediate(true);
+		nameField.setNullRepresentation("");
 		
 		mainLayout.addComponent(new Label("Lösenord"));
 		passwordField = new PasswordField();
@@ -146,6 +147,7 @@ public class UserEditView extends CustomComponent {
 				"Ogiltigt lösenord, måste vara mellan 1-99 tecken", 1, 99, false));
 		passwordField.setRequired(true);
 		passwordField.setImmediate(true);
+		passwordField.setNullRepresentation("");
 		
 		mainLayout.addComponent(new Label("Epost"));
 		emailField = new TextField();
@@ -153,6 +155,7 @@ public class UserEditView extends CustomComponent {
 		emailField.addValidator(new EmailValidator("Ogiltig mailadress"));
 		emailField.setRequired(true);
 		emailField.setImmediate(true);
+		emailField.setNullRepresentation("");
 		
 		mainLayout.addComponent(new Label("Telefon"));
 		teleField = new TextField();
@@ -161,6 +164,7 @@ public class UserEditView extends CustomComponent {
 				"Ogiltigt telefonnummer, får bara innehålla siffror"));
 		teleField.setRequired(true);
 		teleField.setImmediate(true);
+		teleField.setNullRepresentation("");
 		
 		mainLayout.addComponent(new Label("Roll"));
 		roleField = new ComboBox(null, getRolesDataSource());

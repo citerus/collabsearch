@@ -1,5 +1,6 @@
 package se.citerus.lookingfor.view.searchmission;
 
+import java.io.File;
 import java.util.List;
 
 import se.citerus.lookingfor.ViewSwitchController;
@@ -269,12 +270,13 @@ public class SearchMissionEditView extends CustomComponent {
 		final FileUploadHandler fileUploadHandler = new FileUploadHandler();
 		fileUploadHandler.setTableBeanRef(fileBeanContainer);
 		fileUploadHandler.setViewRef(listener);
-		fileUpload = new Upload("", fileUploadHandler);
+		fileUpload = new Upload(null, fileUploadHandler);
 		fileUpload.addListener(new StartedListener() {
 			public void uploadStarted(StartedEvent event) {
 				startFileUpload(fileUploadHandler);
 			}
 		});
+		//fileUpload.setButtonCaption(null); //can be used to disable upload button, replace with validating button
 		fileUpload.addListener((Upload.SucceededListener) fileUploadHandler);
 		fileUpload.addListener((Upload.FailedListener) fileUploadHandler);
 		filesListLayout.addComponent(fileUpload);
@@ -360,7 +362,13 @@ public class SearchMissionEditView extends CustomComponent {
 		SearchMissionHandler handler = null;
 		try {
 			handler = new SearchMissionHandler();
-			handler.deleteFile(itemId.toString(), missionName);
+			String filename = itemId.toString();
+			handler.deleteFile(filename, missionName);
+			
+			File file = new File("tmp/uploads" + itemId.toString());
+			boolean fileDeletionStatus = file.delete();
+			System.out.println("File " + filename + " was " + 
+					(fileDeletionStatus == true ? "deleted" : "not deleted"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {

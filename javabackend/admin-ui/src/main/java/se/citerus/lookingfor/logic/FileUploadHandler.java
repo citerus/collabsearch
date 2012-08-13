@@ -2,7 +2,6 @@ package se.citerus.lookingfor.logic;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
 
 import se.citerus.lookingfor.ViewSwitchController;
@@ -13,6 +12,7 @@ import com.vaadin.ui.Upload.FailedEvent;
 import com.vaadin.ui.Upload.StartedEvent;
 import com.vaadin.ui.Upload.SucceededEvent;
 
+@SuppressWarnings("serial")
 public class FileUploadHandler implements Upload.SucceededListener,
 		Upload.FailedListener, Upload.Receiver {
 
@@ -53,8 +53,10 @@ public class FileUploadHandler implements Upload.SucceededListener,
 		try {
 			handler = new SearchMissionHandler();
 			handler.addFileToMission(parentMissionName, metadata);
+		} catch (RuntimeException e) {
+			listener.displayError("Filöverföring", "Ett uppdragsnamn måste bestämmas innan filer kan laddas upp");
 		} catch (Exception e) {
-			e.printStackTrace();
+			listener.displayError("Fel", e.getMessage());
 		} finally {
 			handler.cleanUp();
 		}

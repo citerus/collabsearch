@@ -35,7 +35,8 @@ public class MainWindow extends Window implements LoginListener, ViewSwitchContr
 
 	public void onLogin(LoginEvent event) {
 		try {
-			if (new Authenticator().login(event.getLoginParameter("username"), 
+			Authenticator authenticator = new Authenticator();
+			if (authenticator.login(event.getLoginParameter("username"), 
 	        		event.getLoginParameter("password").toCharArray())) {
 				LookingForApp.getInstance().setUser(event.getLoginParameter("username"));
 	        	switchToWelcomeView();

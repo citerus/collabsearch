@@ -17,6 +17,8 @@ public class SearchMissionDALInMemory implements SearchMissionDAL {
 	private static List<SearchMission> missionsList;
 	private static List<Status> statusList;
 	
+	private static HashMap<>
+	
 	public SearchMissionDALInMemory() {
 		if (missionsList == null && statusList == null) {
 			missionsList = new ArrayList<SearchMission>();
@@ -153,12 +155,14 @@ public class SearchMissionDALInMemory implements SearchMissionDAL {
 	}
 
 	public void addFileMetadata(String missionName, FileMetadata fileMetaData) throws IOException {
-		SearchMission mission = findMission(missionName);
-		if (mission == null) {
-			throw new IOException("Sökuppdraget " + missionName + " ej funnet");
-		}
+//		SearchMission mission = findMission(missionName);
+//		if (mission == null) {
+//			throw new IOException("Sökuppdraget " + missionName + " ej funnet");
+//		}
+//		
+//		mission.getFileList().add(fileMetaData);
 		
-		mission.getFileList().add(fileMetaData);
+		
 	}
 
 	public void deleteFileMetadata(String filename, String missionName) throws IOException {

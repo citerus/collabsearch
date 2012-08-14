@@ -17,7 +17,7 @@ import org.junit.Test;
 
 import se.citerus.lookingfor.logic.Authenticator;
 import se.citerus.lookingfor.logic.User;
-import se.citerus.lookingfor.logic.UserHandler;
+import se.citerus.lookingfor.logic.UserService;
 
 /**
  * Unit tests for the user management.
@@ -25,7 +25,7 @@ import se.citerus.lookingfor.logic.UserHandler;
  */
 public class UserMgmtTests {
 
-	private UserHandler handler;
+	private UserService handler;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -37,7 +37,7 @@ public class UserMgmtTests {
 
 	@Before
 	public void setUp() throws Exception {
-		handler = new UserHandler();
+		handler = new UserService();
 	}
 
 	@After

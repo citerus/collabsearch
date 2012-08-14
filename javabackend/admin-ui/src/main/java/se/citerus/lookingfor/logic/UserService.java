@@ -6,11 +6,13 @@ import java.util.List;
 import se.citerus.lookingfor.DAL.UserDAL;
 import se.citerus.lookingfor.DAL.UserDALMongoDB;
 
-public class UserHandler {
+public class UserService { //TODO refactor into spring service
 
 	private UserDAL userDAL;
 
-	public UserHandler() {
+	public UserService() {
+		//TODO choose type of DAL by config file
+		//userDAL = new UserDALInMemory();
 		userDAL = new UserDALMongoDB();
 	}
 

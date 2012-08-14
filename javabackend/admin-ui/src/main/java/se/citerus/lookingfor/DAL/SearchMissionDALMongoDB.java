@@ -25,16 +25,10 @@ public class SearchMissionDALMongoDB implements SearchMissionDAL {
 	private DBCollection statusColl;
 	private DBCollection operationsColl;
 
-	public SearchMissionDALMongoDB() {
-		try {
-			mongo = new Mongo();
-			DB db = mongo.getDB("lookingfor");
-			missionColl = db.getCollection("searchmissions");
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-		} catch (MongoException e) {
-			e.printStackTrace();
-		}
+	public SearchMissionDALMongoDB() throws Exception {
+		mongo = new Mongo();
+		DB db = mongo.getDB("lookingfor");
+		missionColl = db.getCollection("searchmissions");
 	}
 	
 	public List<SearchMission> getAllSearchMissions() {
@@ -49,8 +43,8 @@ public class SearchMissionDALMongoDB implements SearchMissionDAL {
 						dbo.getString("name"), 
 						dbo.getString("description"), 
 						dbo.getInt("prio"), 
-						null)
-				);
+						null
+				));
 			}
 			return list;
 		}
@@ -91,6 +85,18 @@ public class SearchMissionDALMongoDB implements SearchMissionDAL {
 
 	public SearchOperation findOperation(String name, String missionName)
 			throws IOException {
+		return null;
+	}
+
+	public void deleteSearchOperation(String searchOpName, String missionName)
+			throws IOException {
+	}
+
+	public void addOrModifySearchOperation(SearchOperation operation,
+			String missionName) throws IOException {
+	}
+
+	public Status findStatus(String statusName) throws IOException {
 		return null;
 	}
 

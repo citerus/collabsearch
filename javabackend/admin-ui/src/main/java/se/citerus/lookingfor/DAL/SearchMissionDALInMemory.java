@@ -17,7 +17,7 @@ public class SearchMissionDALInMemory implements SearchMissionDAL {
 	private static List<SearchMission> missionsList;
 	private static List<Status> statusList;
 	
-	private static HashMap<>
+	private static SearchMission newMission;
 	
 	public SearchMissionDALInMemory() {
 		if (missionsList == null && statusList == null) {
@@ -178,5 +178,62 @@ public class SearchMissionDALInMemory implements SearchMissionDAL {
 				break;
 			}
 		}
+	}
+
+	public void deleteSearchOperation(String searchOpName, String missionName) throws IOException {
+		SearchMission mission = findMission(missionName);
+		if (mission == null) {
+			if (newMission != null && newMission.getName().equals(missionName)) {
+				mission = newMission;
+			} else {
+				throw new IOException("Sökuppdraget " + missionName + " ej funnet");
+			}
+		}
+		
+		List<SearchOperation> opsList = mission.getOpsList();
+		for (SearchOperation op : opsList) {
+			if (op.getTitle().equals(searchOpName)) {
+				opsList.remove(op);
+				break;
+			}
+		}
+	}
+
+	public void clearNewMissionContainer() {
+		newMission = null;
+	}
+
+	public void initNewMissionContainer() {
+		newMission = new SearchMission();
+	}
+
+	public void addOrModifySearchOperation(SearchOperation operation, String missionName) throws IOException {
+		SearchMission mission = findMission(missionName);
+		if (mission == null) {
+			if (newMission != null && newMission.getName().equals(missionName)) {
+				mission = newMission;
+			} else {
+				throw new IOException("Sökuppdraget " + missionName + " ej funnet");
+			}
+		}
+		
+		List<SearchOperation> opsList = mission.getOpsList();
+		for (int i = 0; i < opsList.size(); i++) {
+			if (opsList.get(i).getTitle().equals(operation)) {
+				opsList.set(i, operation);
+				return;
+			}
+		}
+		
+		opsList.add(operation);
+	}
+
+	public Status findStatus(String statusName) throws IOException {
+		for (Status status : statusList) {
+			if (status.getName().equals(statusName)) {
+				return status;
+			}
+		}
+		throw new IOException("Status " + statusName + " ej funnen");
 	}
 }

@@ -1,9 +1,17 @@
 package se.citerus.lookingfor.view.searchoperation;
 
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Locale;
 
 import se.citerus.lookingfor.ViewSwitchController;
+import se.citerus.lookingfor.logic.DateValidator;
+import se.citerus.lookingfor.logic.SearchMissionService;
+import se.citerus.lookingfor.logic.SearchOperation;
 
+import com.vaadin.data.Validator;
+import com.vaadin.data.Validator.InvalidValueException;
+import com.vaadin.data.validator.StringLengthValidator;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.AbstractField;
@@ -30,26 +38,84 @@ public class SearchOperationEditView extends CustomComponent {
 	private TextField titleField;
 	private TextArea descrField;
 	private DateField dateField;
+	private String missionName;
+	private Label headerLabel;
 
 	public SearchOperationEditView(final ViewSwitchController listener) {
 		buildMainLayout();
 		setCompositionRoot(mainLayout);
 		
 		this.listener = listener;
+		saveButton.addListener(new ClickListener() {
+			public void buttonClick(ClickEvent event) {
+				if (allFieldsValid()) {
+					SearchMissionService service = null;
+					try {
+						service = new SearchMissionService();
+						SearchOperation op = new SearchOperation((String) titleField.getValue(), 
+								(String) descrField.getValue(), (Date) dateField.getValue());
+						service.editSearchOp(op, missionName);
+						listener.refreshOpsTable();
+						listener.returnToSearchMissionEditView();
+					} catch (Exception e) {
+						listener.displayError("Fel", e.getMessage());
+					} finally {
+						if (service != null) {
+							service.cleanUp();
+						}
+					}
+				} else {
+					listener.displayError("Fel", "Ett eller flera fält är inte korrekt ifyllda");
+				}
+			}
+		});
 		cancelButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				//TODO make searchmissioneditview save state
 				listener.returnToSearchMissionEditView();
 			}
 		});
 	}
 	
+	protected boolean allFieldsValid() {
+		if (titleField.isValid() && dateField.isValid()) {
+			return true;
+		}
+		return false;
+	}
+
 	public void resetView(String opName, String missionName) {
-		if (opName != null && missionName != null) { //existing operation
+		if (opName != null) { //existing operation
 			//find operation
-			//load data from operation into fields
+			SearchMissionService service = null;
+			try {
+				service = new SearchMissionService();
+				SearchOperation searchOp = service.getSearchOp(opName, missionName);
+				if (searchOp != null) {
+					
+				}
+				
+				//load data from operation into fields
+				titleField.setValue(searchOp.getTitle());
+				descrField.setValue(searchOp.getDescr());
+				dateField.setValue(searchOp.getDate());
+			} catch (Exception e) {
+				listener.displayError("Fel", e.getMessage());
+			} finally {
+				if (service != null) {
+					service.cleanUp();
+				}
+			}
+			
+			headerLabel.setValue("<h1><b>Redigera sökoperation</b></h1>");
 		} else { //new operation
+			this.missionName = missionName;
+			
 			//empty all fields
+			titleField.setValue(null);
+			descrField.setValue(null);
+			dateField.setValue(null);
+			
+			headerLabel.setValue("<h1><b>Ny sökoperation</b></h1>");
 		}
 	}
 
@@ -63,25 +129,37 @@ public class SearchOperationEditView extends CustomComponent {
 		subLayout.setWidth("33%");
 		subLayout.setSpacing(true);
 		
-		Label headerLabel = new Label("<h1><b>Redigera sökoperation</h1></b>");
+		headerLabel = new Label();
 		headerLabel.setContentMode(Label.CONTENT_XHTML);
 		subLayout.addComponent(headerLabel);
 		
 		Label titleLabel = new Label("Titel");
 		titleField = new TextField();
 		makeFormItem(subLayout, titleLabel, titleField, Alignment.MIDDLE_LEFT);
+		titleField.setImmediate(true);
+		titleField.setNullRepresentation("");
+		titleField.setRequired(true);
+		titleField.setValidationVisible(true);
+		titleField.addValidator(new StringLengthValidator(
+				"Namnet måste vara mellan 1-99 karaktärer", 1, 99, false));
 		
 		Label descrLabel = new Label("Beskrivning");
 		descrField = new TextArea();
 		makeFormItem(subLayout, descrLabel, descrField, Alignment.TOP_LEFT);
+		descrField.setNullRepresentation("");
 		
 		Label dateLabel = new Label("Datum");
 		dateField = new DateField();
 		makeFormItem(subLayout, dateLabel, dateField, Alignment.MIDDLE_LEFT);
+		dateField.setImmediate(true);
 		dateField.setLocale(new Locale("sv", "SE"));
 		dateField.setResolution(InlineDateField.RESOLUTION_MIN);
+		dateField.setRequired(true);
+		dateField.setValidationVisible(true);
+		dateField.addValidator(new DateValidator());
 		
 		HorizontalLayout upperButtonLayout = new HorizontalLayout();
+		upperButtonLayout.setSpacing(true);
 		
 		zoneButton = new Button("Hantera zoner");
 		zoneButton.setEnabled(false);
@@ -94,6 +172,7 @@ public class SearchOperationEditView extends CustomComponent {
 		subLayout.addComponent(upperButtonLayout);
 		
 		HorizontalLayout lowerButtonLayout = new HorizontalLayout();
+		lowerButtonLayout.setSpacing(true);
 		
 		saveButton = new Button("Spara");
 		lowerButtonLayout.addComponent(saveButton);

@@ -9,17 +9,21 @@ public class SearchMission {
 	private int prio;
 	private Status status;
 	
-	private List<FileMetadata> fileList;
-	private List<SearchOperation> opsList;
+	private List<FileMetadata> fileList = new ArrayList<FileMetadata>();
+	private List<SearchOperation> opsList = new ArrayList<SearchOperation>();
 		
 	public SearchMission(String name, String description, int prio, Status status) {
 		this.name = name;
 		this.description = description;
 		this.prio = prio;
 		this.status = status;
-		
-		fileList = new ArrayList<FileMetadata>();
-		opsList = new ArrayList<SearchOperation>();
+	}
+
+	/**
+	 * Constructor for new search mission state saving.
+	 */
+	public SearchMission() {
+		//this ctor intentionally left empty
 	}
 
 	public String getName() {
@@ -54,25 +58,25 @@ public class SearchMission {
 		this.status = status;
 	}
 	
-	@Override
-	public String toString() {
-		return name + ", " + description + ", " + status;
-	}
-
 	public List<SearchOperation> getOpsList() {
 		return opsList;
 	}
-
+	
 	public void setOpsList(List<SearchOperation> opsList) {
 		this.opsList = opsList;
 	}
-
+	
 	public List<FileMetadata> getFileList() {
 		return fileList;
 	}
-
+	
 	public void setFileList(List<FileMetadata> fileList) {
 		this.fileList = fileList;
+	}
+	
+	@Override
+	public String toString() {
+		return name + ", " + description + ", " + status;
 	}
 	
 }

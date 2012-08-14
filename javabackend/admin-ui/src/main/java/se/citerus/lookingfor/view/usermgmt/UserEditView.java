@@ -5,7 +5,7 @@ import java.util.List;
 import se.citerus.lookingfor.ViewSwitchController;
 import se.citerus.lookingfor.logic.PhoneNumberValidator;
 import se.citerus.lookingfor.logic.User;
-import se.citerus.lookingfor.logic.UserHandler;
+import se.citerus.lookingfor.logic.UserService;
 
 import com.vaadin.data.validator.EmailValidator;
 import com.vaadin.data.validator.StringLengthValidator;
@@ -48,14 +48,14 @@ public class UserEditView extends CustomComponent {
 		
 		saveButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				if (areAllFieldsValid()) {
+				if (fieldsValid()) {
 					User user = new User(
 							(String)nameField.getValue(), 
 							(String)passwordField.getValue(), 
 							(String)emailField.getValue(), 
 							(String)teleField.getValue(), 
 							(String)roleField.getValue());
-					UserHandler userHandler = new UserHandler();
+					UserService userHandler = new UserService();
 					try {
 						userHandler.editUser(user);
 					} catch (Exception e) {
@@ -96,7 +96,7 @@ public class UserEditView extends CustomComponent {
 		emailField.setValue(null);
 	}
 
-	private boolean areAllFieldsValid() {
+	private boolean fieldsValid() {
 		AbstractField[] fields = {nameField, passwordField, teleField, emailField, roleField};
 		for (AbstractField field : fields) {
 			if (field.getValue() != null) {
@@ -112,7 +112,7 @@ public class UserEditView extends CustomComponent {
 
 	private void populateForms(String selectedUser) {
 		try {
-			UserHandler userHandler = new UserHandler();
+			UserService userHandler = new UserService();
 			User userData = userHandler.getUserData(selectedUser);
 			userHandler.cleanUp();
 			
@@ -129,7 +129,11 @@ public class UserEditView extends CustomComponent {
 
 	private void buildMainLayout() {
 		mainLayout = new VerticalLayout();
-		mainLayout.addComponent(new Label("Användare"));
+		mainLayout.setMargin(false, false, false, true);
+
+		Label headerLabel = new Label("<h1><b>Användare</b></h1>");
+		headerLabel.setContentMode(Label.CONTENT_XHTML);
+		mainLayout.addComponent(headerLabel);
 		
 		mainLayout.addComponent(new Label("Namn"));
 		nameField = new TextField();
@@ -194,7 +198,7 @@ public class UserEditView extends CustomComponent {
 	}
 
 	private List<String> getRolesDataSource() {
-		UserHandler handler = new UserHandler();
+		UserService handler = new UserService();
 		List<String> listOfRoles = handler.getListOfRoles();
 		handler.cleanUp();
 		return listOfRoles;

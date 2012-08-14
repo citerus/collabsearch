@@ -53,4 +53,6 @@ public interface ViewSwitchController {
 
 	public void returnToSearchMissionEditView();
 
+	public void refreshOpsTable();
+
 }

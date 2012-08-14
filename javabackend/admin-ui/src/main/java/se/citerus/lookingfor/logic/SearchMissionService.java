@@ -8,10 +8,12 @@ import se.citerus.lookingfor.DAL.SearchMissionDAL;
 import se.citerus.lookingfor.DAL.SearchMissionDALInMemory;
 import se.citerus.lookingfor.DAL.SearchMissionDALMongoDB;
 
-public class SearchMissionHandler {
+public class SearchMissionService { //TODO refactor into spring service
+	
 	private SearchMissionDAL searchMissionDAL;
 	
-	public SearchMissionHandler() {
+	public SearchMissionService() {
+		//TODO choose type of DAL by config file
 		//searchMissionDAL = new SearchMissionDALMongoDB();
 		searchMissionDAL = new SearchMissionDALInMemory();
 	}
@@ -59,5 +61,29 @@ public class SearchMissionHandler {
 
 	public void deleteFile(String filename, String missionName) throws Exception {
 		searchMissionDAL.deleteFileMetadata(filename, missionName);
+	}
+
+	public void deleteSearchOperation(String searchOpName, String missionName) throws Exception {
+		searchMissionDAL.deleteSearchOperation(searchOpName, missionName);
+	}
+
+	public void clearSavedState() {
+		if (searchMissionDAL instanceof SearchMissionDALInMemory) {
+			((SearchMissionDALInMemory)searchMissionDAL).clearNewMissionContainer();
+		}
+	}
+
+	public void setupSavedState() {
+		if (searchMissionDAL instanceof SearchMissionDALInMemory) {
+			((SearchMissionDALInMemory)searchMissionDAL).initNewMissionContainer();
+		}
+	}
+
+	public void editSearchOp(SearchOperation operation, String missionName) throws Exception {
+		searchMissionDAL.addOrModifySearchOperation(operation, missionName);
+	}
+
+	public Status getStatusByName(String statusName) throws Exception {
+		return searchMissionDAL.findStatus(statusName);
 	}
 }

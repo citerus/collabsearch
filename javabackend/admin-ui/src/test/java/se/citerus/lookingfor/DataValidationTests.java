@@ -39,7 +39,7 @@ public class DataValidationTests {
 
 	@Test
 	public void testUserValidator() {
-		Validator validator;
+		Validator validator = null;
 		
 		final String okUsername = "user123";
 		final String okPassword = "password";
@@ -48,8 +48,9 @@ public class DataValidationTests {
 		final String okRole = "admin";
 		
 		//testing username validation
-		generalValidationChecks(new StringLengthValidator(
-			"Name validation error", 1, 99, false), "username", okUsername);
+		validator = new StringLengthValidator(
+			"Name validation error", 1, 99, false);
+		generalValidationChecks(validator, "username", okUsername);
 		
 		//testing password validation
 		validator = new StringLengthValidator(
@@ -79,6 +80,20 @@ public class DataValidationTests {
 		validator = new StringLengthValidator("", 1, 99, false);
 		generalValidationChecks(validator, "role", okRole);
 	}
+
+	@Test
+	public void testSearchMissionValidator() {
+		Validator validator = null;
+		
+		final String validName = "Example search mission";
+		final String validDescr = "";
+		final String valid
+	}
+
+	@Test
+	public void testSearchOperationValidator() {
+		//fail("Not yet implemented");
+	}
 	
 	private void generalValidationChecks(Validator validator, String msg, String validData) {
 		try {
@@ -92,15 +107,5 @@ public class DataValidationTests {
 		} catch (InvalidValueException e) {
 			//ok
 		}
-	}
-
-	@Test
-	public void testSearchMissionValidator() {
-		//fail("Not yet implemented");
-	}
-
-	@Test
-	public void testSearchOperationValidator() {
-		//fail("Not yet implemented");
 	}
 }

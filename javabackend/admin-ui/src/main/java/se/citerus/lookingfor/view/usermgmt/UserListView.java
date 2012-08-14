@@ -5,7 +5,7 @@ import java.util.List;
 
 import se.citerus.lookingfor.ViewSwitchController;
 import se.citerus.lookingfor.logic.User;
-import se.citerus.lookingfor.logic.UserHandler;
+import se.citerus.lookingfor.logic.UserService;
 
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
@@ -71,9 +71,9 @@ public class UserListView extends CustomComponent {
 							"Markera en användare för borttagning");
 				} else {
 					Boolean removeStatus = false;
-					UserHandler userHandler = null;
+					UserService userHandler = null;
 					try {
-						userHandler = new UserHandler();
+						userHandler = new UserService();
 						removeStatus = userHandler.removeUser(selectedUser);
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -103,9 +103,9 @@ public class UserListView extends CustomComponent {
 
 	private void populateTable() {
 		List<User> list = null;
-		UserHandler handler = null;
+		UserService handler = null;
 		try {
-			handler = new UserHandler();
+			handler = new UserService();
 			list = handler.getListOfUsers();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -176,9 +176,9 @@ public class UserListView extends CustomComponent {
 	public void resetView() {
 		beans.removeAllItems();
 		
-		UserHandler handler = null;
+		UserService handler = null;
 		try {
-			handler = new UserHandler();
+			handler = new UserService();
 			List<User> list = handler.getListOfUsers();
 			if (list != null) {
 				beans.addAll(list);

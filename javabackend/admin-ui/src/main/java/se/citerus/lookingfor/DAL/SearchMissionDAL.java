@@ -29,4 +29,10 @@ public interface SearchMissionDAL {
 	public void addFileMetadata(String missionName, FileMetadata metadata) throws IOException;
 
 	public void deleteFileMetadata(String filename, String missionName) throws IOException;
+
+	public void deleteSearchOperation(String searchOpName, String missionName) throws IOException;
+
+	public void addOrModifySearchOperation(SearchOperation operation, String missionName) throws IOException;
+
+	public Status findStatus(String statusName) throws IOException;
 }

@@ -7,7 +7,7 @@ import se.citerus.lookingfor.ViewSwitchController;
 import se.citerus.lookingfor.logic.FileMetadata;
 import se.citerus.lookingfor.logic.FileUploadHandler;
 import se.citerus.lookingfor.logic.SearchMission;
-import se.citerus.lookingfor.logic.SearchMissionHandler;
+import se.citerus.lookingfor.logic.SearchMissionService;
 import se.citerus.lookingfor.logic.SearchOperation;
 import se.citerus.lookingfor.logic.Status;
 
@@ -42,9 +42,7 @@ public class SearchMissionEditView extends CustomComponent {
 	private final ViewSwitchController listener;
 	private Button cancelButton;
 	private Button saveButton;
-	private Table filesTable;
 	private BeanContainer<String,FileMetadata> fileBeanContainer;
-	private Upload fileUpload;
 	private TextField titleField;
 	private TextArea descrField;
 	private TextField prioField;
@@ -56,8 +54,6 @@ public class SearchMissionEditView extends CustomComponent {
 	private Button editButton;
 	private Button addButton;
 	
-	private boolean existingMission;
-
 	public SearchMissionEditView(final ViewSwitchController listener) {
 		this.listener = listener;
 		buildMainLayout();
@@ -67,27 +63,13 @@ public class SearchMissionEditView extends CustomComponent {
 		//save and store search mission (including files and ops) 
 		saveButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				//dialogue here?
-				SearchMissionHandler handler = null;
-				try {
-					handler = new SearchMissionHandler();
-					SearchMission mission = null;
-					handler.editMission(mission);
-				} catch (Exception e) {
-					e.printStackTrace();
-					listener.displayError("Fel", "Ett fel uppstod vid sparandet " +
-							"av sökuppdraget, datat har ej sparats.");
-				} finally {
-					if (handler != null) {
-						handler.cleanUp();
-					}
-				}
-				listener.switchToSearchMissionListView();
+				saveData(listener);
 			}
 		});
 		//cancel actions and return to search mission list
 		cancelButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
+				clearSavedState();
 				listener.switchToSearchMissionListView();
 			}
 		});
@@ -97,6 +79,7 @@ public class SearchMissionEditView extends CustomComponent {
 			public void buttonClick(ClickEvent event) {
 				String missionTitle = (String) titleField.getValue();
 				if (missionTitle != null) {
+					commitMission(missionTitle);
 					listener.switchToSearchOperationEditView(null, missionTitle);
 				} else {
 					listener.displayError("Fel: Sökuppdragsnamn saknas", 
@@ -108,8 +91,9 @@ public class SearchMissionEditView extends CustomComponent {
 		editButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
 				String missionTitle = (String) titleField.getValue();
-				if (missionTitle != null) {
-					String selectedOp = opsList.getValue().toString();
+				String selectedOp = opsList.getValue().toString();
+				if (missionTitle != null && selectedOp != null) {
+					commitMission(missionTitle);
 					listener.switchToSearchOperationEditView(selectedOp, missionTitle);
 				} else {
 					listener.displayError("Fel: Sökuppdragsnamn saknas", 
@@ -120,9 +104,17 @@ public class SearchMissionEditView extends CustomComponent {
 		//delete search operation
 		deleteButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				//TODO add delete searchOp logic
 				Object itemId = opsList.getValue();
 				opsList.removeItem(itemId);
+				SearchMissionService handler = new SearchMissionService();
+				try {
+					handler.deleteSearchOperation(itemId.toString(), 
+							titleField.getValue().toString());
+				} catch (Exception e) {
+					listener.displayError("Fel", e.getMessage());
+				} finally {
+					handler.cleanUp();
+				}
 			}
 		});
 	}
@@ -130,7 +122,6 @@ public class SearchMissionEditView extends CustomComponent {
 	public void resetView(String selectedSearchMissionName) {
 		if (selectedSearchMissionName != null) { //edit mission mode
 			populateForms(selectedSearchMissionName);
-			existingMission = true;
 		} else { //new mission mode
 			titleField.setValue(null);
 			descrField.setValue(descrField.getNullRepresentation());
@@ -140,15 +131,16 @@ public class SearchMissionEditView extends CustomComponent {
 			fileBeanContainer.removeAllItems();
 			opsBeanContainer.removeAllItems();
 			
-			existingMission = true;
+			clearSavedState();
+			setupSavedState();
 		}
 	}
 
 	private void populateForms(String missionName) {
 		SearchMission mission = null;
-		SearchMissionHandler handler = null;
+		SearchMissionService handler = null;
 		try {
-			handler = new SearchMissionHandler();
+			handler = new SearchMissionService();
 			mission = handler.getSearchMissionData(missionName);
 			if (mission == null) {
 				listener.displayError("Fel", "Uppdraget " + missionName + " kunde ej hittas");
@@ -178,18 +170,6 @@ public class SearchMissionEditView extends CustomComponent {
 		for (SearchOperation searchOp : opsList2) {
 			opsBeanContainer.addItem(searchOp);
 		}
-	}
-
-	private void setupValidators() {
-		titleField.addValidator(new StringLengthValidator(
-				"Titeln måste vara mellan 1-99 tecken", 1, 99, false));
-		titleField.setRequired(true);
-//		descrField.addValidator(new StringLengthValidator(
-//				"Beskrivningen måste vara mellan 1-140 tecken", 1, 140, false));
-		descrField.setRequired(true);
-		prioField.addValidator(new IntegerValidator("Prioriteringstalet måste vara ett heltal"));
-		prioField.setRequired(true);
-		statusField.setRequired(true);
 	}
 
 	private void buildMainLayout() {
@@ -238,13 +218,13 @@ public class SearchMissionEditView extends CustomComponent {
 		
 		populateStatusField();
 		
-		VerticalLayout filesListLayout = new VerticalLayout();
-		filesListLayout.setWidth("100%");
+		VerticalLayout fileListLayout = new VerticalLayout();
+		fileListLayout.setWidth("100%");
 		
 		fileBeanContainer = new BeanContainer<String, FileMetadata>(FileMetadata.class);
 		fileBeanContainer.setBeanIdProperty("filename");
 		
-		filesTable = new Table("Bifogade filer");
+		Table filesTable = new Table("Bifogade filer");
 		filesTable.setHeight("150px");
 		filesTable.setWidth("100%");
 		filesTable.setContainerDataSource(fileBeanContainer);
@@ -265,24 +245,36 @@ public class SearchMissionEditView extends CustomComponent {
 		filesTable.setColumnReorderingAllowed(false);
 		filesTable.setColumnCollapsingAllowed(false);
 		filesTable.setSelectable(true);
-		filesListLayout.addComponent(filesTable);
+		fileListLayout.addComponent(filesTable);
+		
+		HorizontalLayout fileButtonsLayout = new HorizontalLayout();
 		
 		final FileUploadHandler fileUploadHandler = new FileUploadHandler();
 		fileUploadHandler.setTableBeanRef(fileBeanContainer);
 		fileUploadHandler.setViewRef(listener);
-		fileUpload = new Upload(null, fileUploadHandler);
-		fileUpload.addListener(new StartedListener() {
-			public void uploadStarted(StartedEvent event) {
-				startFileUpload(fileUploadHandler);
-			}
-		});
-		//fileUpload.setButtonCaption(null); //can be used to disable upload button, replace with validating button
+		final Upload fileUpload = new Upload(null, fileUploadHandler);
+//		fileUpload.addListener(new StartedListener() {
+//			public void uploadStarted(StartedEvent event) {
+//				startFileUpload(fileUploadHandler);
+//			}
+//		});
+		fileUpload.setButtonCaption(null);
 		fileUpload.addListener((Upload.SucceededListener) fileUploadHandler);
 		fileUpload.addListener((Upload.FailedListener) fileUploadHandler);
-		filesListLayout.addComponent(fileUpload);
-		filesListLayout.setComponentAlignment(fileUpload, Alignment.TOP_RIGHT);
-		filesListLayout.setExpandRatio(fileUpload, 1f);
-		leftFormLayout.addComponent(filesListLayout);
+		fileButtonsLayout.addComponent(fileUpload);
+		
+		Button uploadButton = new Button("Ladda upp fil");
+		uploadButton.addListener(new ClickListener() {
+			public void buttonClick(ClickEvent event) {
+				startFileUpload(fileUploadHandler, fileUpload);
+			}
+		});
+		fileButtonsLayout.addComponent(uploadButton);
+		fileListLayout.addComponent(fileButtonsLayout);
+		
+		fileListLayout.setComponentAlignment(fileButtonsLayout, Alignment.TOP_RIGHT);
+		fileListLayout.setExpandRatio(fileButtonsLayout, 1f);
+		leftFormLayout.addComponent(fileListLayout);
 		
 		outerLayout.addComponent(leftFormLayout);
 		
@@ -331,7 +323,7 @@ public class SearchMissionEditView extends CustomComponent {
 	
 	private void populateStatusField() {
 		statusBeanContainer.removeAllItems();
-		SearchMissionHandler handler = new SearchMissionHandler();
+		SearchMissionService handler = new SearchMissionService();
 		List<Status> listOfStatuses = null;
 		try {
 			listOfStatuses = handler.getListOfStatuses();
@@ -358,38 +350,137 @@ public class SearchMissionEditView extends CustomComponent {
 	
 	private void removeFile(Container container, Object itemId) {
 		String missionName = (String) titleField.getValue();
-		System.out.println("Delete clicked for item: " + itemId);
-		SearchMissionHandler handler = null;
-		try {
-			handler = new SearchMissionHandler();
-			String filename = itemId.toString();
-			handler.deleteFile(filename, missionName);
-			
-			File file = new File("tmp/uploads" + itemId.toString());
-			boolean fileDeletionStatus = file.delete();
-			System.out.println("File " + filename + " was " + 
-					(fileDeletionStatus == true ? "deleted" : "not deleted"));
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			if (handler != null) {
-				handler.cleanUp();
+		if (missionName != null) {
+			SearchMissionService handler = null;
+			try {
+				handler = new SearchMissionService();
+				String filename = itemId.toString();
+				handler.deleteFile(filename, missionName);
+				
+				File file = new File("tmp/uploads" + itemId.toString());
+				boolean fileDeletionStatus = file.delete();
+				System.out.println("File " + filename + " was " + 
+						(fileDeletionStatus == true ? "deleted" : "not deleted"));
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				if (handler != null) {
+					handler.cleanUp();
+				}
 			}
+			container.removeItem(itemId);
+		} else {
+			listener.displayError("Filuppladdning", 
+					"Sökuppdraget måste namnges innan filer kan tas bort.");
 		}
-		container.removeItem(itemId);
 	}
 	
-	private void startFileUpload(FileUploadHandler handler) {
+	private void startFileUpload(FileUploadHandler handler, Upload fileUpload) {
 		String missionTitle = (String) titleField.getValue();
 		if (missionTitle != null) {
 			if ("".equals(missionTitle) || missionTitle.length() == 0) {
-				fileUpload.interruptUpload();
 				listener.displayError("Filuppladdning", 
 						"Sökuppdraget måste namnges innan filuppladdningar kan genomföras.");
 			} else {
 				handler.setParentMissionName(missionTitle);
+				fileUpload.submitUpload();
 			}
 		}
 	}
+	
+	private boolean fieldsValid() {
+		AbstractField[] fields = {titleField, descrField, prioField, statusField};
+		for (AbstractField field : fields) {
+			if (!field.isValid()) {
+				return false;
+			}
+		}
+		return true;
+	}
 
+	private void setupValidators() {
+		titleField.addValidator(new StringLengthValidator(
+				"Titeln måste vara mellan 1-99 tecken", 1, 99, false));
+		titleField.setRequired(true);
+//		descrField.addValidator(new StringLengthValidator(
+//				"Beskrivningen måste vara mellan 1-140 tecken", 1, 140, false));
+		descrField.setRequired(true);
+		prioField.addValidator(new IntegerValidator("Prioriteringstalet måste vara ett heltal"));
+		prioField.setRequired(true);
+		statusField.setRequired(true);
+	}
+	
+	private void clearSavedState() {
+		SearchMissionService handler = new SearchMissionService();
+		try {
+			handler.clearSavedState();
+		} catch (Exception e) {
+			listener.displayError("Fel", e.getMessage());
+		} finally {
+			handler.cleanUp();
+		}
+	}
+
+	private void setupSavedState() {
+		SearchMissionService handler = new SearchMissionService();
+		try {
+			handler.setupSavedState();
+		} catch (Exception e) {
+			listener.displayError("Fel", e.getMessage());
+		} finally {
+			handler.cleanUp();
+		}
+	}
+
+	public void refreshOpsTable() {
+		opsBeanContainer.removeAllItems();
+		SearchMissionService service = new SearchMissionService();
+		List<SearchOperation> list = service.getListOfSearchOps(titleField.getValue().toString());
+		if (list != null) {
+			opsBeanContainer.addAll(list);
+		}
+	}
+	
+	private void saveData(final ViewSwitchController listener) {
+		//popup dialogue here?
+		if (fieldsValid()) {
+			SearchMissionService handler = null;
+			try {
+				handler = new SearchMissionService();
+				int prio = Integer.parseInt(prioField.getValue().toString());
+				Status status = handler.getStatusByName(statusField.getValue().toString());
+				SearchMission mission = new SearchMission(
+						(String) titleField.getValue(), 
+						(String) descrField.getValue(), 
+						prio, 
+						status
+				);
+				handler.editMission(mission);
+				clearSavedState();
+				listener.switchToSearchMissionListView();
+			} catch (Exception e) {
+				listener.displayError("Fel", "Ett fel uppstod vid sparandet " +
+						"av sökuppdraget, datat har ej sparats.");
+			} finally {
+				if (handler != null) {
+					handler.cleanUp();
+				}
+			}
+		} else {
+			listener.displayError("Fel", "Ett eller flera fält är inte korrekt ifyllda");
+		}
+	}
+
+	private void commitMission(String missionTitle) {
+		SearchMission mission = new SearchMission();
+		mission.setName(missionTitle);
+		SearchMissionService service = new SearchMissionService();
+		try {
+			service.editMission(mission);
+		} catch (Exception e) {
+			listener.displayError("Fel", e.getMessage());
+		} finally {
+			service.cleanUp();
+		}
+	}
 }

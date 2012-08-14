@@ -124,4 +124,8 @@ public class MainWindow extends Window implements LoginListener, ViewSwitchContr
 		setContent(searchMissionEditView);
 	}
 
+	public void refreshOpsTable() {
+		searchMissionEditView.refreshOpsTable();
+	}
+
 }

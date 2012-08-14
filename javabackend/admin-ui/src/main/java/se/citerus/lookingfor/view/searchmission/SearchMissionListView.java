@@ -4,7 +4,7 @@ import java.util.List;
 
 import se.citerus.lookingfor.ViewSwitchController;
 import se.citerus.lookingfor.logic.SearchMission;
-import se.citerus.lookingfor.logic.SearchMissionHandler;
+import se.citerus.lookingfor.logic.SearchMissionService;
 
 import com.vaadin.data.util.BeanContainer;
 import com.vaadin.ui.Alignment;
@@ -56,11 +56,11 @@ public class SearchMissionListView extends CustomComponent {
 		endMissionButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
 				//TODO should this be change status or remove?
-				SearchMissionHandler handler = null;
+				SearchMissionService handler = null;
 				String itemId = (String) table.getValue();
 				if (itemId != null) {
 					try {
-						handler = new SearchMissionHandler();
+						handler = new SearchMissionService();
 						handler.endMission(itemId);
 						//table.removeItem(itemId);
 					} catch (Exception e) {
@@ -84,7 +84,7 @@ public class SearchMissionListView extends CustomComponent {
 		beans = new BeanContainer<String, SearchMission>(SearchMission.class);
 		beans.setBeanIdProperty("name");
 		
-		SearchMissionHandler handler = new SearchMissionHandler();
+		SearchMissionService handler = new SearchMissionService();
 		try {
 			List<SearchMission> list = handler.getListOfSearchMissions();
 			if (list != null) {
@@ -151,7 +151,7 @@ public class SearchMissionListView extends CustomComponent {
 	public void resetView() {
 		beans.removeAllItems();
 		
-		SearchMissionHandler handler = new SearchMissionHandler();
+		SearchMissionService handler = new SearchMissionService();
 		try {
 			List<SearchMission> list = handler.getListOfSearchMissions();
 			if (list != null) {

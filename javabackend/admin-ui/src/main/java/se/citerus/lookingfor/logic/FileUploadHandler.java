@@ -49,9 +49,9 @@ public class FileUploadHandler implements Upload.SucceededListener,
 
 	public void uploadSucceeded(SucceededEvent event) {
 		//add filemetadata to db
-		SearchMissionHandler handler = null;
+		SearchMissionService handler = null;
 		try {
-			handler = new SearchMissionHandler();
+			handler = new SearchMissionService();
 			handler.addFileToMission(parentMissionName, metadata);
 		} catch (RuntimeException e) {
 			listener.displayError("Filöverföring", "Ett uppdragsnamn måste bestämmas innan filer kan laddas upp");

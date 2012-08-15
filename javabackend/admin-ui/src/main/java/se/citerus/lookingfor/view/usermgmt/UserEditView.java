@@ -39,6 +39,8 @@ public class UserEditView extends CustomComponent {
 	private Window popupWindow;
 	private Button closePopupButton;
 	private Label popupMessage;
+	private Label headerLabel;
+	private boolean existingUser;
 
 	public UserEditView(final ViewSwitchController listener) {
 		this.listener = listener;
@@ -48,33 +50,12 @@ public class UserEditView extends CustomComponent {
 		
 		saveButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				if (fieldsValid()) {
-					User user = new User(
-							(String)nameField.getValue(), 
-							(String)passwordField.getValue(), 
-							(String)emailField.getValue(), 
-							(String)teleField.getValue(), 
-							(String)roleField.getValue());
-					UserService userHandler = new UserService();
-					try {
-						userHandler.editUser(user);
-					} catch (Exception e) {
-						e.printStackTrace();
-					} finally {
-						if (userHandler != null) {
-							userHandler.cleanUp();
-						}
-					}
-					
-					//display popup with button leading back to user list
-					if (popupWindow.getParent() != null) {
-	                    listener.displayNotification("Fel", "Fönstret är redan öppnat");
-	                } else {
-	                    getWindow().addWindow(popupWindow);
-	                }
-				} else {
-					listener.displayNotification("Fel", "Ett eller flera fält innehåller fel");
-				}
+				saveUserData();
+			}
+		});
+		cancelButton.addListener(new ClickListener() {
+			public void buttonClick(ClickEvent event) {
+				listener.switchToUserListView();
 			}
 		});
 	}
@@ -83,9 +64,13 @@ public class UserEditView extends CustomComponent {
 		if (selectedUsername != null) {
 			populateForms(selectedUsername);
 			popupMessage.setValue("Användare redigerad.");
+			headerLabel.setValue("Redigera användare");
+			existingUser = true;
 		} else {
 			emptyForms();
 			popupMessage.setValue("Ny användare skapad.");
+			headerLabel.setValue("Ny användare");
+			existingUser = false;
 		}
 	}
 
@@ -131,7 +116,7 @@ public class UserEditView extends CustomComponent {
 		mainLayout = new VerticalLayout();
 		mainLayout.setMargin(false, false, false, true);
 
-		Label headerLabel = new Label("<h1><b>Användare</b></h1>");
+		headerLabel = new Label("<h1><b>Användare</b></h1>");
 		headerLabel.setContentMode(Label.CONTENT_XHTML);
 		mainLayout.addComponent(headerLabel);
 		
@@ -181,11 +166,6 @@ public class UserEditView extends CustomComponent {
 		subLayout.setSpacing(true);
 		
 		cancelButton = new Button("Avbryt");
-		cancelButton.addListener(new ClickListener() {
-			public void buttonClick(ClickEvent event) {
-				listener.switchToUserListView();
-			}
-		});
 		subLayout.addComponent(cancelButton);
 		
 		saveButton = new Button("Spara");
@@ -236,5 +216,39 @@ public class UserEditView extends CustomComponent {
         });
         
         popupWindow.addComponent(buttonLayout);
+	}
+
+	private void saveUserData() {
+		if (fieldsValid()) {
+			User user = new User(
+					(String)nameField.getValue(), 
+					(String)passwordField.getValue(), 
+					(String)emailField.getValue(), 
+					(String)teleField.getValue(), 
+					(String)roleField.getValue());
+			UserService userHandler = new UserService();
+			try {
+				if (existingUser) {
+					userHandler.editUser(user);
+				} else {
+					userHandler.addUser(user);
+				}
+			} catch (Exception e) {
+				listener.displayError("Fel", e.getMessage());
+			} finally {
+				if (userHandler != null) {
+					userHandler.cleanUp();
+				}
+			}
+			
+			//display popup with button leading back to user list
+			if (popupWindow.getParent() != null) {
+		        listener.displayNotification("Fel", "Fönstret är redan öppnat");
+		    } else {
+		        getWindow().addWindow(popupWindow);
+		    }
+		} else {
+			listener.displayNotification("Fel", "Ett eller flera fält innehåller fel");
+		}
 	}
 }

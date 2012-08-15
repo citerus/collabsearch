@@ -1,5 +1,7 @@
 package se.citerus.lookingfor.logic;
 
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.util.Date;
 
 import com.vaadin.data.Validator;
@@ -9,8 +11,13 @@ import com.vaadin.data.Validator.InvalidValueException;
 public class DateValidator implements Validator {
 
 	public void validate(Object value) throws InvalidValueException {
-		Date date = (Date) value;
-		if (date == null) {
+		try {
+			//Date date = DateFormat.getInstance().parse(value.toString());
+			Date date = DateFormat.getDateInstance().parse(value.toString());
+			if (date == null) {
+				throw new InvalidValueException("Invalid date");
+			}
+		} catch (ParseException e) {
 			throw new InvalidValueException("Invalid date");
 		}
 	}

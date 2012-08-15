@@ -62,32 +62,26 @@ public class UserDALInMemory implements UserDAL {
 		return salts.get(username);
 	}
 
-	public void addOrModifyUser(User user) throws IOException {
-		allUsers.add(user);
-	}
-
 	public List<User> getAllUsers() {
 		return allUsers;
 	}
 
-	public User getUserByUsername(String username) throws Exception {
+	public User getUserByUsername(String username) throws IOException {
 		for (User user : allUsers) {
 			if (user.getUsername().equals(username)) {
 				return user;
 			}
 		}
-		throw new Exception("User not found");
+		throw new IOException("Användare ej funnen!");
 	}
 
-	public Boolean deleteUserByUsername(String username) throws IOException {
+	public void deleteUserByUsername(String username) throws IOException {
 		for (int i = 0; i < allUsers.size(); i++) {
 			User user = allUsers.get(i);
 			if (user.getUsername().equals(username)) {
 				allUsers.remove(i);
-				return true;
 			}
 		}
-		return false;
 	}
 
 	public List<String> getAllRoles() throws IOException {
@@ -102,6 +96,21 @@ public class UserDALInMemory implements UserDAL {
 			}
 		}
 		return result;
+	}
+
+	public void editExistingUser(User user) throws IOException {
+		for (int i = 0; i < allUsers.size(); i++) {
+			User existingUser = allUsers.get(i);
+			if (existingUser.getUsername().equals(user.getUsername())) {
+				allUsers.set(i, user);
+				return;
+			}
+		}
+		throw new IOException("Användare ej funnen!");
+	}
+
+	public void addNewUser(User user) throws IOException {
+		allUsers.add(user);
 	}
 
 }

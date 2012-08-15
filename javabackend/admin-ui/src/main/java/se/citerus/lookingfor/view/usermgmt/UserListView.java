@@ -32,15 +32,12 @@ public class UserListView extends CustomComponent {
 	private Table table;
 	private Label headerLabel;
 
-	private String selectedUsername;
 	private BeanContainer<String, User> beans;
 	
 	public UserListView(final ViewSwitchController listener) {
 		mainLayout = buildMainLayout2();
 		setCompositionRoot(mainLayout);
 		listener.setMainWindowCaption("Missing People - Användare");
-		
-		selectedUsername = null;
 		
 		homeButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
@@ -54,7 +51,7 @@ public class UserListView extends CustomComponent {
 		});
 		editButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				String selectedUser = getSelectedUser();
+				String selectedUser = table.getValue().toString();
 				if (selectedUser == null) {
 					listener.displayNotification("Ingen användare markerad", 
 							"Markera en användare för redigering");
@@ -65,36 +62,25 @@ public class UserListView extends CustomComponent {
 		});
 		deleteButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				String selectedUser = getSelectedUser();
+				String selectedUser = table.getValue().toString();
 				if (selectedUser == null) {
 					listener.displayNotification("Ingen användare markerad", 
 							"Markera en användare för borttagning");
 				} else {
-					Boolean removeStatus = false;
-					UserService userHandler = null;
+					UserService service = null;
 					try {
-						userHandler = new UserService();
-						removeStatus = userHandler.removeUser(selectedUser);
-					} catch (Exception e) {
-						e.printStackTrace();
-					} finally {
-						if (userHandler != null) {
-							userHandler.cleanUp();
-						}
-					}
-					if (removeStatus) {
+						service = new UserService();
+						service.removeUser(selectedUser);
 						table.removeItem(selectedUser);
 						listener.displayNotification("Användare borttagen", "Användare " + selectedUser + " borttagen");
-					} else {
+					} catch (Exception e) {
 						listener.displayError("Fel", "Användare " + selectedUser + " kunde ej tas bort");
+					} finally {
+						if (service != null) {
+							service.cleanUp();
+						}
 					}
 				}
-			}
-		});
-		
-		table.addListener(new Property.ValueChangeListener() {
-			public void valueChange(ValueChangeEvent event) {
-				selectedUsername = (String) event.getProperty().getValue();
 			}
 		});
 		
@@ -120,10 +106,6 @@ public class UserListView extends CustomComponent {
 		table.setContainerDataSource(beans);
 		table.setVisibleColumns(new Object[]{"username","role"});
 		table.setColumnHeaders(new String[]{"Användarnamn","Roll"});
-	}
-	
-	protected String getSelectedUser() {
-		return selectedUsername;
 	}
 	
 	private Layout buildMainLayout2() {
@@ -188,8 +170,6 @@ public class UserListView extends CustomComponent {
 		} finally {
 			handler.cleanUp();
 		}
-		
-		selectedUsername = null;
 	}
 
 }

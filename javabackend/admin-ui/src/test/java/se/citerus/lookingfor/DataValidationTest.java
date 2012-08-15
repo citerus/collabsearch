@@ -2,40 +2,23 @@ package se.citerus.lookingfor;
 
 import static org.junit.Assert.fail;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+
 import org.junit.Test;
 
+import se.citerus.lookingfor.logic.DateValidator;
 import se.citerus.lookingfor.logic.PhoneNumberValidator;
+import se.citerus.lookingfor.logic.PriorityNumberValidator;
 
 import com.vaadin.data.Validator;
 import com.vaadin.data.Validator.InvalidValueException;
 import com.vaadin.data.validator.EmailValidator;
+import com.vaadin.data.validator.IntegerValidator;
 import com.vaadin.data.validator.StringLengthValidator;
 
-public class DataValidationTests {
-
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-		
-	}
-
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-		
-	}
-
-	@Before
-	public void setUp() throws Exception {
-		
-	}
-
-	@After
-	public void tearDown() throws Exception {
-		
-	}
+public class DataValidationTest {
 
 	@Test
 	public void testUserValidator() {
@@ -75,6 +58,11 @@ public class DataValidationTests {
 		} catch (InvalidValueException e) {
 			//ok
 		}
+		try {
+			validator.validate("123 456 789");
+		} catch (InvalidValueException e) {
+			fail("Failed to validate valid phone number");
+		}
 		
 		//testing role validation
 		validator = new StringLengthValidator("", 1, 99, false);
@@ -86,13 +74,66 @@ public class DataValidationTests {
 		Validator validator = null;
 		
 		final String validName = "Example search mission";
-		final String validDescr = "";
-		final String valid
+		final String validDescr = "beskrivning...";
+		final int validPrio = 10;
+		
+		//name validation
+		validator = new StringLengthValidator("", 1, 30, false);
+		generalValidationChecks(validator, "name", validName);
+		
+		//descr validation
+		generalValidationChecks(validator, "descr", validDescr);
+		try {
+			validator.validate("aaaaabbbbbcccccdddddeeeeefffffggggg");
+			fail("Failed to invalidate too long description");
+		} catch (InvalidValueException e) {
+			//ok
+		}
+		
+		//prio validation
+		validator = new PriorityNumberValidator("");
+		generalValidationChecks(validator, "prio", "" + validPrio);
+		try {
+			validator.validate("test");
+			fail("Failed to invalidate non-integer prio");
+		} catch (InvalidValueException e) {
+			//ok
+		}
+		try {
+			validator.validate("1.5");
+			fail("Failed to invalidate non-integer prio");
+		} catch (InvalidValueException e) {
+			//ok
+		}
+		try {
+			validator.validate("-1");
+			fail("Failed to invalidate negative prio");
+		} catch (InvalidValueException e) {
+			//ok
+		}
 	}
 
 	@Test
 	public void testSearchOperationValidator() {
-		//fail("Not yet implemented");
+		Validator validator = null;
+		
+		final String validTitle = "Sökoperation 1";
+		final Date validDate = Calendar.getInstance().getTime();
+		
+		validator = new StringLengthValidator("", 3, 99, false);
+		generalValidationChecks(validator, "title", validTitle);
+		
+		validator = new DateValidator();
+		generalValidationChecks(validator, "date", validDate.toString());
+		try {
+			GregorianCalendar calendar = new GregorianCalendar();
+			calendar.set(2011, 1, 30);
+			Date date = calendar.getTime();
+			validator.validate(date.toString());
+			fail("Failed to invalidate invalid date");
+		} catch (Exception e) {
+			//ok
+		}
 	}
 	
 	private void generalValidationChecks(Validator validator, String msg, String validData) {

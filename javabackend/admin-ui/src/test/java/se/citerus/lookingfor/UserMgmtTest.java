@@ -7,7 +7,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.IOException;
+import java.util.Random;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -23,9 +23,11 @@ import se.citerus.lookingfor.logic.UserService;
  * Unit tests for the user management.
  * @author Ola Rende
  */
-public class UserMgmtTests {
+public class UserMgmtTest {
 
+	private static final Random RANDOM = new Random();
 	private UserService handler;
+	private User dummyUser;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -47,26 +49,28 @@ public class UserMgmtTests {
 
 	@Test
 	public void testCreateAndFindUser() {
+		String username = "testuser" + RANDOM.nextInt();
+		dummyUser = new User(username, "password", username + "@email.com", 
+				"" + RANDOM.nextInt(), "user");
 		try {
-			handler.editUser(new User("test","test".toCharArray()));
+			handler.addUser(dummyUser);
 		} catch (Exception e) {
-			e.printStackTrace();
-			fail("IOException on user creation");
+			fail("IOException on user creation: " + e.getMessage());
 		}
 		try {
-			boolean userFound = handler.getUserData("test") != null;
-			assertTrue("User \"test\" not found in database", userFound == true);
+			User user = handler.getUserData(dummyUser.getUsername());
 		} catch (Exception e) {
-			fail("Exception throw on user search");
+			fail("User " + dummyUser.getUsername() + " should have been in database");
 		}
 	}
 	
 	@Test
 	public void testFindNonExistentUser() {
 		User user = null;
+		String nonUser = "thisusernamedoesnotexist";
 		try {
-			user = handler.getUserData("test");
-			fail("Did not throw exception");
+			user = handler.getUserData(nonUser);
+			fail("Did not throw exception for non-existent user: " + nonUser);
 		} catch (Exception e) {
 			//expected
 		}
@@ -77,31 +81,31 @@ public class UserMgmtTests {
 	public void testUserAuthFailure() throws Exception {
 		boolean userAuthResult;
 		Authenticator auth = new Authenticator();
-		userAuthResult = auth.login("test", "wrongpassword".toCharArray());
+		userAuthResult = auth.login("testusr", "wrongpassword".toCharArray());
 		assertTrue("User \"test\" authenticated with wrong password, should throw error", userAuthResult == false);
 	}
 	
 	@Test
 	public void testDeleteUser() {
 		//create user
+		String username = "testuser" + RANDOM.nextInt();
 		try {
-			handler.editUser(new User("testuser123","password"));
+			handler.addUser(new User(username, "password", username + "@email.com", 
+					"" + RANDOM.nextInt(), "user"));
 		} catch (Exception e1) {
-			e1.printStackTrace();
+			fail("Failed to create new user: " + e1.getMessage());
 		}
 		
 		//delete user
-		Boolean removeUserResult = false;
 		try {
-			removeUserResult = handler.removeUser("testuser123");
+			handler.removeUser(username);
 		} catch (Exception e1) {
-			e1.printStackTrace();
+			fail("Deletable user not deleted");
 		}
-		assertTrue("Removal of testuser123 returned false, should be true", removeUserResult);
 		
 		//search for deleted user
 		try {
-			handler.getUserData("testuser123");
+			handler.getUserData(username);
 			fail("Did not throw exception");
 		} catch (Exception e) {
 			//expected
@@ -110,12 +114,22 @@ public class UserMgmtTests {
 	
 	@Test
 	public void testDeleteNonExistentUser() {
-		Boolean removeUserResult = true;
 		try {
-			removeUserResult = handler.removeUser("unknown");
+			handler.removeUser("unknown");
+			fail("Did not throw exception on non-existent user deletion");
 		} catch (Exception e) {
-			e.printStackTrace();
+			//expected
 		}
-		assertFalse("Removal of nonexistent user \"unknown\" returned true, should be false", removeUserResult);
+	}
+	
+	@Test
+	public void testAddUserWithDuplicateData() {
+		try {
+			User user = new User("omega", null, null, null);
+			handler.addUser(user);
+			fail("Did not throw exception");
+		} catch (Exception e) {
+			//expected
+		}
 	}
 }

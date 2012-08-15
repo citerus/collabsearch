@@ -14,7 +14,7 @@ public class PhoneNumberValidator implements Validator {
 	public void validate(Object value) throws InvalidValueException {
 		if (value != null) {
 			String strVal = ((String)value);
-			if (!strVal.matches("\\d+")) {
+			if (!strVal.matches("[\\d\\s]+")) {
 				throw new InvalidValueException(errorMessage);
 			}
 		} else {

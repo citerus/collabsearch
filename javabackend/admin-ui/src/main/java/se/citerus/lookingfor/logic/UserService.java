@@ -24,20 +24,15 @@ public class UserService { //TODO refactor into spring service
 		return userDAL.getUserByUsername(selectedUser);
 	}
 
-	public Boolean removeUser(String username) throws Exception {
-		try {
-			return userDAL.deleteUserByUsername(username);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return false;
-		}
+	public void removeUser(String username) throws Exception {
+		userDAL.deleteUserByUsername(username);
 	}
 
 	/**
 	 * Edits user (if existing) or adds a new one with the included attributes.
 	 */
 	public void editUser(User user) throws Exception {
-		userDAL.addOrModifyUser(user);
+		userDAL.editExistingUser(user);
 	}
 
 	public List<String> getListOfRoles() {
@@ -59,6 +54,10 @@ public class UserService { //TODO refactor into spring service
 	 */
 	public boolean lookForDuplicates(String username, String tele, String email) throws Exception {
 		return userDAL.checkForDuplicateUserData(username, tele, email);
+	}
+
+	public void addUser(User user) throws Exception {
+		userDAL.addNewUser(user);
 	}
 
 }

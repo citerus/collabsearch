@@ -57,7 +57,7 @@ public class UserDALMongoDB implements UserDAL {
 				}
 			}
 		} catch (MongoException e) {
-			throw new IOException("No database connectivity");
+			throw new IOException("Kontakt med databasen kunde ej upprättas", e);
 		}
 		return false; //no such user
 	}
@@ -74,7 +74,7 @@ public class UserDALMongoDB implements UserDAL {
 				return true;
 			}
 		} catch (MongoException e) {
-			throw new IOException("No database connectivity");
+			throw new IOException("Kontakt med databasen kunde ej upprättas", e);
 		}
 		return false;
 	}
@@ -87,10 +87,10 @@ public class UserDALMongoDB implements UserDAL {
 			}
 			WriteResult result = authColl.insert(new BasicDBObject("username", username).append("salt", salt));
 			if (result.getLastError().ok() == false) {
-				throw new IOException("Database write failure");
+				throw new IOException("Databasfel");
 			}
 		} catch (MongoException e) {
-			throw new IOException("No database connectivity");
+			throw new IOException("Kontakt med databasen kunde ej upprättas", e);
 		}
 	}
 
@@ -105,25 +105,7 @@ public class UserDALMongoDB implements UserDAL {
 				throw new Exception("User not found");
 			}
 		} catch (MongoException e) {
-			throw new IOException("No database connectivity");
-		}
-	}
-
-	public void addOrModifyUser(User user) throws IOException {
-		try {
-			DBObject query = new BasicDBObject("username",user.getUsername());
-			DBObject updateObj = new BasicDBObject();
-			updateObj.put("username", user.getUsername());
-			updateObj.put("password", user.getPassword());
-			updateObj.put("email", user.getEmail());
-			updateObj.put("tele", user.getTele());
-			updateObj.put("role", user.getRole());
-			WriteResult result = userColl.update(query, updateObj, ENABLEUPSERT, DISABLEMULTIUPDATE);
-			if (result.getLastError().ok() == false) {
-				throw new IOException("Database write failure");
-			}
-		} catch (MongoException e) {
-			throw new IOException("No database connectivity");
+			throw new IOException("Kontakt med databasen kunde ej upprättas", e);
 		}
 	}
 
@@ -142,18 +124,18 @@ public class UserDALMongoDB implements UserDAL {
 				}
 			}
 		} catch (MongoException e) {
-			throw new IOException("No database connectivity");
+			throw new IOException("Kontakt med databasen kunde ej upprättas", e);
 		}
 		return list;
 	}
 
-	public User getUserByUsername(String username) throws Exception {
+	public User getUserByUsername(String username) throws IOException {
 		User user = null;
 		try {
 			BasicDBObject query = new BasicDBObject("username",username);
 			BasicDBObject result = (BasicDBObject) userColl.findOne(query);
 			if (result == null) {
-				throw new Exception("User not found");
+				throw new IOException("User not found");
 			}
 			user = new User(
 				result.getString("username"), 
@@ -163,28 +145,33 @@ public class UserDALMongoDB implements UserDAL {
 				result.getString("role")
 			);
 		} catch (MongoException e) {
-			throw new IOException("No database connectivity");
+			throw new IOException("Kontakt med databasen kunde ej upprättas", e);
 		}
 		return user;
 	}
 
-	public Boolean deleteUserByUsername(String username) throws IOException {
+	public void deleteUserByUsername(String username) throws IOException {
 		try {
 			BasicDBObject query = new BasicDBObject("username", username);
 			WriteResult result = userColl.remove(query);
 			CommandResult lastError = result.getLastError();
 			if (!lastError.ok()) {
 				throw new IOException("Error: Database write failure on User document deletion");
+			} else if (result.getN() == 0) {
+				throw new IOException("User " + username + " not found in user collection");
 			}
-			result = authColl.remove(query);
-			lastError = result.getLastError();
-			if (!lastError.ok()) {
-				throw new IOException("Error: Database write failure on Salt document deletion");
-			}
+			
+			//auth collection not yet implemented
+//			result = authColl.remove(query);
+//			lastError = result.getLastError();
+//			if (!lastError.ok()) {
+//				throw new IOException("Error: Database write failure on Salt document deletion", e);
+//			} else if (result.getN() == 0) {
+//				throw new IOException("User " + username + " not found in auth collection", e);
+//			}
 		} catch (MongoException e) {
-			throw new IOException("No database connectivity");
+			throw new IOException("Kontakt med databasen kunde ej upprättas", e);
 		}
-		return true;
 	}
 
 	public List<String> getAllRoles() throws IOException {
@@ -203,7 +190,7 @@ public class UserDALMongoDB implements UserDAL {
 				throw new IOException("No roles found in database");
 			}
 		} catch (MongoException e) {
-			throw new IOException("No database connectivity");
+			throw new IOException("Kontakt med databasen kunde ej upprättas", e);
 		}
 		return list;
 	}
@@ -226,8 +213,46 @@ public class UserDALMongoDB implements UserDAL {
 			}
 			return false;
 		} catch (MongoException e) {
-			throw new IOException("No database connectivity");
+			throw new IOException("Kontakt med databasen kunde ej upprättas", e);
 		}
+	}
+
+	public void editExistingUser(User user) throws IOException {
+		BasicDBObject query = new BasicDBObject("username", user.getUsername());
+		BasicDBObject userObject = makeUserDBO(user);
+		WriteResult result = userColl.update(query, userObject);
+		if (result.getLastError().ok() == false) {
+			if (result.getLastError().getException() instanceof MongoException.DuplicateKey) {
+				throw new IOException("Duplicerat värde på användarnamn, epost eller telefonnummer");
+			}
+			throw new IOException("Databasfel");
+		}
+	}
+
+	public void addNewUser(User user) throws IOException {
+		BasicDBObject userObject = makeUserDBO(user);
+		WriteResult result = userColl.insert(userObject);
+		if (result.getLastError().ok() == false) {
+			if (result.getLastError().getException() instanceof MongoException.DuplicateKey) {
+				throw new IOException("Duplicerat värde på användarnamn, epost eller telefonnummer");
+			}
+			throw new IOException("Databasfel");
+		} else if (result.getField("code") != null) {
+			int code = Integer.parseInt(result.getField("code").toString());
+			if (code == 11000 || code == 11001) {
+				throw new IOException("Duplicerat värde på användarnamn, epost eller telefonnummer");
+			}
+		}
+	}
+
+	private BasicDBObject makeUserDBO(User user) {
+		BasicDBObject userObject = new BasicDBObject();
+		userObject.put("username", user.getUsername());
+		userObject.put("password", user.getPassword());
+		userObject.put("email", user.getEmail());
+		userObject.put("tele", user.getTele());
+		userObject.put("role", user.getRole()); //TODO replace with dbref to roleColl
+		return userObject;
 	}
 
 }

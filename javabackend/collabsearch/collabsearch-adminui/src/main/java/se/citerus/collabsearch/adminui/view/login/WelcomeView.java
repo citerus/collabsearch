@@ -23,7 +23,7 @@ public class WelcomeView extends CustomComponent {
 	public WelcomeView(final ViewSwitchController listener) {
 		buildMainLayout();
 		setCompositionRoot(mainLayout);
-		listener.setMainWindowCaption("Missing People - Välkommen");
+		listener.setMainWindowCaption("Välkommen");
 		
 		userButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {

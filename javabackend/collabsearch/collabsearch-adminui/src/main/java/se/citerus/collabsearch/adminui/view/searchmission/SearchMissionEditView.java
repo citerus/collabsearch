@@ -58,7 +58,7 @@ public class SearchMissionEditView extends CustomComponent {
 		this.listener = listener;
 		buildMainLayout();
 		setCompositionRoot(mainLayout);
-		listener.setMainWindowCaption("Missing People - Redigera sökuppdrag");
+		listener.setMainWindowCaption("Collaborative Search - Redigera sökuppdrag");
 		
 		//save and store search mission (including files and ops) 
 		saveButton.addListener(new ClickListener() {

@@ -37,7 +37,7 @@ public class UserListView extends CustomComponent {
 	public UserListView(final ViewSwitchController listener) {
 		mainLayout = buildMainLayout2();
 		setCompositionRoot(mainLayout);
-		listener.setMainWindowCaption("Missing People - Användare");
+		listener.setMainWindowCaption("Collaborative Search - Användare");
 		
 		homeButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {

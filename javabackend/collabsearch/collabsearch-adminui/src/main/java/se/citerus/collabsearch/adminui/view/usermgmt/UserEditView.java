@@ -46,7 +46,7 @@ public class UserEditView extends CustomComponent {
 		this.listener = listener;
 		buildMainLayout();
 		setCompositionRoot(mainLayout);
-		listener.setMainWindowCaption("Missing People - Användarredigering");
+		listener.setMainWindowCaption("Collaborative Search - Användarredigering");
 		
 		saveButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {

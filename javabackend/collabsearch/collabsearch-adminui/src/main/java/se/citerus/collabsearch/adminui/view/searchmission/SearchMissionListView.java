@@ -30,7 +30,7 @@ public class SearchMissionListView extends CustomComponent {
 	public SearchMissionListView(final ViewSwitchController listener) {
 		VerticalLayout mainLayout = buildMainLayout();
 		setCompositionRoot(mainLayout);
-		listener.setMainWindowCaption("Missing People - Sökuppdrag");
+		listener.setMainWindowCaption("Collaborative Search - Sökuppdrag");
 		
 		homeButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {

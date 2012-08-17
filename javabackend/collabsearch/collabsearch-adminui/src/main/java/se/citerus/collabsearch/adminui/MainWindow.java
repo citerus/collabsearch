@@ -25,7 +25,7 @@ public class MainWindow extends Window implements LoginListener, ViewSwitchContr
 	private SearchOperationEditView searchOperationEditView;
 
 	public MainWindow() {
-		setCaption("Missing People - Login");
+		setCaption("Collaborative Search - Inloggning");
 		if (LookingForApp.getInstance().getUser() == null) {
 			switchToLoginView();
 		} else {

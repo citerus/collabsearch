@@ -111,9 +111,19 @@
 			<version>1.0.0.GA</version> <classifier>sources</classifier> <scope>provided</scope> 
 			</dependency> -->
 		<dependency>
-		  	<groupId>tomcat</groupId>
-		  	<artifactId>servlet-api</artifactId>
-		  	<version>5.5.23</version>
+			<groupId>tomcat</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>5.5.23</version>
+		</dependency>
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>vaadin</artifactId>
+			<version>${vaadin.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mongodb</groupId>
+			<artifactId>mongo-java-driver</artifactId>
+			<version>2.7.3</version>
 		</dependency>
 	</dependencies>
 

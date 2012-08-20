@@ -178,5 +178,7 @@
     <module>collabsearch-adminui</module>
     <module>collabsearch-api</module>
     <module>collabsearch-publicwebsite</module>
+    <module>collabsearch-model</module>
+    <module>collabsearch-store</module>
   </modules>
 </project>

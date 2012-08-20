@@ -1,6 +1,8 @@
 package se.citerus.collabsearch.api;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
@@ -17,14 +19,20 @@ public class RestServiceImpl implements RestService {
 	@Path("/hello")
 	@Produces(MediaType.TEXT_PLAIN)
 	public String hello() {
-		return "Hello world!";
+		return "Hello world!" + "\n";
 	}
 
 	@GET
 	@Path("/getAllOps")
 	@Produces(MediaType.TEXT_PLAIN)
-	public List<String> getAllOps() {
-		List<String> list = Arrays.asList("Sökop 1", "Sökop 2", "Sökop 3");
+	public List<SearchOperationDTO> getAllOps() {
+		List<SearchOperationDTO> list = new ArrayList<SearchOperationDTO>();
+		list.add(new SearchOperationDTO("Sökoperation 1", "text...", new Date(
+				System.currentTimeMillis()), "Plats X"));
+		list.add(new SearchOperationDTO("Sökoperation 2", "text...", new Date(
+				System.currentTimeMillis() + 86400000), "Plats Y"));
+		list.add(new SearchOperationDTO("Sökoperation 3", "text...", new Date(
+				System.currentTimeMillis() + 86400000 * 2), "Plats Z"));
 		return list;
 	}
 
@@ -33,7 +41,17 @@ public class RestServiceImpl implements RestService {
 	@Produces(MediaType.TEXT_PLAIN)
 	@Consumes(MediaType.TEXT_PLAIN)
 	public String echo(@PathParam("input") String input) {
-		return "Hello " + input;
+		return "Hello " + input + "\n";
+	}
+
+	@GET
+	@Path("/getSeaOp/{name}")
+	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+	@Consumes(MediaType.TEXT_PLAIN)
+	public SearchOperationDTO getSearchOperation(@PathParam("name") String name) {
+		SearchOperationDTO op = new SearchOperationDTO(name, "beskrivning här",
+				new Date(System.currentTimeMillis()), "Plats XYZ");
+		return op;
 	}
 
 }

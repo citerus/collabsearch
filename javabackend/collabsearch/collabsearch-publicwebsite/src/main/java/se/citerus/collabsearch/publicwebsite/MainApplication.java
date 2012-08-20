@@ -15,10 +15,10 @@
  */
 package se.citerus.collabsearch.publicwebsite;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import com.vaadin.Application;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Label;
 import com.vaadin.ui.Window;
 
 /**
@@ -28,21 +28,30 @@ import com.vaadin.ui.Window;
 public class MainApplication extends Application {
 	private Window mainWindow;
 
+	private static ThreadLocal<MainApplication> threadLocal = new ThreadLocal<MainApplication>();
+	
 	@Override
 	public void init() {
-		mainWindow = new Window("My Vaadin Application");
+		mainWindow = new Window("Collaborative Search");
 		setMainWindow(mainWindow);
-		Button button = new Button("Click Me");
-		button.addListener(new Button.ClickListener() {
-			public void buttonClick(ClickEvent event) {
-				mainWindow.addComponent(new Label("Thank you for clicking"));
-			}
-		});
-		mainWindow.addComponent(button);
 		
-		//init Model
-		//init View
-		//init Controller
+		Controller controller = new Controller(mainWindow);
+	}
+	
+	public static MainApplication getInstance() {
+		return threadLocal.get();
+	}
+	
+	public static void setInstance(MainApplication mainApplication) {
+		threadLocal.set(mainApplication);
+	}
+	
+	public void onRequestStart(HttpServletRequest request, HttpServletResponse response) {
+		MainApplication.setInstance(this);
+	}
+	
+	public void onRequestEnd(HttpServletRequest request, HttpServletResponse response) {
+		threadLocal.remove();
 	}
 
 }

@@ -1,10 +1,6 @@
 package se.citerus.collabsearch.api;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
-
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -24,16 +20,16 @@ public class RestServiceImpl implements RestService {
 
 	@GET
 	@Path("/getAllOps")
-	@Produces(MediaType.TEXT_PLAIN)
-	public List<SearchOperationDTO> getAllOps() {
-		List<SearchOperationDTO> list = new ArrayList<SearchOperationDTO>();
-		list.add(new SearchOperationDTO("Sökoperation 1", "text...", new Date(
-				System.currentTimeMillis()), "Plats X"));
-		list.add(new SearchOperationDTO("Sökoperation 2", "text...", new Date(
-				System.currentTimeMillis() + 86400000), "Plats Y"));
-		list.add(new SearchOperationDTO("Sökoperation 3", "text...", new Date(
-				System.currentTimeMillis() + 86400000 * 2), "Plats Z"));
-		return list;
+	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+	public SearchOperationDTO[] getAllOps() {
+		SearchOperationDTO[] array = new SearchOperationDTO[3];
+		array[0] = new SearchOperationDTO("Sökoperation 1", "text...", new Date(
+				System.currentTimeMillis()), "Plats X");
+		array[1] = new SearchOperationDTO("Sökoperation 2", "text...", new Date(
+				System.currentTimeMillis() + 86400000), "Plats Y");
+		array[2] = new SearchOperationDTO("Sökoperation 3", "text...", new Date(
+				System.currentTimeMillis() + 86400000 * 2), "Plats Z");
+		return array;
 	}
 
 	@GET

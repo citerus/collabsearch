@@ -1,0 +1,5 @@
+#surefire
+#Mon Aug 20 14:25:47 CEST 2012
+user.dir=/home/ola/workspace/j2ee/lookingfor/javabackend/collabsearch/collabsearch-publicwebsite
+localRepository=/home/ola/.m2/repository
+basedir=/home/ola/workspace/j2ee/lookingfor/javabackend/collabsearch/collabsearch-publicwebsite

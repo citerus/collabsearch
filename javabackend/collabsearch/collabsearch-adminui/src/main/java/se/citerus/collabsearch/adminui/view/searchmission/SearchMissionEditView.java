@@ -63,7 +63,7 @@ public class SearchMissionEditView extends CustomComponent {
 		//save and store search mission (including files and ops) 
 		saveButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				saveData(listener);
+				saveSearchMissionData(listener);
 			}
 		});
 		//cancel actions and return to search mission list
@@ -441,7 +441,7 @@ public class SearchMissionEditView extends CustomComponent {
 		}
 	}
 	
-	private void saveData(final ViewSwitchController listener) {
+	private void saveSearchMissionData(final ViewSwitchController listener) {
 		//popup dialogue here?
 		if (fieldsValid()) {
 			SearchMissionService handler = null;

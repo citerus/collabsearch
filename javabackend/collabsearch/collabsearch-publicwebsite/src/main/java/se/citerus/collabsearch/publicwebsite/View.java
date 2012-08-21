@@ -1,6 +1,7 @@
 package se.citerus.collabsearch.publicwebsite;
 
 import com.vaadin.ui.Window;
+import com.vaadin.ui.Window.Notification;
 
 public class View {
 
@@ -12,10 +13,14 @@ public class View {
 		this.listener = listener;
 		this.mainWindow = mainWindow;
 		
-		opsListView = new OperationsListView();
+		opsListView = new OperationsListView(listener);
 		
 		//set starting view
 		mainWindow.setContent(opsListView);
+	}
+	
+	public void showErrorMessage(String header, String message) {
+		mainWindow.showNotification(header, message, Notification.TYPE_ERROR_MESSAGE);
 	}
 
 }

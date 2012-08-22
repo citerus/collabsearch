@@ -5,6 +5,7 @@ import java.util.List;
 
 import se.citerus.collabsearch.adminui.DAL.UserDAL;
 import se.citerus.collabsearch.adminui.DAL.UserDALMongoDB;
+import se.citerus.collabsearch.model.User;
 
 public class UserService { //TODO refactor into spring service
 

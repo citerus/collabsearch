@@ -1,4 +1,4 @@
-package se.citerus.collabsearch.adminui.logic;
+package se.citerus.collabsearch.model;
 
 import java.util.ArrayList;
 import java.util.List;

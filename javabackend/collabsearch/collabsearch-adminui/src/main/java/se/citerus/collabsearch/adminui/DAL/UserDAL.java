@@ -3,7 +3,7 @@ package se.citerus.collabsearch.adminui.DAL;
 import java.io.IOException;
 import java.util.List;
 
-import se.citerus.collabsearch.adminui.logic.User;
+import se.citerus.collabsearch.model.User;
 
 /**
  * A facade for separating the higher levels from the db specific code.

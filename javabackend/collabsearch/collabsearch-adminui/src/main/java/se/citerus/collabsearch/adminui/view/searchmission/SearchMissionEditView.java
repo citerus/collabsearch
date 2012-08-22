@@ -4,12 +4,12 @@ import java.io.File;
 import java.util.List;
 
 import se.citerus.collabsearch.adminui.ViewSwitchController;
-import se.citerus.collabsearch.adminui.logic.FileMetadata;
 import se.citerus.collabsearch.adminui.logic.FileUploadHandler;
-import se.citerus.collabsearch.adminui.logic.SearchMission;
 import se.citerus.collabsearch.adminui.logic.SearchMissionService;
-import se.citerus.collabsearch.adminui.logic.SearchOperation;
-import se.citerus.collabsearch.adminui.logic.Status;
+import se.citerus.collabsearch.model.FileMetadata;
+import se.citerus.collabsearch.model.SearchMission;
+import se.citerus.collabsearch.model.SearchOperation;
+import se.citerus.collabsearch.model.Status;
 
 import com.vaadin.data.Container;
 import com.vaadin.data.util.BeanContainer;

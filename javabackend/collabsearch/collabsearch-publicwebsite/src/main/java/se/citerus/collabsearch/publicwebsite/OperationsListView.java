@@ -3,6 +3,9 @@ package se.citerus.collabsearch.publicwebsite;
 import java.util.ArrayList;
 import java.util.List;
 
+import se.citerus.collabsearch.model.SearchOperationDTO;
+import se.citerus.collabsearch.model.validator.PhoneNumberValidator;
+
 import com.vaadin.data.validator.EmailValidator;
 import com.vaadin.data.validator.StringLengthValidator;
 import com.vaadin.ui.Button;
@@ -25,6 +28,7 @@ public class OperationsListView extends CustomComponent {
 	private VerticalLayout listLayout;
 	private final ControllerListener listener;
 	private List<Component> componentsList;
+	private List<Component> expandedComponents;
 	private Window subWindow;
 	private TextField nameField;
 	private TextField teleField;
@@ -42,6 +46,7 @@ public class OperationsListView extends CustomComponent {
 		setCompositionRoot(mainLayout);
 		
 		componentsList = new ArrayList<Component>();
+		expandedComponents = new ArrayList<Component>();
 		
 		applyButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
@@ -62,13 +67,12 @@ public class OperationsListView extends CustomComponent {
 		
 		searchButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				String searchString = (String) searchField.getValue();
-				listener.getSearchOpsByName(searchString);
+				simpleSearch();
 			}
 		});
 		advSearchButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				
+				advancedSearch();
 			}
 		});
 		
@@ -147,9 +151,8 @@ public class OperationsListView extends CustomComponent {
 		nameField.setImmediate(true);
 		
 		teleField = new TextField("Tele");
-		//TODO add dependency to collabsearch-model
-//		teleField.addValidator(new PhoneNumberValidator("Telefonnummer " +
-//				"får ej innehålla andra tecken än siffror och mellanslag"));
+		teleField.addValidator(new PhoneNumberValidator("Telefonnummer " +
+				"får ej innehålla andra tecken än siffror och mellanslag"));
 		teleField.setRequired(true);
 		teleField.setImmediate(true);
 		
@@ -173,32 +176,43 @@ public class OperationsListView extends CustomComponent {
 		clearRowComponents();
 		
 		//requery db for searchops list
-		SearchOperationDTO[] opsArray = listener.getAllSearchOps(); //TODO fetch only titles/short descrs
+		SearchOperationDTO[] opsArray = listener.getAllSearchOpsIntros(); //TODO fetch only titles/short descrs
 		for (int i = 0; i < opsArray.length; i++) {
 			SearchOperationDTO dto = opsArray[i];
 			addRowComponent(dto.getTitle(), dto.getDescr(), "Läs mer");
 		}
 	}
 
-	private Component buildListRowComponent(String header, String descr, 
-			String buttonText, ClickListener clickListener) {
+	private Component buildListRowComponent(String opTitle, String opDescr, 
+			String buttonText, ClickListener lowerRightClickListener, ClickListener contractClickListener) {
 		Panel panel = new Panel();
 		panel.setWidth("100%");
-		panel.setData(header);
+		panel.setData(opTitle);
 		
 		VerticalLayout layout = new VerticalLayout();
 		layout.setWidth("100%");
 		
-		Label headerLabel = new Label("<h2><b>" + header + "</b></h2>");
-		headerLabel.setContentMode(Label.CONTENT_XHTML);
-		layout.addComponent(headerLabel);
+		HorizontalLayout topLayout = new HorizontalLayout();
+		topLayout.setWidth("100%");
 		
-		Label descrLabel = new Label(descr);
+		Label headerLabel = new Label("<h2><b>" + opTitle + "</b></h2>");
+		headerLabel.setContentMode(Label.CONTENT_XHTML);
+		topLayout.addComponent(headerLabel);
+		
+		if (contractClickListener != null) {
+			Button contractButton = new Button("Minimera", contractClickListener);
+			topLayout.addComponent(contractButton);
+			topLayout.setComponentAlignment(contractButton, Alignment.TOP_RIGHT);
+		}
+		
+		layout.addComponent(topLayout);
+		
+		Label descrLabel = new Label(opDescr);
 		layout.addComponent(descrLabel);
 		
-		Button readMoreButton = new Button(buttonText, clickListener);
-		layout.addComponent(readMoreButton);
-		layout.setComponentAlignment(readMoreButton, Alignment.BOTTOM_RIGHT);
+		Button lowerRightButton = new Button(buttonText, lowerRightClickListener);
+		layout.addComponent(lowerRightButton);
+		layout.setComponentAlignment(lowerRightButton, Alignment.BOTTOM_RIGHT);
 		
 		panel.setContent(layout);
 		return panel;
@@ -206,45 +220,63 @@ public class OperationsListView extends CustomComponent {
 
 	/**
 	 * Adds a new row component to the UI and to the underlying component list.
-	 * @param header the title (a search operation name) of the row
+	 * @param opTitle the title (a search operation name) of the row
 	 * @param descr the body (a short description) of the row
 	 * @param buttonText the text of the "Show more" button
 	 */
-	private void addRowComponent(final String header, String descr, String buttonText) {
+	private void addRowComponent(final String opTitle, String descr, String buttonText) {
 		Component listRowComponent = buildListRowComponent(
-			header, descr, buttonText, 
-			new ClickListener() {
-				public void buttonClick(ClickEvent event) {
-					SearchOperationDTO dto = listener.fireReadMoreEvent(header);
-					expandRowComponent(header, dto);
-				}
-			}
+			opTitle, descr, buttonText,
+			new ReadMoreClickListener(opTitle),
+			null
 		);
 		componentsList.add(listRowComponent);
 		listLayout.addComponent(listRowComponent);
 	}
 
-	private void expandRowComponent(final String header, SearchOperationDTO dto) {
+	private void expandRowComponent(final String opTitle, SearchOperationDTO dto) {
+		Component oldComponent = getOldComponent(opTitle, componentsList);
+		Component newComponent = buildListRowComponent(
+			dto.getTitle(), dto.getDescr(), "Anmäl mig", 
+			new ApplyMeClickListener(opTitle), 
+			new ContractClickListener(opTitle)
+		);
+		listLayout.replaceComponent(oldComponent, newComponent);
+		componentsList.set(componentsList.indexOf(oldComponent), newComponent);
+		expandedComponents.add(oldComponent);
+	}
+
+	private void contractRowComponent(String opTitle) {
+		Component oldComponent = getOldComponent(opTitle, componentsList);
+		Component newComponent = getExpandedComponent(opTitle, expandedComponents);
+		listLayout.replaceComponent(oldComponent, newComponent);
+		componentsList.set(componentsList.indexOf(oldComponent), newComponent);
+	}
+
+	private Component getOldComponent(final String opTitle, List<Component> list) {
 		Component oldComponent = null;
-		for (Component comp : componentsList) {
+		for (Component comp : list) {
 			Panel panel = (Panel) comp;
 			String name = (String) panel.getData();
-			if (name.equals(header)) {
+			if (name.equals(opTitle)) {
 				oldComponent = comp;
 				break;
 			}
 		}
-		Component newComponent = buildListRowComponent(
-			dto.getTitle(), dto.getDescr(), "Anmäl mig", 
-			new ClickListener() {
-				public void buttonClick(ClickEvent event) {
-					selectedOp = header;
-					getWindow().addWindow(subWindow);
-				}
+		return oldComponent;
+	}
+	
+	private Component getExpandedComponent(String opTitle, List<Component> list) {
+		Component oldComponent = null;
+		for (int i = 0; i < list.size(); i++) {
+			Panel panel = (Panel) list.get(i);
+			String name = (String) panel.getData();
+			if (name.equals(opTitle)) {
+				oldComponent = list.remove(i);
+				break;
 			}
-		);
-		listLayout.replaceComponent(oldComponent, newComponent);
-		componentsList.set(componentsList.indexOf(oldComponent), newComponent);
+		}
+		return oldComponent;
 	}
 
 	/**
@@ -263,11 +295,44 @@ public class OperationsListView extends CustomComponent {
 		subWindow.getParent().removeWindow(subWindow);
 	}
 
-	private interface ApplyMeClickListener extends ClickListener {
-		public void buttonClick(ClickEvent event);
+	private void simpleSearch() { //TODO implement simple search
+		String searchString = (String) searchField.getValue();
+		listener.getSearchOpsByName(searchString);
+	}
+	
+	protected void advancedSearch() { //TODO implement adv search
+		
 	}
 
-	private interface ReadMoreClickListener extends ClickListener {
-		public void buttonClick(ClickEvent event);
+	private class ApplyMeClickListener implements ClickListener {
+		private final String opTitle;
+		public ApplyMeClickListener(String opTitle) {
+			this.opTitle = opTitle;
+		}
+		public void buttonClick(ClickEvent event) {
+			selectedOp = opTitle;
+			OperationsListView.this.getWindow().addWindow(subWindow);
+		}
+	}
+
+	private class ReadMoreClickListener implements ClickListener {
+		private final String opTitle;
+		public ReadMoreClickListener(String opTitle) {
+			this.opTitle = opTitle;
+		}
+		public void buttonClick(ClickEvent event) {
+			SearchOperationDTO dto = listener.fireReadMoreEvent(opTitle);
+			expandRowComponent(opTitle, dto);
+		}
+	}
+	
+	private class ContractClickListener implements ClickListener {
+		private final String opTitle;
+		public ContractClickListener(String opTitle) {
+			this.opTitle = opTitle;
+		}
+		public void buttonClick(ClickEvent event) {
+			contractRowComponent(opTitle);
+		}
 	}
 }

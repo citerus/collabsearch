@@ -7,6 +7,10 @@ import java.util.List;
 import se.citerus.collabsearch.adminui.DAL.SearchMissionDAL;
 import se.citerus.collabsearch.adminui.DAL.SearchMissionDALInMemory;
 import se.citerus.collabsearch.adminui.DAL.SearchMissionDALMongoDB;
+import se.citerus.collabsearch.model.FileMetadata;
+import se.citerus.collabsearch.model.SearchMission;
+import se.citerus.collabsearch.model.SearchOperation;
+import se.citerus.collabsearch.model.Status;
 
 public class SearchMissionService { //TODO refactor into spring service
 	

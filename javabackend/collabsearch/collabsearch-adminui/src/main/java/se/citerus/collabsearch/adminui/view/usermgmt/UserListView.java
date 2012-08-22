@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.util.List;
 
 import se.citerus.collabsearch.adminui.ViewSwitchController;
-import se.citerus.collabsearch.adminui.logic.User;
 import se.citerus.collabsearch.adminui.logic.UserService;
+import se.citerus.collabsearch.model.User;
 
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;

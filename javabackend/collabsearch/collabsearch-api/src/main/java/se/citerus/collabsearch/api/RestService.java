@@ -1,6 +1,6 @@
 package se.citerus.collabsearch.api;
 
-import java.util.List;
+import se.citerus.collabsearch.model.SearchOperationDTO;
 
 public interface RestService {
 

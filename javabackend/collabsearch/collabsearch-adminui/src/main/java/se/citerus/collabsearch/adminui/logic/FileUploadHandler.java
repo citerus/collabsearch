@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 
 import se.citerus.collabsearch.adminui.ViewSwitchController;
+import se.citerus.collabsearch.model.FileMetadata;
 
 import com.vaadin.data.util.BeanContainer;
 import com.vaadin.ui.Upload;

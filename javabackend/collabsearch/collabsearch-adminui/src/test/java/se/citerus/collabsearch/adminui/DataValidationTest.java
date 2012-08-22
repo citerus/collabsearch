@@ -8,9 +8,9 @@ import java.util.GregorianCalendar;
 
 import org.junit.Test;
 
-import se.citerus.collabsearch.adminui.logic.DateValidator;
-import se.citerus.collabsearch.adminui.logic.PhoneNumberValidator;
-import se.citerus.collabsearch.adminui.logic.PriorityNumberValidator;
+import se.citerus.collabsearch.model.validator.DateValidator;
+import se.citerus.collabsearch.model.validator.PhoneNumberValidator;
+import se.citerus.collabsearch.model.validator.PriorityNumberValidator;
 
 import com.vaadin.data.Validator;
 import com.vaadin.data.Validator.InvalidValueException;

@@ -12,6 +12,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
+import se.citerus.collabsearch.model.SearchOperationDTO;
+
 @Path("/ws")
 public class RestServiceImpl implements RestService {
 

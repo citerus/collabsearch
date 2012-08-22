@@ -4,6 +4,9 @@
         <wb-resource deploy-path="/" source-path="/src/main/webapp" tag="defaultRootSource"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/test/java"/>
+        <dependent-module archiveName="collabsearch-model-1.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/collabsearch-model/collabsearch-model">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
         <property name="context-root" value="collabsearch-publicwebsite"/>
         <property name="java-output-path" value="/collabsearch-publicwebsite/target/classes"/>
     </wb-module>

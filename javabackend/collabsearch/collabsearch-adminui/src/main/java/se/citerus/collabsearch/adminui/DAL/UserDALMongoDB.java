@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import se.citerus.collabsearch.adminui.logic.User;
+import se.citerus.collabsearch.model.User;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;

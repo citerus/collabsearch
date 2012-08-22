@@ -3,8 +3,8 @@ package se.citerus.collabsearch.adminui.view.searchmission;
 import java.util.List;
 
 import se.citerus.collabsearch.adminui.ViewSwitchController;
-import se.citerus.collabsearch.adminui.logic.SearchMission;
 import se.citerus.collabsearch.adminui.logic.SearchMissionService;
+import se.citerus.collabsearch.model.SearchMission;
 
 import com.vaadin.data.util.BeanContainer;
 import com.vaadin.ui.Alignment;

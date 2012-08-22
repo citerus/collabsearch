@@ -1,4 +1,4 @@
-package se.citerus.collabsearch.adminui.logic;
+package se.citerus.collabsearch.model.validator;
 
 import java.text.DateFormat;
 import java.text.ParseException;

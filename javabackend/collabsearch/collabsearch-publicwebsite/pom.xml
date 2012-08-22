@@ -115,6 +115,11 @@
 			<groupId>javax.validation</groupId> <artifactId>validation-api</artifactId> 
 			<version>1.0.0.GA</version> <classifier>sources</classifier> <scope>provided</scope> 
 			</dependency> -->
+		<dependency>
+			<groupId>se.citerus</groupId>
+			<artifactId>collabsearch-model</artifactId>
+			<version>1.0</version>
+		</dependency>
 	</dependencies>
 
 </project>

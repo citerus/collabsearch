@@ -5,9 +5,9 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 
 import se.citerus.collabsearch.adminui.ViewSwitchController;
-import se.citerus.collabsearch.adminui.logic.DateValidator;
 import se.citerus.collabsearch.adminui.logic.SearchMissionService;
-import se.citerus.collabsearch.adminui.logic.SearchOperation;
+import se.citerus.collabsearch.model.SearchOperation;
+import se.citerus.collabsearch.model.validator.DateValidator;
 
 import com.vaadin.data.Validator;
 import com.vaadin.data.Validator.InvalidValueException;

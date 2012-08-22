@@ -16,8 +16,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import se.citerus.collabsearch.adminui.logic.Authenticator;
-import se.citerus.collabsearch.adminui.logic.User;
 import se.citerus.collabsearch.adminui.logic.UserService;
+import se.citerus.collabsearch.model.User;
 
 /**
  * Unit tests for the user management.

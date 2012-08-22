@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import se.citerus.collabsearch.adminui.logic.User;
+import se.citerus.collabsearch.model.User;
 
 public class UserDALInMemory implements UserDAL {
 	

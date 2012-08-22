@@ -1,4 +1,4 @@
-package org.collabsearch.model;
+package se.citerus.collabsearch.model.validator;
 
 import com.vaadin.data.Validator;;
 
@@ -10,7 +10,7 @@ public class PhoneNumberValidator implements Validator {
 	public PhoneNumberValidator(String errorMessage) {
 		this.errorMessage = errorMessage;
 	}
-
+	
 	public void validate(Object value) throws InvalidValueException {
 		if (value != null) {
 			String strVal = ((String)value);

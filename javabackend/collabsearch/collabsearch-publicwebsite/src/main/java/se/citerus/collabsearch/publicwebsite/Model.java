@@ -2,6 +2,8 @@ package se.citerus.collabsearch.publicwebsite;
 
 import java.util.Date;
 
+import se.citerus.collabsearch.model.SearchOperationDTO;
+
 public class Model {
 	private ControllerListener listener;
 

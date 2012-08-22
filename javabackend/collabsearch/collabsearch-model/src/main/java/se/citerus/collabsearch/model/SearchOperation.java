@@ -1,27 +1,18 @@
-package se.citerus.collabsearch.api;
+package se.citerus.collabsearch.model;
 
 import java.util.Date;
 
-import javax.xml.bind.annotation.XmlRootElement;
-
-@XmlRootElement
-public class SearchOperationDTO {
+public class SearchOperation {
 	String title;
 	String descr;
 	Date date;
 	String location;
 	
-	public SearchOperationDTO() {
-		//serialization ctor, intentionally left empty
-	}
-	
-	public SearchOperationDTO(String title, String descr, Date date,
-			String location) {
+	public SearchOperation(String title, String descr, Date date) {
 		super();
 		this.title = title;
 		this.descr = descr;
 		this.date = date;
-		this.location = location;
 	}
 
 	public String getTitle() {
@@ -47,12 +38,10 @@ public class SearchOperationDTO {
 	public void setDate(Date date) {
 		this.date = date;
 	}
-
-	public String getLocation() {
-		return location;
+	
+	@Override
+	public String toString() {
+		return title + ", " + descr + ", " + date.toString();
 	}
-
-	public void setLocation(String location) {
-		this.location = location;
-	}
+	
 }

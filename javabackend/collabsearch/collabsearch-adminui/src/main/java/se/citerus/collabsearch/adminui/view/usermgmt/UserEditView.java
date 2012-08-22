@@ -3,9 +3,9 @@ package se.citerus.collabsearch.adminui.view.usermgmt;
 import java.util.List;
 
 import se.citerus.collabsearch.adminui.ViewSwitchController;
-import se.citerus.collabsearch.adminui.logic.PhoneNumberValidator;
-import se.citerus.collabsearch.adminui.logic.User;
 import se.citerus.collabsearch.adminui.logic.UserService;
+import se.citerus.collabsearch.model.User;
+import se.citerus.collabsearch.model.validator.PhoneNumberValidator;
 
 import com.vaadin.data.validator.EmailValidator;
 import com.vaadin.data.validator.StringLengthValidator;

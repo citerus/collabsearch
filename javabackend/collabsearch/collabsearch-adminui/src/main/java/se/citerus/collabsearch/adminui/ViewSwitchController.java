@@ -2,8 +2,8 @@ package se.citerus.collabsearch.adminui;
 
 import com.vaadin.data.util.BeanItemContainer;
 
-import se.citerus.collabsearch.adminui.logic.SearchOperation;
-import se.citerus.collabsearch.adminui.logic.User;
+import se.citerus.collabsearch.model.SearchOperation;
+import se.citerus.collabsearch.model.User;
 
 public interface ViewSwitchController {
 	

@@ -7,10 +7,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import se.citerus.collabsearch.adminui.logic.FileMetadata;
-import se.citerus.collabsearch.adminui.logic.SearchMission;
-import se.citerus.collabsearch.adminui.logic.SearchOperation;
-import se.citerus.collabsearch.adminui.logic.Status;
+import se.citerus.collabsearch.model.FileMetadata;
+import se.citerus.collabsearch.model.SearchMission;
+import se.citerus.collabsearch.model.SearchOperation;
+import se.citerus.collabsearch.model.Status;
 
 public class SearchMissionDALInMemory implements SearchMissionDAL {
 	

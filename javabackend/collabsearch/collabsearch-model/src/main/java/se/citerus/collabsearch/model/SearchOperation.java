@@ -7,7 +7,7 @@ public class SearchOperation {
 	String descr;
 	Date date;
 	String location;
-	
+
 	public SearchOperation(String title, String descr, Date date) {
 		super();
 		this.title = title;

@@ -1,6 +1,7 @@
 package se.citerus.collabsearch.publicwebsite;
 
 import se.citerus.collabsearch.model.SearchOperationDTO;
+import se.citerus.collabsearch.model.SearchOperationIntro;
 
 import com.vaadin.ui.Window;
 
@@ -23,7 +24,7 @@ public class Controller implements ControllerListener {
 		model.submitSearchOpApplication(selectedOp, name, tele, email);
 	}
 
-	public SearchOperationDTO[] getAllSearchOpsIntros() {
+	public SearchOperationIntro[] getAllSearchOpsIntros() {
 		return model.getAllSearchOps();
 	}
 
@@ -31,8 +32,13 @@ public class Controller implements ControllerListener {
 		view.showErrorMessage(errorHeader, errorMessage);
 	}
 
-	public SearchOperationDTO[] getSearchOpsByName(String searchString) {
+	public SearchOperationIntro[] getSearchOpsByName(String searchString) {
 		return model.getSearchOpsByName(searchString);
+	}
+
+	public SearchOperationIntro[] getSearchOpsByFilter(String name,
+			String location, String date) {
+		return model.getSearchOpsByFilter(name, location, date);
 	}
 
 }

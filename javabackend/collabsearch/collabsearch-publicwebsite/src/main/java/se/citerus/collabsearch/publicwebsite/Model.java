@@ -3,15 +3,18 @@ package se.citerus.collabsearch.publicwebsite;
 import java.util.Date;
 
 import se.citerus.collabsearch.model.SearchOperationDTO;
+import se.citerus.collabsearch.model.SearchOperationIntro;
 
 public class Model {
+
 	private ControllerListener listener;
+	private RestClient restClient;
 
 	public Model(ControllerListener listener) {
 		this.listener = listener;
 	}
 
-	public SearchOperationDTO getSearchOpByName(String header) {
+	public SearchOperationDTO getSearchOpByName(String header){
 		return new SearchOperationDTO(
 				header,
 				"Lorem ipsum dolor sit amet, consectetur adipisicing elit, "
@@ -32,7 +35,7 @@ public class Model {
 	}
 
 	public void submitSearchOpApplication(String selectedOp, String name,
-			String tele, String email) {
+			String tele, String email){
 		int responseCode = 200; //XXX DEBUGVALUE
 		System.out.println("Received application for searchop " + selectedOp
 				+ " from " + name + " with tele " + tele + " and email " + email);
@@ -41,21 +44,24 @@ public class Model {
 		}
 	}
 
-	public SearchOperationDTO[] getAllSearchOps() {
-		SearchOperationDTO[] array = new SearchOperationDTO[6];
+	public SearchOperationIntro[] getAllSearchOps(){
+		SearchOperationIntro[] array = new SearchOperationIntro[6];
 		for (int i = 0; i < array.length; i++) {
-			array[i] = new SearchOperationDTO(
-					"Sökoperation " + (i+1),
-					"kort beskrivning", 
-					new Date(System.currentTimeMillis()),
-					"Plats XYZ");
+			array[i] = new SearchOperationIntro(
+				"Sökoperation " + (i+1), "kort beskrivning");
 		}
 		return array;
 	}
 
-	public SearchOperationDTO[] getSearchOpsByName(String searchString) {
-		SearchOperationDTO[] array = null;
+	public SearchOperationIntro[] getSearchOpsByName(String searchString){
+		SearchOperationIntro[] array = new SearchOperationIntro[1];
+		array[0] = new SearchOperationIntro("Sökoperation X", "kort beskrivning av Sökoperation X här...");
 		return array;
 	}
 
+	public SearchOperationIntro[] getSearchOpsByFilter(String name,
+			String location, String date){
+		SearchOperationIntro[] array = null;
+		return array;
+	}
 }

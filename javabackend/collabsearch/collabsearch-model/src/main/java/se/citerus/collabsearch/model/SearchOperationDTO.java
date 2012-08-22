@@ -1,7 +1,6 @@
 package se.citerus.collabsearch.model;
 
 import java.util.Date;
-
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
@@ -10,11 +9,11 @@ public class SearchOperationDTO {
 	String descr;
 	Date date;
 	String location;
-	
+
 	public SearchOperationDTO() {
 		//serialization ctor, intentionally left empty
 	}
-	
+
 	public SearchOperationDTO(String title, String descr, Date date,
 			String location) {
 		super();

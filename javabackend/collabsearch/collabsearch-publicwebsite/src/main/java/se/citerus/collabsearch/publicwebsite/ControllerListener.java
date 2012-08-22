@@ -1,6 +1,7 @@
 package se.citerus.collabsearch.publicwebsite;
 
 import se.citerus.collabsearch.model.SearchOperationDTO;
+import se.citerus.collabsearch.model.SearchOperationIntro;
 
 public interface ControllerListener {
 
@@ -9,13 +10,16 @@ public interface ControllerListener {
 	void submitSearchOpApplication(String selectedOp, String name, String tele, String email);
 
 	/**
-	 * 
-	 * @return all currently stored search operations.
+	 * Queries for a list of short introductions to all available Search Operations.
+	 * @return introductory texts for all currently stored search operations.
 	 */
-	SearchOperationDTO[] getAllSearchOpsIntros();
+	SearchOperationIntro[] getAllSearchOpsIntros();
 
-	void showErrorMessage(String string, String string2);
+	void showErrorMessage(String errorHeader, String errorMessage);
 
-	SearchOperationDTO[] getSearchOpsByName(String searchString);
+	SearchOperationIntro[] getSearchOpsByName(String searchString);
+
+	SearchOperationIntro[] getSearchOpsByFilter(String name, String location,
+			String date);
 
 }

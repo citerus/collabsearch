@@ -1,9 +1,11 @@
 package se.citerus.collabsearch.publicwebsite;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import se.citerus.collabsearch.model.SearchOperationDTO;
+import se.citerus.collabsearch.model.SearchOperationIntro;
 import se.citerus.collabsearch.model.validator.PhoneNumberValidator;
 
 import com.vaadin.data.validator.EmailValidator;
@@ -29,7 +31,8 @@ public class OperationsListView extends CustomComponent {
 	private final ControllerListener listener;
 	private List<Component> componentsList;
 	private List<Component> expandedComponents;
-	private Window subWindow;
+	private Window applyWindow;
+	private Window advSearchWindow;
 	private TextField nameField;
 	private TextField teleField;
 	private TextField emailField;
@@ -38,7 +41,11 @@ public class OperationsListView extends CustomComponent {
 	private String selectedOp;
 	private Button searchButton;
 	private TextField searchField;
-	private Button advSearchButton;
+	private Button advSearchPopupButton;
+	private TextField titleQueryField;
+	private TextField locationQueryField;
+	private TextField dateQueryField;
+	private Button advSearchCommitButton;
 
 	public OperationsListView(final ControllerListener listener) {
 		this.listener = listener;
@@ -67,10 +74,10 @@ public class OperationsListView extends CustomComponent {
 		
 		searchButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				simpleSearch();
+				titleSearch();
 			}
 		});
-		advSearchButton.addListener(new ClickListener() {
+		advSearchPopupButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
 				advancedSearch();
 			}
@@ -78,12 +85,17 @@ public class OperationsListView extends CustomComponent {
 		
 		resetView(); //TODO debug only, remove later
 	}
-
-	protected boolean allFieldsValid() {
-		if (nameField.isValid() && teleField.isValid() && emailField.isValid()) {
-			return true;
+	
+	public void resetView() {
+		//empty list and table
+		clearRowComponents();
+		
+		//requery db for searchops list
+		SearchOperationIntro[] opsArray = listener.getAllSearchOpsIntros();
+		for (int i = 0; i < opsArray.length; i++) {
+			SearchOperationIntro dto = opsArray[i];
+			addRowComponent(dto.getTitle(), dto.getDescr(), "Läs mer");
 		}
-		return false;
 	}
 
 	private void buildMainLayout() {
@@ -103,6 +115,9 @@ public class OperationsListView extends CustomComponent {
 		
 		//build "ApplyMe" popup window
 		buildPopupWindow();
+		
+		//build Advanced Search popup window
+		buildAdvSearchWindow();
 	}
 
 	private void buildTopLayout() {
@@ -126,8 +141,8 @@ public class OperationsListView extends CustomComponent {
 		searchButton = new Button("Sök");
 		topRightLayout.addComponent(searchButton);
 		
-		advSearchButton = new Button("Avancerad sökning");
-		topRightLayout.addComponent(advSearchButton);
+		advSearchPopupButton = new Button("Avancerad sökning");
+		topRightLayout.addComponent(advSearchPopupButton);
 		
 		topLayout.addComponent(topLeftLayout);
 		topLayout.addComponent(topRightLayout);
@@ -137,10 +152,10 @@ public class OperationsListView extends CustomComponent {
 	}
 
 	private void buildPopupWindow() {
-		subWindow = new Window("Anmälning");
-		subWindow.setModal(true);
+		applyWindow = new Window("Anmälning");
+		applyWindow.setModal(true);
 		
-		VerticalLayout layout = (VerticalLayout) subWindow.getContent();
+		VerticalLayout layout = (VerticalLayout) applyWindow.getContent();
 		layout.setMargin(true);
 		layout.setSpacing(true);
 		
@@ -170,21 +185,35 @@ public class OperationsListView extends CustomComponent {
 		layout.addComponent(applyButton);
 		layout.addComponent(cancelButton);
 	}
-
-	public void resetView() {
-		//empty list and table
-		clearRowComponents();
+	
+	private void buildAdvSearchWindow() {
+		advSearchWindow = new Window("Avancerad sökning");
+		advSearchWindow.setModal(true);
 		
-		//requery db for searchops list
-		SearchOperationDTO[] opsArray = listener.getAllSearchOpsIntros(); //TODO fetch only titles/short descrs
-		for (int i = 0; i < opsArray.length; i++) {
-			SearchOperationDTO dto = opsArray[i];
-			addRowComponent(dto.getTitle(), dto.getDescr(), "Läs mer");
-		}
+		VerticalLayout layout = (VerticalLayout) advSearchWindow.getContent();
+		layout.setMargin(true);
+		layout.setSpacing(true);
+		
+		titleQueryField = new TextField();
+		titleQueryField.setInputPrompt("Namn på uppdrag");
+		titleQueryField.setNullRepresentation("");
+		layout.addComponent(titleQueryField);
+		
+		locationQueryField = new TextField();
+		locationQueryField.setInputPrompt("Ort för uppdrag");
+		locationQueryField.setNullRepresentation("");
+		layout.addComponent(locationQueryField);
+		
+		dateQueryField = new TextField();
+		dateQueryField.setInputPrompt("Datum för uppdrag");
+		layout.addComponent(dateQueryField);
+		
+		advSearchCommitButton = new Button("Sök");
+		layout.addComponent(advSearchCommitButton);
 	}
 
-	private Component buildListRowComponent(String opTitle, String opDescr, 
-			String buttonText, ClickListener lowerRightClickListener, ClickListener contractClickListener) {
+	private Component buildContractedListRowComponent(String opTitle, String opDescr, 
+			String buttonText, ClickListener lowerRightClickListener) {
 		Panel panel = new Panel();
 		panel.setWidth("100%");
 		panel.setData(opTitle);
@@ -199,18 +228,67 @@ public class OperationsListView extends CustomComponent {
 		headerLabel.setContentMode(Label.CONTENT_XHTML);
 		topLayout.addComponent(headerLabel);
 		
-		if (contractClickListener != null) {
-			Button contractButton = new Button("Minimera", contractClickListener);
-			topLayout.addComponent(contractButton);
-			topLayout.setComponentAlignment(contractButton, Alignment.TOP_RIGHT);
-		}
-		
 		layout.addComponent(topLayout);
 		
 		Label descrLabel = new Label(opDescr);
 		layout.addComponent(descrLabel);
 		
 		Button lowerRightButton = new Button(buttonText, lowerRightClickListener);
+		layout.addComponent(lowerRightButton);
+		layout.setComponentAlignment(lowerRightButton, Alignment.BOTTOM_RIGHT);
+		
+		panel.setContent(layout);
+		return panel;
+	}
+	
+	private Component buildExpandedListRowComponent(SearchOperationDTO dto, 
+			ClickListener lowerRightClickListener, ClickListener contractClickListener) {
+		Panel panel = new Panel();
+		panel.setWidth("100%");
+		panel.setData(dto.getTitle());
+		
+		VerticalLayout layout = new VerticalLayout();
+		layout.setWidth("100%");
+		
+		HorizontalLayout topLayout = new HorizontalLayout();
+		topLayout.setWidth("100%");
+		
+		Label headerLabel = new Label("<h2><b>" + dto.getTitle() + "</b></h2>");
+		headerLabel.setContentMode(Label.CONTENT_XHTML);
+		topLayout.addComponent(headerLabel);
+		
+		Button contractButton = new Button("Minimera", contractClickListener);
+		topLayout.addComponent(contractButton);
+		topLayout.setComponentAlignment(contractButton, Alignment.TOP_RIGHT);
+				
+		layout.addComponent(topLayout);
+		
+		Label descrLabel = new Label(dto.getDescr());
+		layout.addComponent(descrLabel);
+		
+		Label lineBreaker = new Label("<br>");
+		lineBreaker.setContentMode(Label.CONTENT_XHTML);
+		layout.addComponent(lineBreaker);
+		
+		HorizontalLayout locationLayout = new HorizontalLayout();
+		locationLayout.setSpacing(true);
+		Label locationKeyLabel = new Label("<b>Ort:</b>");
+		locationKeyLabel.setContentMode(Label.CONTENT_XHTML);
+		locationLayout.addComponent(locationKeyLabel);
+		Label locationValueLabel = new Label(dto.getLocation());
+		locationLayout.addComponent(locationValueLabel);
+		layout.addComponent(locationLayout);
+		
+		HorizontalLayout dateLayout = new HorizontalLayout();
+		dateLayout.setSpacing(true);
+		Label dateKeyLabel = new Label("<b>Datum:</b>"); 
+		dateKeyLabel.setContentMode(Label.CONTENT_XHTML);
+		dateLayout.addComponent(dateKeyLabel);
+		Label dateValueLabel = new Label(dto.getDate().toString()); //TODO might need date formatting?
+		dateLayout.addComponent(dateValueLabel);
+		layout.addComponent(dateLayout);
+		
+		Button lowerRightButton = new Button("Anmäl mig", lowerRightClickListener);
 		layout.addComponent(lowerRightButton);
 		layout.setComponentAlignment(lowerRightButton, Alignment.BOTTOM_RIGHT);
 		
@@ -225,10 +303,9 @@ public class OperationsListView extends CustomComponent {
 	 * @param buttonText the text of the "Show more" button
 	 */
 	private void addRowComponent(final String opTitle, String descr, String buttonText) {
-		Component listRowComponent = buildListRowComponent(
-			opTitle, descr, buttonText,
-			new ReadMoreClickListener(opTitle),
-			null
+		Component listRowComponent = buildContractedListRowComponent(
+			opTitle, descr, buttonText, 
+			new ReadMoreClickListener(opTitle)
 		);
 		componentsList.add(listRowComponent);
 		listLayout.addComponent(listRowComponent);
@@ -236,10 +313,8 @@ public class OperationsListView extends CustomComponent {
 
 	private void expandRowComponent(final String opTitle, SearchOperationDTO dto) {
 		Component oldComponent = getOldComponent(opTitle, componentsList);
-		Component newComponent = buildListRowComponent(
-			dto.getTitle(), dto.getDescr(), "Anmäl mig", 
-			new ApplyMeClickListener(opTitle), 
-			new ContractClickListener(opTitle)
+		Component newComponent = buildExpandedListRowComponent(dto, 
+			new ApplyMeClickListener(opTitle), new ContractClickListener(opTitle)
 		);
 		listLayout.replaceComponent(oldComponent, newComponent);
 		componentsList.set(componentsList.indexOf(oldComponent), newComponent);
@@ -265,7 +340,7 @@ public class OperationsListView extends CustomComponent {
 		}
 		return oldComponent;
 	}
-	
+
 	private Component getExpandedComponent(String opTitle, List<Component> list) {
 		Component oldComponent = null;
 		for (int i = 0; i < list.size(); i++) {
@@ -285,6 +360,7 @@ public class OperationsListView extends CustomComponent {
 	private void clearRowComponents() {
 		listLayout.removeAllComponents();
 		componentsList.clear();
+		expandedComponents.clear();
 	}
 
 	private void resetAndClosePopup() {
@@ -292,16 +368,81 @@ public class OperationsListView extends CustomComponent {
 		nameField.setValue("");
 		teleField.setValue("");
 		emailField.setValue("");
-		subWindow.getParent().removeWindow(subWindow);
+		applyWindow.getParent().removeWindow(applyWindow);
 	}
 
-	private void simpleSearch() { //TODO implement simple search
+	private void titleSearch() {
+		clearRowComponents();
+		
 		String searchString = (String) searchField.getValue();
-		listener.getSearchOpsByName(searchString);
+		SearchOperationIntro[] searchOpsArray = null;
+		if (searchString != null) {
+			searchOpsArray = listener.getSearchOpsByName(searchString);
+		} else {
+			searchOpsArray = listener.getAllSearchOpsIntros();
+		}
+		if (searchOpsArray != null) {
+			for (int i = 0; i < searchOpsArray.length; i++) {
+				SearchOperationIntro opIntro = searchOpsArray[i];
+				addRowComponent(opIntro.getTitle(), opIntro.getDescr(), "Läs mer");
+			}
+		} else {
+			listener.showErrorMessage("Fel", "Inga sökuppdrag med namnet " + searchString + " funna");
+		}
 	}
 	
-	protected void advancedSearch() { //TODO implement adv search
+	private void advancedSearch() {
+		clearRowComponents();
 		
+		String name = null;
+		String location = null;
+		long date = 0;
+		SearchOperationIntro[] searchOpsArray = null;
+		
+		if (allSearchFieldsValid()) {
+			name = (String) titleQueryField.getValue();
+			location = (String) locationQueryField.getValue();
+			Date realDate = (Date)dateQueryField.getValue();
+			date = realDate.getTime();
+			searchOpsArray = listener.getSearchOpsByFilter(name, location, ""+date); //TODO change to real date
+		} else {
+			searchOpsArray = listener.getAllSearchOpsIntros();
+		}
+		if (searchOpsArray != null) {
+			for (int i = 0; i < searchOpsArray.length; i++) {
+				SearchOperationIntro opIntro = searchOpsArray[i];
+				addRowComponent(opIntro.getTitle(), opIntro.getDescr(), "Läs mer");
+			}
+		} else {
+			StringBuilder sb = new StringBuilder();
+			sb.append("Inga sökuppdrag funna med söktermerna");
+			if (name != null) {
+				sb.append(" namnet " + name);
+			}
+			if (location != null) {
+				sb.append(" orten" + location);
+			}
+			if (date != 0) {
+				sb.append(" datumet " + date);
+			}
+			listener.showErrorMessage("Fel", sb.toString());
+		}
+	}
+
+	private boolean allFieldsValid() {
+		if (nameField.isValid() && teleField.isValid() && emailField.isValid()) {
+			return true;
+		}
+		return false;
+	}
+
+	private boolean allSearchFieldsValid() {
+		if (titleQueryField.getValue() == null 
+				&& locationQueryField.getValue() == null 
+				&& dateQueryField.getValue() == null) {
+			return false;
+		}
+		return true;
 	}
 
 	private class ApplyMeClickListener implements ClickListener {
@@ -311,7 +452,7 @@ public class OperationsListView extends CustomComponent {
 		}
 		public void buttonClick(ClickEvent event) {
 			selectedOp = opTitle;
-			OperationsListView.this.getWindow().addWindow(subWindow);
+			OperationsListView.this.getWindow().addWindow(applyWindow);
 		}
 	}
 
@@ -325,7 +466,7 @@ public class OperationsListView extends CustomComponent {
 			expandRowComponent(opTitle, dto);
 		}
 	}
-	
+
 	private class ContractClickListener implements ClickListener {
 		private final String opTitle;
 		public ContractClickListener(String opTitle) {

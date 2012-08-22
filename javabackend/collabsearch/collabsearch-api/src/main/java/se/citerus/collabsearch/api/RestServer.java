@@ -13,9 +13,11 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import se.citerus.collabsearch.model.SearchOperationDTO;
+import se.citerus.collabsearch.model.SearchOperationIntro;
+import se.citerus.collabsearch.model.interfaces.RestService;
 
 @Path("/ws")
-public class RestServiceImpl implements RestService {
+public class RestServer implements RestService {
 
 	@GET
 	@Path("/hello")
@@ -35,14 +37,11 @@ public class RestServiceImpl implements RestService {
 	@GET
 	@Path("/getAllOps")
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-	public SearchOperationDTO[] getAllOps() {
-		SearchOperationDTO[] array = new SearchOperationDTO[3];
-		array[0] = new SearchOperationDTO("Sökoperation 1", "text...", new Date(
-				System.currentTimeMillis()), "Plats X");
-		array[1] = new SearchOperationDTO("Sökoperation 2", "text...", new Date(
-				System.currentTimeMillis() + 86400000), "Plats Y");
-		array[2] = new SearchOperationDTO("Sökoperation 3", "text...", new Date(
-				System.currentTimeMillis() + 86400000 * 2), "Plats Z");
+	public SearchOperationIntro[] getAllOps() {
+		SearchOperationIntro[] array = new SearchOperationIntro[3];
+		array[0] = new SearchOperationIntro("Sökoperation 1", "text...");
+		array[1] = new SearchOperationIntro("Sökoperation 2", "text...");
+		array[2] = new SearchOperationIntro("Sökoperation 3", "text...");
 		return array;
 	}
 

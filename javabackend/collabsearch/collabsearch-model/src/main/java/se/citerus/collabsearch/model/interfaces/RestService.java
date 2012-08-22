@@ -1,10 +1,15 @@
-package se.citerus.collabsearch.api;
+package se.citerus.collabsearch.model.interfaces;
 
 import se.citerus.collabsearch.model.SearchOperationDTO;
+import se.citerus.collabsearch.model.SearchOperationIntro;
 
+/**
+ * And interface required be implemented by both clients and servers acessing the collabsearch RESTful web service.
+ * @author Ola Rende
+ */
 public interface RestService {
 
-	public SearchOperationDTO[] getAllOps();
+	public SearchOperationIntro[] getAllOps();
 
 	public SearchOperationDTO getSearchOperation(String name);
 

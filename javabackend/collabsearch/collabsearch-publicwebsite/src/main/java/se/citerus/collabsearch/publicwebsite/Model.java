@@ -60,8 +60,9 @@ public class Model {
 	}
 
 	public SearchOperationIntro[] getSearchOpsByFilter(String name,
-			String location, String date){
-		SearchOperationIntro[] array = null;
+			String location, long date){
+		SearchOperationIntro[] array = new SearchOperationIntro[1];
+		array[0] = new SearchOperationIntro("Sökoperation Y", "kort beskrivning av Sökoperation Y här...");
 		return array;
 	}
 }

@@ -23,4 +23,8 @@ public class View {
 		mainWindow.showNotification(header, message, Notification.TYPE_ERROR_MESSAGE);
 	}
 
+	public void showTrayNotification(String caption, String message) {
+		mainWindow.showNotification(caption, message, Notification.TYPE_TRAY_NOTIFICATION);
+	}
+
 }

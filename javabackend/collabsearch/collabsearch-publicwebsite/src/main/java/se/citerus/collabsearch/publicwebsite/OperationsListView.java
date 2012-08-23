@@ -1,5 +1,6 @@
 package se.citerus.collabsearch.publicwebsite;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -15,13 +16,16 @@ import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.CustomComponent;
+import com.vaadin.ui.DateField;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.Window.CloseEvent;
 import com.vaadin.ui.Window;
+import com.vaadin.ui.Window.CloseListener;
 
 @SuppressWarnings("serial")
 public class OperationsListView extends CustomComponent {
@@ -44,7 +48,7 @@ public class OperationsListView extends CustomComponent {
 	private Button advSearchPopupButton;
 	private TextField titleQueryField;
 	private TextField locationQueryField;
-	private TextField dateQueryField;
+	private DateField dateQueryField;
 	private Button advSearchCommitButton;
 
 	public OperationsListView(final ControllerListener listener) {
@@ -62,13 +66,13 @@ public class OperationsListView extends CustomComponent {
 					String tele = (String) teleField.getValue();
 					String email = (String) emailField.getValue();
 					listener.submitSearchOpApplication(selectedOp, name, tele, email);
-					resetAndClosePopup();
+					resetAndCloseApplyMePopup();
 				}
 			}
 		});
 		cancelButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				resetAndClosePopup();
+				resetAndCloseApplyMePopup();
 			}
 		});
 		
@@ -79,13 +83,19 @@ public class OperationsListView extends CustomComponent {
 		});
 		advSearchPopupButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
+				OperationsListView.this.getWindow().addWindow(advSearchWindow);
+			}
+		});
+		advSearchCommitButton.addListener(new ClickListener() {
+			public void buttonClick(ClickEvent event) {
 				advancedSearch();
+				closeAdvSearchPopup();
 			}
 		});
 		
 		resetView(); //TODO debug only, remove later
 	}
-	
+
 	public void resetView() {
 		//empty list and table
 		clearRowComponents();
@@ -114,7 +124,7 @@ public class OperationsListView extends CustomComponent {
 		mainLayout.addComponent(listPanel);
 		
 		//build "ApplyMe" popup window
-		buildPopupWindow();
+		buildApplyMePopupWindow();
 		
 		//build Advanced Search popup window
 		buildAdvSearchWindow();
@@ -151,11 +161,21 @@ public class OperationsListView extends CustomComponent {
 		mainLayout.addComponent(topLayout);
 	}
 
-	private void buildPopupWindow() {
+	private void buildApplyMePopupWindow() {
 		applyWindow = new Window("Anmälning");
 		applyWindow.setModal(true);
 		
+		applyWindow.addListener(new CloseListener() {
+			public void windowClose(CloseEvent e) {
+				selectedOp = null;
+				nameField.setValue("");
+				teleField.setValue("");
+				emailField.setValue("");
+			}
+		});
+		
 		VerticalLayout layout = (VerticalLayout) applyWindow.getContent();
+		layout.setSizeUndefined();
 		layout.setMargin(true);
 		layout.setSpacing(true);
 		
@@ -164,26 +184,30 @@ public class OperationsListView extends CustomComponent {
 				"Namn måste vara mellan 1 till 99 tecken", 1, 99, false));
 		nameField.setRequired(true);
 		nameField.setImmediate(true);
+		layout.addComponent(nameField);
 		
 		teleField = new TextField("Tele");
 		teleField.addValidator(new PhoneNumberValidator("Telefonnummer " +
 				"får ej innehålla andra tecken än siffror och mellanslag"));
 		teleField.setRequired(true);
 		teleField.setImmediate(true);
+		layout.addComponent(teleField);
 		
 		emailField = new TextField("Email");
 		emailField.addValidator(new EmailValidator("Ogiltig epostadress"));
 		emailField.setRequired(true);
 		emailField.setImmediate(true);
+		layout.addComponent(emailField);
+		
+		HorizontalLayout bottomButtonsLayout = new HorizontalLayout();
 		
 		applyButton = new Button("Anmäl");
-		cancelButton = new Button("Avbryt");
+		bottomButtonsLayout.addComponent(applyButton);
 		
-		layout.addComponent(nameField);
-		layout.addComponent(teleField);
-		layout.addComponent(emailField);
-		layout.addComponent(applyButton);
-		layout.addComponent(cancelButton);
+		cancelButton = new Button("Avbryt");
+		bottomButtonsLayout.addComponent(cancelButton);
+		
+		layout.addComponent(bottomButtonsLayout);
 	}
 	
 	private void buildAdvSearchWindow() {
@@ -191,6 +215,7 @@ public class OperationsListView extends CustomComponent {
 		advSearchWindow.setModal(true);
 		
 		VerticalLayout layout = (VerticalLayout) advSearchWindow.getContent();
+		layout.setSizeUndefined();
 		layout.setMargin(true);
 		layout.setSpacing(true);
 		
@@ -204,15 +229,15 @@ public class OperationsListView extends CustomComponent {
 		locationQueryField.setNullRepresentation("");
 		layout.addComponent(locationQueryField);
 		
-		dateQueryField = new TextField();
-		dateQueryField.setInputPrompt("Datum för uppdrag");
+		dateQueryField = new DateField();
+		dateQueryField.setResolution(DateField.RESOLUTION_DAY);
 		layout.addComponent(dateQueryField);
 		
 		advSearchCommitButton = new Button("Sök");
 		layout.addComponent(advSearchCommitButton);
 	}
 
-	private Component buildContractedListRowComponent(String opTitle, String opDescr, 
+	private Component buildContractedRowComponent(String opTitle, String opDescr, 
 			String buttonText, ClickListener lowerRightClickListener) {
 		Panel panel = new Panel();
 		panel.setWidth("100%");
@@ -241,7 +266,7 @@ public class OperationsListView extends CustomComponent {
 		return panel;
 	}
 	
-	private Component buildExpandedListRowComponent(SearchOperationDTO dto, 
+	private Component buildExpandedRowComponent(SearchOperationDTO dto, 
 			ClickListener lowerRightClickListener, ClickListener contractClickListener) {
 		Panel panel = new Panel();
 		panel.setWidth("100%");
@@ -284,7 +309,7 @@ public class OperationsListView extends CustomComponent {
 		Label dateKeyLabel = new Label("<b>Datum:</b>"); 
 		dateKeyLabel.setContentMode(Label.CONTENT_XHTML);
 		dateLayout.addComponent(dateKeyLabel);
-		Label dateValueLabel = new Label(dto.getDate().toString()); //TODO might need date formatting?
+		Label dateValueLabel = new Label(getFormattedDate(dto.getDate())); // dto.getDate().toString()
 		dateLayout.addComponent(dateValueLabel);
 		layout.addComponent(dateLayout);
 		
@@ -296,6 +321,11 @@ public class OperationsListView extends CustomComponent {
 		return panel;
 	}
 
+	private String getFormattedDate(Date date) {
+		String dateString = DateFormat.getInstance().format(date);
+		return dateString;
+	}
+
 	/**
 	 * Adds a new row component to the UI and to the underlying component list.
 	 * @param opTitle the title (a search operation name) of the row
@@ -303,7 +333,7 @@ public class OperationsListView extends CustomComponent {
 	 * @param buttonText the text of the "Show more" button
 	 */
 	private void addRowComponent(final String opTitle, String descr, String buttonText) {
-		Component listRowComponent = buildContractedListRowComponent(
+		Component listRowComponent = buildContractedRowComponent(
 			opTitle, descr, buttonText, 
 			new ReadMoreClickListener(opTitle)
 		);
@@ -312,8 +342,8 @@ public class OperationsListView extends CustomComponent {
 	}
 
 	private void expandRowComponent(final String opTitle, SearchOperationDTO dto) {
-		Component oldComponent = getOldComponent(opTitle, componentsList);
-		Component newComponent = buildExpandedListRowComponent(dto, 
+		Component oldComponent = getCurrentRowComponent(opTitle, componentsList);
+		Component newComponent = buildExpandedRowComponent(dto, 
 			new ApplyMeClickListener(opTitle), new ContractClickListener(opTitle)
 		);
 		listLayout.replaceComponent(oldComponent, newComponent);
@@ -322,13 +352,19 @@ public class OperationsListView extends CustomComponent {
 	}
 
 	private void contractRowComponent(String opTitle) {
-		Component oldComponent = getOldComponent(opTitle, componentsList);
+		Component oldComponent = getCurrentRowComponent(opTitle, componentsList);
 		Component newComponent = getExpandedComponent(opTitle, expandedComponents);
 		listLayout.replaceComponent(oldComponent, newComponent);
 		componentsList.set(componentsList.indexOf(oldComponent), newComponent);
 	}
 
-	private Component getOldComponent(final String opTitle, List<Component> list) {
+	/**
+	 * Retrieves a row component currently shown in the UI.
+	 * @param opTitle The title of the component contents
+	 * @param list The list holding the component
+	 * @return the currently visible component or null if none is found.
+	 */
+	private Component getCurrentRowComponent(final String opTitle, List<Component> list) {
 		Component oldComponent = null;
 		for (Component comp : list) {
 			Panel panel = (Panel) comp;
@@ -363,7 +399,7 @@ public class OperationsListView extends CustomComponent {
 		expandedComponents.clear();
 	}
 
-	private void resetAndClosePopup() {
+	private void resetAndCloseApplyMePopup() {
 		selectedOp = null;
 		nameField.setValue("");
 		teleField.setValue("");
@@ -376,7 +412,13 @@ public class OperationsListView extends CustomComponent {
 		
 		String searchString = (String) searchField.getValue();
 		SearchOperationIntro[] searchOpsArray = null;
+		boolean searchStringOk = false;
 		if (searchString != null) {
+			if (!searchString.equals("")) {
+				searchStringOk = true;
+			}
+		}
+		if (searchStringOk == true) {
 			searchOpsArray = listener.getSearchOpsByName(searchString);
 		} else {
 			searchOpsArray = listener.getAllSearchOpsIntros();
@@ -387,26 +429,38 @@ public class OperationsListView extends CustomComponent {
 				addRowComponent(opIntro.getTitle(), opIntro.getDescr(), "Läs mer");
 			}
 		} else {
-			listener.showErrorMessage("Fel", "Inga sökuppdrag med namnet " + searchString + " funna");
+			listener.showTrayNotification("Sökning", "Inga sökuppdrag med namnet " + searchString + " funna");
 		}
 	}
-	
+
 	private void advancedSearch() {
 		clearRowComponents();
 		
 		String name = null;
 		String location = null;
 		long date = 0;
+		try {
+			name = (String) titleQueryField.getValue();
+			if (name != null && name.equals("")) {
+				name = null;
+			}
+			location = (String) locationQueryField.getValue();
+			if (location != null && location.equals("")) {
+				location = null;
+			}
+			Date realDate = (Date) dateQueryField.getValue();
+			if (realDate != null) {
+				date = realDate.getTime();
+			}
+		} catch (Exception e) {
+			listener.showErrorMessage("Sökfel", "En eller flera av söktermerna är felaktiga");
+			closeAdvSearchPopup();
+			return;
+		}
 		SearchOperationIntro[] searchOpsArray = null;
 		
-		if (allSearchFieldsValid()) {
-			name = (String) titleQueryField.getValue();
-			location = (String) locationQueryField.getValue();
-			Date realDate = (Date)dateQueryField.getValue();
-			date = realDate.getTime();
-			searchOpsArray = listener.getSearchOpsByFilter(name, location, ""+date); //TODO change to real date
-		} else {
-			searchOpsArray = listener.getAllSearchOpsIntros();
+		if (allSearchFieldsValid(name, location, date)) {
+			searchOpsArray = listener.getSearchOpsByFilter(name, location, date);
 		}
 		if (searchOpsArray != null) {
 			for (int i = 0; i < searchOpsArray.length; i++) {
@@ -414,18 +468,7 @@ public class OperationsListView extends CustomComponent {
 				addRowComponent(opIntro.getTitle(), opIntro.getDescr(), "Läs mer");
 			}
 		} else {
-			StringBuilder sb = new StringBuilder();
-			sb.append("Inga sökuppdrag funna med söktermerna");
-			if (name != null) {
-				sb.append(" namnet " + name);
-			}
-			if (location != null) {
-				sb.append(" orten" + location);
-			}
-			if (date != 0) {
-				sb.append(" datumet " + date);
-			}
-			listener.showErrorMessage("Fel", sb.toString());
+			listener.showTrayNotification("Sökning", "Inga sökuppdrag funna med de valda söktermerna");
 		}
 	}
 
@@ -436,13 +479,15 @@ public class OperationsListView extends CustomComponent {
 		return false;
 	}
 
-	private boolean allSearchFieldsValid() {
-		if (titleQueryField.getValue() == null 
-				&& locationQueryField.getValue() == null 
-				&& dateQueryField.getValue() == null) {
+	private boolean allSearchFieldsValid(String name, String location, long date) {
+		if (name == null && location == null && date == 0) {
 			return false;
 		}
 		return true;
+	}
+
+	private void closeAdvSearchPopup() {
+		advSearchWindow.getParent().removeWindow(advSearchWindow);
 	}
 
 	private class ApplyMeClickListener implements ClickListener {

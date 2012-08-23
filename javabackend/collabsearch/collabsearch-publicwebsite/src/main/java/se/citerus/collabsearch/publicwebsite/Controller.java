@@ -1,5 +1,7 @@
 package se.citerus.collabsearch.publicwebsite;
 
+import java.util.Date;
+
 import se.citerus.collabsearch.model.SearchOperationDTO;
 import se.citerus.collabsearch.model.SearchOperationIntro;
 
@@ -37,8 +39,12 @@ public class Controller implements ControllerListener {
 	}
 
 	public SearchOperationIntro[] getSearchOpsByFilter(String name,
-			String location, String date) {
+			String location, long date) {
 		return model.getSearchOpsByFilter(name, location, date);
+	}
+
+	public void showTrayNotification(String caption, String message) {
+		view.showTrayNotification(caption, message);
 	}
 
 }

@@ -9,7 +9,7 @@ import se.citerus.collabsearch.model.User;
  * A facade for separating the higher levels from the db specific code.
  * @author Ola Rende
  */
-public interface UserDAL {
+public interface UserDAO {
 	
 	public boolean findUser(String username, char[] password) throws IOException;
 	

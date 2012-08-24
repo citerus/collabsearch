@@ -118,13 +118,23 @@ public class DataValidationTest {
 		Validator validator = null;
 		
 		final String validTitle = "Sökoperation 1";
-		final Date validDate = Calendar.getInstance().getTime();
+		final long validDate = Calendar.getInstance().getTime().getTime();
 		
 		validator = new StringLengthValidator("", 3, 99, false);
 		generalValidationChecks(validator, "title", validTitle);
 		
 		validator = new DateValidator();
-		generalValidationChecks(validator, "date", validDate.toString());
+		try {
+			validator.validate(validDate);
+		} catch (InvalidValueException e) {
+			fail("Failed to validate valid " + "date");
+		}
+		try {
+			validator.validate("");
+			fail("Failed to invalidate empty " + "date");
+		} catch (InvalidValueException e) {
+			//ok
+		}
 		try {
 			GregorianCalendar calendar = new GregorianCalendar();
 			calendar.set(2011, 1, 30);

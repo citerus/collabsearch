@@ -1,9 +1,10 @@
-package se.citerus.collabsearch.publicwebsite;
+package se.citerus.collabsearch.publicwebsite.logic;
 
 import java.util.Date;
 
-import se.citerus.collabsearch.model.SearchOperationDTO;
+import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.SearchOperationIntro;
+import se.citerus.collabsearch.publicwebsite.ControllerListener;
 
 public class Model {
 
@@ -14,8 +15,8 @@ public class Model {
 		this.listener = listener;
 	}
 
-	public SearchOperationDTO getSearchOpByName(String header){
-		return new SearchOperationDTO(
+	public SearchOperation getSearchOpByName(String header){
+		return new SearchOperation(
 				header,
 				"Lorem ipsum dolor sit amet, consectetur adipisicing elit, "
 						+ "sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. "
@@ -36,12 +37,8 @@ public class Model {
 
 	public void submitSearchOpApplication(String selectedOp, String name,
 			String tele, String email){
-		int responseCode = 200; //XXX DEBUGVALUE
 		System.out.println("Received application for searchop " + selectedOp
 				+ " from " + name + " with tele " + tele + " and email " + email);
-		if (responseCode != 200) {
-			listener.showErrorMessage("Fel","Ett fel uppstod vid kommunikationen med servern, försök igen");
-		}
 	}
 
 	public SearchOperationIntro[] getAllSearchOps(){

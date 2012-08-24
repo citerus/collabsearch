@@ -12,7 +12,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
-import se.citerus.collabsearch.model.SearchOperationDTO;
+import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.SearchOperationIntro;
 import se.citerus.collabsearch.model.interfaces.RestService;
 
@@ -49,9 +49,9 @@ public class RestServer implements RestService {
 	@Path("/getSearchOp/{name}")
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	@Consumes(MediaType.TEXT_PLAIN)
-	public SearchOperationDTO getSearchOperation(@PathParam("name") String name) {
+	public SearchOperation getSearchOperation(@PathParam("name") String name) {
 		//TODO search db for single op with matching name/id
-		SearchOperationDTO op = new SearchOperationDTO(name, "beskrivning här",
+		SearchOperation op = new SearchOperation(name, "beskrivning här",
 				new Date(System.currentTimeMillis()), "Plats XYZ");
 		return op;
 	}
@@ -70,7 +70,7 @@ public class RestServer implements RestService {
 	@GET
 	@Path("/search")
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-	public SearchOperationDTO[] searchForOps(
+	public SearchOperation[] searchForOps(
 			@DefaultValue("") @QueryParam("title") String title, 
 			@DefaultValue("") @QueryParam("location") String location, 
 			@DefaultValue("") @QueryParam("date") String date) {

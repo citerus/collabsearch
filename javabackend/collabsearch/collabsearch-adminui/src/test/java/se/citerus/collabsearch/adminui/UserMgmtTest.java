@@ -3,7 +3,6 @@
  */
 package se.citerus.collabsearch.adminui;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -31,10 +30,12 @@ public class UserMgmtTest {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
+		
 	}
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
+		
 	}
 
 	@Before

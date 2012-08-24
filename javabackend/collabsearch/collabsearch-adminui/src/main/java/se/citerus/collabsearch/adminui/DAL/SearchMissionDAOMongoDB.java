@@ -18,14 +18,14 @@ import se.citerus.collabsearch.model.SearchMission;
 import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.Status;
 
-public class SearchMissionDALMongoDB implements SearchMissionDAL {
+public class SearchMissionDAOMongoDB implements SearchMissionDAO {
 
 	private Mongo mongo;
 	private DBCollection missionColl;
 	private DBCollection statusColl;
 	private DBCollection operationsColl;
 
-	public SearchMissionDALMongoDB() throws Exception {
+	public SearchMissionDAOMongoDB() throws Exception {
 		mongo = new Mongo();
 		DB db = mongo.getDB("lookingfor");
 		missionColl = db.getCollection("searchmissions");

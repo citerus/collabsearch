@@ -5,6 +5,7 @@ import se.citerus.collabsearch.adminui.view.login.LoginView;
 import se.citerus.collabsearch.adminui.view.login.WelcomeView;
 import se.citerus.collabsearch.adminui.view.searchmission.SearchMissionEditView;
 import se.citerus.collabsearch.adminui.view.searchmission.SearchMissionListView;
+import se.citerus.collabsearch.adminui.view.searchoperation.GroupEditView;
 import se.citerus.collabsearch.adminui.view.searchoperation.SearchOperationEditView;
 import se.citerus.collabsearch.adminui.view.usermgmt.UserEditView;
 import se.citerus.collabsearch.adminui.view.usermgmt.UserListView;
@@ -16,6 +17,8 @@ import com.vaadin.ui.Window;
 @SuppressWarnings("serial")
 public class MainWindow extends Window implements LoginListener, ViewSwitchController {
 
+	private static final boolean debugMode = true;
+	
 	private LoginView loginView;
 	private WelcomeView welcomeView;
 	private UserListView userListView;
@@ -23,6 +26,8 @@ public class MainWindow extends Window implements LoginListener, ViewSwitchContr
 	private SearchMissionListView searchMissionListView;
 	private SearchMissionEditView searchMissionEditView;
 	private SearchOperationEditView searchOperationEditView;
+
+	private GroupEditView groupEditView;
 
 	public MainWindow() {
 		setCaption("Collaborative Search - Inloggning");
@@ -39,7 +44,11 @@ public class MainWindow extends Window implements LoginListener, ViewSwitchContr
 			if (authenticator.login(event.getLoginParameter("username"), 
 	        		event.getLoginParameter("password").toCharArray())) {
 				LookingForApp.getInstance().setUser(event.getLoginParameter("username"));
-	        	switchToWelcomeView();
+	        	if (debugMode) { //XXX debugging code
+	        		switchToGroupEditView("Sökuppdrag 1 (test)");
+	        	} else {
+	        		switchToWelcomeView();
+	        	}
 	        } else {
 	        	displayNotification("Login failed", "Wrong username or password");
 	        }
@@ -117,6 +126,15 @@ public class MainWindow extends Window implements LoginListener, ViewSwitchContr
 		}
 		searchOperationEditView.resetView(opName, missionName);
 		setContent(searchOperationEditView);
+	}
+
+	public void switchToGroupEditView(String opName) {
+		if (groupEditView == null) {
+			groupEditView = new GroupEditView(this);
+			groupEditView.init();
+		}
+		groupEditView.resetView(opName);
+		setContent(groupEditView);
 	}
 
 	public void returnToSearchMissionEditView() {

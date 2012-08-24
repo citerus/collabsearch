@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import se.citerus.collabsearch.adminui.DAL.SearchMissionDAL;
-import se.citerus.collabsearch.adminui.DAL.SearchMissionDALInMemory;
-import se.citerus.collabsearch.adminui.DAL.SearchMissionDALMongoDB;
+import se.citerus.collabsearch.adminui.DAL.SearchMissionDAO;
+import se.citerus.collabsearch.adminui.DAL.SearchMissionDAOInMemory;
+import se.citerus.collabsearch.adminui.DAL.SearchMissionDAOMongoDB;
 import se.citerus.collabsearch.model.FileMetadata;
 import se.citerus.collabsearch.model.SearchMission;
 import se.citerus.collabsearch.model.SearchOperation;
@@ -14,12 +14,12 @@ import se.citerus.collabsearch.model.Status;
 
 public class SearchMissionService { //TODO refactor into spring service
 	
-	private SearchMissionDAL searchMissionDAL;
+	private SearchMissionDAO searchMissionDAL;
 	
 	public SearchMissionService() {
 		//TODO choose type of DAL by config file
 		//searchMissionDAL = new SearchMissionDALMongoDB();
-		searchMissionDAL = new SearchMissionDALInMemory();
+		searchMissionDAL = new SearchMissionDAOInMemory();
 	}
 
 	public List<SearchMission> getListOfSearchMissions() throws Exception {
@@ -72,14 +72,14 @@ public class SearchMissionService { //TODO refactor into spring service
 	}
 
 	public void clearSavedState() {
-		if (searchMissionDAL instanceof SearchMissionDALInMemory) {
-			((SearchMissionDALInMemory)searchMissionDAL).clearNewMissionContainer();
+		if (searchMissionDAL instanceof SearchMissionDAOInMemory) {
+			((SearchMissionDAOInMemory)searchMissionDAL).clearNewMissionContainer();
 		}
 	}
 
 	public void setupSavedState() {
-		if (searchMissionDAL instanceof SearchMissionDALInMemory) {
-			((SearchMissionDALInMemory)searchMissionDAL).initNewMissionContainer();
+		if (searchMissionDAL instanceof SearchMissionDAOInMemory) {
+			((SearchMissionDAOInMemory)searchMissionDAL).initNewMissionContainer();
 		}
 	}
 

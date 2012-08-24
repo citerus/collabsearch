@@ -12,7 +12,7 @@
         <init-param>
             <description>Vaadin application class to start</description>
             <param-name>application</param-name>
-            <param-value>se.citerus.collabsearch.publicwebsite.MainApplication</param-value>
+            <param-value>se.citerus.collabsearch.publicwebsite.logic.MainApplication</param-value>
         </init-param>
     </servlet>
     <servlet-mapping>

@@ -1,6 +1,6 @@
-package se.citerus.collabsearch.publicwebsite;
+package se.citerus.collabsearch.publicwebsite.logic;
 
-import se.citerus.collabsearch.model.SearchOperationDTO;
+import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.SearchOperationIntro;
 import se.citerus.collabsearch.model.interfaces.RestService;
 
@@ -14,15 +14,16 @@ public class RestClient implements RestService {
 		return null;
 	}
 
-	public SearchOperationDTO getSearchOperation(String name) {
+	public SearchOperation getSearchOperation(String name) {
 		return null;
 	}
 
 	public void applyForSearchOp(String opName, String name, String email,
 			String tele) {
+		//...
 	}
 
-	public SearchOperationDTO[] searchForOps(String title, String location,
+	public SearchOperation[] searchForOps(String title, String location,
 			String date) {
 		return null;
 	}

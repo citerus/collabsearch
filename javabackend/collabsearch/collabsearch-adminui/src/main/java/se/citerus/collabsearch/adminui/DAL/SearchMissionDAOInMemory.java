@@ -12,14 +12,14 @@ import se.citerus.collabsearch.model.SearchMission;
 import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.Status;
 
-public class SearchMissionDALInMemory implements SearchMissionDAL {
+public class SearchMissionDAOInMemory implements SearchMissionDAO {
 	
 	private static List<SearchMission> missionsList;
 	private static List<Status> statusList;
 	
 	private static SearchMission newMission;
 	
-	public SearchMissionDALInMemory() {
+	public SearchMissionDAOInMemory() {
 		if (missionsList == null && statusList == null) {
 			missionsList = new ArrayList<SearchMission>();
 			statusList = new ArrayList<Status>();
@@ -147,11 +147,11 @@ public class SearchMissionDALInMemory implements SearchMissionDAL {
 	
 	private void addMockOps(List<SearchOperation> opsList) {
 		opsList.add(new SearchOperation("Operation 1", "beskrivn...", 
-				new Date(System.currentTimeMillis())));
+				new Date(System.currentTimeMillis()), "Plats X"));
 		opsList.add(new SearchOperation("Operation 2", "beskrivn...", 
-				new Date(System.currentTimeMillis()+86400000L)));
+				new Date(System.currentTimeMillis()+86400000L), "Plats Y"));
 		opsList.add(new SearchOperation("Operation 3", "beskrivn...", 
-				new Date(System.currentTimeMillis()+(2*86400000L))));
+				new Date(System.currentTimeMillis()+(2*86400000L)), "Plats Z"));
 	}
 
 	public void addFileMetadata(String missionName, FileMetadata fileMetaData) throws IOException {

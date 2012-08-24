@@ -5,16 +5,16 @@ import java.io.IOException;
 import com.mongodb.MongoException;
 import com.mongodb.util.Hash;
 
-import se.citerus.collabsearch.adminui.DAL.UserDAL;
-import se.citerus.collabsearch.adminui.DAL.UserDALMongoDB;
+import se.citerus.collabsearch.adminui.DAL.UserDAO;
+import se.citerus.collabsearch.adminui.DAL.UserDAOMongoDB;
 
 public class Authenticator {
 	
-	private UserDAL userDAL;
+	private UserDAO userDAL;
 
 	public Authenticator() {
 		try {
-			userDAL = new UserDALMongoDB();
+			userDAL = new UserDAOMongoDB();
 		} catch (MongoException e) {
 			e.printStackTrace();
 		}

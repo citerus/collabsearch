@@ -5,6 +5,7 @@
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/java/test"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/test/java"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/resources"/>
         <dependent-module archiveName="collabsearch-model-1.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/collabsearch-model/collabsearch-model">
             <dependency-type>uses</dependency-type>
         </dependent-module>

@@ -1,9 +1,9 @@
 package se.citerus.collabsearch.publicwebsite;
 
-import java.util.Date;
-
-import se.citerus.collabsearch.model.SearchOperationDTO;
+import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.SearchOperationIntro;
+import se.citerus.collabsearch.publicwebsite.logic.Model;
+import se.citerus.collabsearch.publicwebsite.view.View;
 
 import com.vaadin.ui.Window;
 
@@ -17,7 +17,7 @@ public class Controller implements ControllerListener {
 		view = new View(this, mainWindow);
 	}
 
-	public SearchOperationDTO fireReadMoreEvent(String header) {
+	public SearchOperation fireReadMoreEvent(String header) {
 		return model.getSearchOpByName(header);
 	}
 

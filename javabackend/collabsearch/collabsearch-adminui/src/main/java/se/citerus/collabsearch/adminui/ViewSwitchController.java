@@ -51,6 +51,8 @@ public interface ViewSwitchController {
 
 	public void switchToSearchOperationEditView(String selectedSearchOperationName, String missionTitle);
 
+	public void switchToGroupEditView(String opName);
+	
 	public void returnToSearchMissionEditView();
 
 	public void refreshOpsTable();

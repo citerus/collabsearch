@@ -7,13 +7,13 @@ import java.util.List;
 
 import se.citerus.collabsearch.model.User;
 
-public class UserDALInMemory implements UserDAL {
+public class UserDAOInMemory implements UserDAO {
 	
 	private static List<User> allUsers;
 	private static HashMap<String, Long> salts;
 	private static List<String> allRoles;
 	
-	public UserDALInMemory() {
+	public UserDAOInMemory() {
 		if (allUsers == null) {
 			allUsers = new ArrayList<User>(1);
 			User testUser = new User("test","test","test@test.test","123456789","admin");

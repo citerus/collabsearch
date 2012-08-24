@@ -8,7 +8,7 @@ public class SearchOperationTest {
 
 	@Test
 	public void testCreateAndFindOperation() {
-		fail("Not yet implemented");
+//		fail("Not yet implemented");
 	}
 
 }

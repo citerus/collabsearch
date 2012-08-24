@@ -1,6 +1,6 @@
 package se.citerus.collabsearch.model.interfaces;
 
-import se.citerus.collabsearch.model.SearchOperationDTO;
+import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.SearchOperationIntro;
 
 /**
@@ -11,9 +11,9 @@ public interface RestService {
 
 	public SearchOperationIntro[] getAllOps();
 
-	public SearchOperationDTO getSearchOperation(String name);
+	public SearchOperation getSearchOperation(String name);
 
 	void applyForSearchOp(String opName, String name, String email, String tele);
 
-	public SearchOperationDTO[] searchForOps(String title, String location, String date);
+	public SearchOperation[] searchForOps(String title, String location, String date);
 }

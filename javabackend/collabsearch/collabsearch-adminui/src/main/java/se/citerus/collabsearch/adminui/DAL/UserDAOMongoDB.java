@@ -19,7 +19,7 @@ import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 import com.mongodb.WriteResult;
 
-public class UserDALMongoDB implements UserDAL {
+public class UserDAOMongoDB implements UserDAO {
 
 	private Mongo mongo;
 	private DBCollection userColl;
@@ -31,7 +31,7 @@ public class UserDALMongoDB implements UserDAL {
 	private static final boolean ENABLEMULTIUPDATE = true;
 	private static final boolean DISABLEMULTIUPDATE = false;
 
-	public UserDALMongoDB() {
+	public UserDAOMongoDB() {
 		try {
 			mongo = new Mongo();
 			DB db = mongo.getDB("lookingfor");

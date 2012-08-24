@@ -12,12 +12,18 @@ public class DateValidator implements Validator {
 
 	public void validate(Object value) throws InvalidValueException {
 		try {
-			//Date date = DateFormat.getInstance().parse(value.toString());
-			Date date = DateFormat.getDateInstance().parse(value.toString());
+			Date date = null;
+			try { //try Date typecast first
+				date = (Date) value;
+			} catch (Exception e) { //fallback to Long-conversion
+				date = new Date((Long)value);
+			}
 			if (date == null) {
 				throw new InvalidValueException("Invalid date");
 			}
-		} catch (ParseException e) {
+		} catch (NumberFormatException e) {
+			throw new InvalidValueException("Invalid date");
+		} catch (Exception e) {
 			throw new InvalidValueException("Invalid date");
 		}
 	}

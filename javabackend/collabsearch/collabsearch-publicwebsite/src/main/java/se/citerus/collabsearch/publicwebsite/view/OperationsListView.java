@@ -1,19 +1,21 @@
-package se.citerus.collabsearch.publicwebsite;
+package se.citerus.collabsearch.publicwebsite.view;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import se.citerus.collabsearch.model.SearchOperationDTO;
+import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.SearchOperationIntro;
 import se.citerus.collabsearch.model.validator.PhoneNumberValidator;
+import se.citerus.collabsearch.publicwebsite.ControllerListener;
 
 import com.vaadin.data.validator.EmailValidator;
 import com.vaadin.data.validator.StringLengthValidator;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.Alignment;
+import com.vaadin.ui.Button;
+import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.DateField;
@@ -22,9 +24,8 @@ import com.vaadin.ui.Label;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Window.CloseEvent;
 import com.vaadin.ui.Window;
+import com.vaadin.ui.Window.CloseEvent;
 import com.vaadin.ui.Window.CloseListener;
 
 @SuppressWarnings("serial")
@@ -67,6 +68,9 @@ public class OperationsListView extends CustomComponent {
 					String email = (String) emailField.getValue();
 					listener.submitSearchOpApplication(selectedOp, name, tele, email);
 					resetAndCloseApplyMePopup();
+				} else {
+					listener.showTrayNotification("Valideringsfel", 
+							"Ett eller flera av fälten innehåller felaktiga värden.");
 				}
 			}
 		});
@@ -200,14 +204,16 @@ public class OperationsListView extends CustomComponent {
 		layout.addComponent(emailField);
 		
 		HorizontalLayout bottomButtonsLayout = new HorizontalLayout();
-		
-		applyButton = new Button("Anmäl");
-		bottomButtonsLayout.addComponent(applyButton);
+		bottomButtonsLayout.setSpacing(true);
 		
 		cancelButton = new Button("Avbryt");
 		bottomButtonsLayout.addComponent(cancelButton);
 		
+		applyButton = new Button("Anmäl");
+		bottomButtonsLayout.addComponent(applyButton);
+		
 		layout.addComponent(bottomButtonsLayout);
+		layout.setComponentAlignment(bottomButtonsLayout, Alignment.MIDDLE_CENTER);
 	}
 	
 	private void buildAdvSearchWindow() {
@@ -230,11 +236,13 @@ public class OperationsListView extends CustomComponent {
 		layout.addComponent(locationQueryField);
 		
 		dateQueryField = new DateField();
+		dateQueryField.setWidth("100%");
 		dateQueryField.setResolution(DateField.RESOLUTION_DAY);
 		layout.addComponent(dateQueryField);
 		
 		advSearchCommitButton = new Button("Sök");
 		layout.addComponent(advSearchCommitButton);
+		layout.setComponentAlignment(advSearchCommitButton, Alignment.MIDDLE_CENTER);
 	}
 
 	private Component buildContractedRowComponent(String opTitle, String opDescr, 
@@ -266,7 +274,7 @@ public class OperationsListView extends CustomComponent {
 		return panel;
 	}
 	
-	private Component buildExpandedRowComponent(SearchOperationDTO dto, 
+	private Component buildExpandedRowComponent(SearchOperation dto, 
 			ClickListener lowerRightClickListener, ClickListener contractClickListener) {
 		Panel panel = new Panel();
 		panel.setWidth("100%");
@@ -341,7 +349,7 @@ public class OperationsListView extends CustomComponent {
 		listLayout.addComponent(listRowComponent);
 	}
 
-	private void expandRowComponent(final String opTitle, SearchOperationDTO dto) {
+	private void expandRowComponent(final String opTitle, SearchOperation dto) {
 		Component oldComponent = getCurrentRowComponent(opTitle, componentsList);
 		Component newComponent = buildExpandedRowComponent(dto, 
 			new ApplyMeClickListener(opTitle), new ContractClickListener(opTitle)
@@ -507,7 +515,7 @@ public class OperationsListView extends CustomComponent {
 			this.opTitle = opTitle;
 		}
 		public void buttonClick(ClickEvent event) {
-			SearchOperationDTO dto = listener.fireReadMoreEvent(opTitle);
+			SearchOperation dto = listener.fireReadMoreEvent(opTitle);
 			expandRowComponent(opTitle, dto);
 		}
 	}

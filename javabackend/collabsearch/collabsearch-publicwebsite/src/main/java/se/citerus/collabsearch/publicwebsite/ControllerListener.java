@@ -1,13 +1,11 @@
 package se.citerus.collabsearch.publicwebsite;
 
-import java.util.Date;
-
-import se.citerus.collabsearch.model.SearchOperationDTO;
+import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.SearchOperationIntro;
 
 public interface ControllerListener {
 
-	SearchOperationDTO fireReadMoreEvent(String header);
+	SearchOperation fireReadMoreEvent(String header);
 
 	void submitSearchOpApplication(String selectedOp, String name, String tele, String email);
 

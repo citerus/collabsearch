@@ -52,8 +52,9 @@ public class SearchOperationEditView extends CustomComponent {
 					SearchMissionService service = null;
 					try {
 						service = new SearchMissionService();
+						//TODO replace "" with (String) locationField.getValue()
 						SearchOperation op = new SearchOperation((String) titleField.getValue(), 
-								(String) descrField.getValue(), (Date) dateField.getValue());
+								(String) descrField.getValue(), (Date) dateField.getValue(), "");
 						service.editSearchOp(op, missionName);
 						listener.refreshOpsTable();
 						listener.returnToSearchMissionEditView();
@@ -91,7 +92,7 @@ public class SearchOperationEditView extends CustomComponent {
 				service = new SearchMissionService();
 				SearchOperation searchOp = service.getSearchOp(opName, missionName);
 				if (searchOp != null) {
-					
+					//TODO handle this case
 				}
 				
 				//load data from operation into fields
@@ -141,7 +142,7 @@ public class SearchOperationEditView extends CustomComponent {
 		titleField.setRequired(true);
 		titleField.setValidationVisible(true);
 		titleField.addValidator(new StringLengthValidator(
-				"Namnet måste vara mellan 1-99 karaktärer", 1, 99, false));
+				"Namnet måste vara mellan 1-99 tecken", 1, 99, false));
 		
 		Label descrLabel = new Label("Beskrivning");
 		descrField = new TextArea();
@@ -157,6 +158,8 @@ public class SearchOperationEditView extends CustomComponent {
 		dateField.setRequired(true);
 		dateField.setValidationVisible(true);
 		dateField.addValidator(new DateValidator());
+		
+		//TODO add location input field
 		
 		HorizontalLayout upperButtonLayout = new HorizontalLayout();
 		upperButtonLayout.setSpacing(true);

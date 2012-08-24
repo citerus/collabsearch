@@ -13,10 +13,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package se.citerus.collabsearch.publicwebsite;
+package se.citerus.collabsearch.publicwebsite.logic;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import se.citerus.collabsearch.publicwebsite.Controller;
 
 import com.vaadin.Application;
 import com.vaadin.ui.Window;

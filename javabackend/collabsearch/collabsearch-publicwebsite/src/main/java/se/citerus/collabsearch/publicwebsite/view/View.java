@@ -1,4 +1,6 @@
-package se.citerus.collabsearch.publicwebsite;
+package se.citerus.collabsearch.publicwebsite.view;
+
+import se.citerus.collabsearch.publicwebsite.ControllerListener;
 
 import com.vaadin.ui.Window;
 import com.vaadin.ui.Window.Notification;

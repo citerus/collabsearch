@@ -8,7 +8,7 @@ import se.citerus.collabsearch.model.SearchMission;
 import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.Status;
 
-public interface SearchMissionDAL {
+public interface SearchMissionDAO {
 
 	public List<SearchMission> getAllSearchMissions() throws IOException;
 	

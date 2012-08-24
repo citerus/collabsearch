@@ -3,18 +3,18 @@ package se.citerus.collabsearch.adminui.logic;
 import java.io.IOException;
 import java.util.List;
 
-import se.citerus.collabsearch.adminui.DAL.UserDAL;
-import se.citerus.collabsearch.adminui.DAL.UserDALMongoDB;
+import se.citerus.collabsearch.adminui.DAL.UserDAO;
+import se.citerus.collabsearch.adminui.DAL.UserDAOMongoDB;
 import se.citerus.collabsearch.model.User;
 
 public class UserService { //TODO refactor into spring service
 
-	private UserDAL userDAL;
+	private UserDAO userDAL;
 
 	public UserService() {
 		//TODO choose type of DAL by config file
 		//userDAL = new UserDALInMemory();
-		userDAL = new UserDALMongoDB();
+		userDAL = new UserDAOMongoDB();
 	}
 
 	public List<User> getListOfUsers() throws IOException {

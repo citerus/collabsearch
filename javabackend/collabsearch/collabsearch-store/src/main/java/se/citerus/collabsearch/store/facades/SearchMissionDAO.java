@@ -1,4 +1,4 @@
-package se.citerus.collabsearch.adminui.DAL;
+package se.citerus.collabsearch.store.facades;
 
 import java.io.IOException;
 import java.util.List;

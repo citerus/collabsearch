@@ -1,4 +1,4 @@
-package se.citerus.collabsearch.adminui.DAL;
+package se.citerus.collabsearch.store.inmemory;
 
 import java.io.IOException;
 import java.sql.Date;
@@ -11,6 +11,7 @@ import se.citerus.collabsearch.model.FileMetadata;
 import se.citerus.collabsearch.model.SearchMission;
 import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.Status;
+import se.citerus.collabsearch.store.facades.SearchMissionDAO;
 
 public class SearchMissionDAOInMemory implements SearchMissionDAO {
 	
@@ -147,11 +148,14 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 	
 	private void addMockOps(List<SearchOperation> opsList) {
 		opsList.add(new SearchOperation("Operation 1", "beskrivn...", 
-				new Date(System.currentTimeMillis()), "Plats X"));
+				new Date(System.currentTimeMillis()), "Plats X", 
+				new Status(0, "status 1", "beskrivn...")));
 		opsList.add(new SearchOperation("Operation 2", "beskrivn...", 
-				new Date(System.currentTimeMillis()+86400000L), "Plats Y"));
+				new Date(System.currentTimeMillis()+86400000L), "Plats Y", 
+				new Status(1, "status 2", "beskrivn...")));
 		opsList.add(new SearchOperation("Operation 3", "beskrivn...", 
-				new Date(System.currentTimeMillis()+(2*86400000L)), "Plats Z"));
+				new Date(System.currentTimeMillis()+(2*86400000L)), "Plats Z", 
+				new Status(2, "status 3", "beskrivn...")));
 	}
 
 	public void addFileMetadata(String missionName, FileMetadata fileMetaData) throws IOException {

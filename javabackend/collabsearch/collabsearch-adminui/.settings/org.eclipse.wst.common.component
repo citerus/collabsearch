@@ -9,6 +9,9 @@
         <dependent-module archiveName="collabsearch-model-1.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/collabsearch-model/collabsearch-model">
             <dependency-type>uses</dependency-type>
         </dependent-module>
+        <dependent-module archiveName="collabsearch-store-1.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/collabsearch-store/collabsearch-store">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
         <property name="context-root" value="collabsearch-adminui"/>
         <property name="java-output-path" value="/collabsearch-adminui/target/classes"/>
     </wb-module>

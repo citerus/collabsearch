@@ -17,7 +17,7 @@ import com.vaadin.ui.Upload.SucceededEvent;
 public class FileUploadHandler implements Upload.SucceededListener,
 		Upload.FailedListener, Upload.Receiver {
 
-	private static final String FILEPATH = "/tmp/uploads/"; //TODO remember to change this before production
+	private static final String FILEPATH = "/tmp/uploads/"; //TODO change filepath to search mission specific path
 	private String parentMissionName;
 	private BeanContainer<String, FileMetadata> fileBeanContainer;
 	private File file;

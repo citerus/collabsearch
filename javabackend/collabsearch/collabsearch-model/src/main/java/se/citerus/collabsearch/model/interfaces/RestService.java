@@ -1,5 +1,7 @@
 package se.citerus.collabsearch.model.interfaces;
 
+import javax.ws.rs.core.Response;
+
 import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.SearchOperationIntro;
 
@@ -13,7 +15,7 @@ public interface RestService {
 
 	public SearchOperation getSearchOperation(String name);
 
-	void applyForSearchOp(String opName, String name, String email, String tele);
+	public Response applyForSearchOp(String opName, String name, String email, String tele);
 
-	public SearchOperation[] searchForOps(String title, String location, String date);
+	public SearchOperationIntro[] searchForOps(String title, String location, String date);
 }

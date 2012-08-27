@@ -10,6 +10,7 @@ public class SearchOperation {
 	private String descr;
 	private Date date;
 	private String location;
+	private Status status;
 	
 	/**
 	 * Serialization ctor.
@@ -17,12 +18,13 @@ public class SearchOperation {
 	public SearchOperation() {
 	}
 
-	public SearchOperation(String title, String descr, Date date, String location) {
-		super();
+	public SearchOperation(String title, String descr, 
+			Date date, String location, Status status) {
 		this.title = title;
 		this.descr = descr;
 		this.date = date;
 		this.location = location;
+		this.setStatus(status);
 	}
 
 	public String getTitle() {
@@ -56,10 +58,20 @@ public class SearchOperation {
 	public void setLocation(String location) {
 		this.location = location;
 	}
+	
+	public Status getStatus() {
+		return status;
+	}
+	
+	public void setStatus(Status status) {
+		this.status = status;
+	}
 
 	@Override
 	public String toString() {
-		return title + ", " + descr + ", " + date.toString() + ", " + location;
+		return title + ", " + descr + ", " 
+			+ date.toString() + ", " + location
+			+ ", " + getStatus().toString();
 	}
 	
 }

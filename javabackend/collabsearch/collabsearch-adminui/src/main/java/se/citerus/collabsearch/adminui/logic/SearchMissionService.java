@@ -1,23 +1,21 @@
 package se.citerus.collabsearch.adminui.logic;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 
-import se.citerus.collabsearch.adminui.DAL.SearchMissionDAO;
-import se.citerus.collabsearch.adminui.DAL.SearchMissionDAOInMemory;
-import se.citerus.collabsearch.adminui.DAL.SearchMissionDAOMongoDB;
 import se.citerus.collabsearch.model.FileMetadata;
 import se.citerus.collabsearch.model.SearchMission;
 import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.Status;
+import se.citerus.collabsearch.store.facades.SearchMissionDAO;
+import se.citerus.collabsearch.store.inmemory.SearchMissionDAOInMemory;
 
 public class SearchMissionService { //TODO refactor into spring service
 	
 	private SearchMissionDAO searchMissionDAL;
 	
 	public SearchMissionService() {
-		//TODO choose type of DAL by config file
+		//TODO choose type of DAO by config file
 		//searchMissionDAL = new SearchMissionDALMongoDB();
 		searchMissionDAL = new SearchMissionDAOInMemory();
 	}

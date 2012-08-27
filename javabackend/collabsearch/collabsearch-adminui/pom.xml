@@ -125,6 +125,11 @@
 			<artifactId>collabsearch-model</artifactId>
 			<version>1.0</version>
 		</dependency>
+		<dependency>
+			<groupId>se.citerus</groupId>
+			<artifactId>collabsearch-store</artifactId>
+			<version>1.0</version>
+		</dependency>
 	</dependencies>
 
 </project>

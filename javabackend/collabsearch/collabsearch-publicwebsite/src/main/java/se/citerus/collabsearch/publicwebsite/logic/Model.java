@@ -4,10 +4,10 @@ import java.util.Date;
 
 import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.SearchOperationIntro;
+import se.citerus.collabsearch.model.Status;
 import se.citerus.collabsearch.publicwebsite.ControllerListener;
 
 public class Model {
-
 	private ControllerListener listener;
 	private RestClient restClient;
 
@@ -32,7 +32,7 @@ public class Model {
 						+ "dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non "
 						+ "proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
 				new Date(System.currentTimeMillis()), 
-				"Plats XYZ");
+				"Plats XYZ", new Status(0, "Sökande pågår", "beskrivning här..."));
 	}
 
 	public void submitSearchOpApplication(String selectedOp, String name,

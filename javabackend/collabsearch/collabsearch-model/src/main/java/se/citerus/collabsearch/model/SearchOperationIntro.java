@@ -7,6 +7,13 @@ public class SearchOperationIntro {
 	private String title;
 	private String descr;
 
+	/**
+	 * Serialization ctor.
+	 */
+	public SearchOperationIntro() {
+		//intentionally left empty
+	}
+	
 	public SearchOperationIntro(String title, String descr) {
 		this.title = title;
 		this.descr = descr;
@@ -26,6 +33,11 @@ public class SearchOperationIntro {
 
 	public void setDescr(String descr) {
 		this.descr = descr;
+	}
+	
+	@Override
+	public String toString() {
+		return title + ", " + descr;
 	}
 
 }

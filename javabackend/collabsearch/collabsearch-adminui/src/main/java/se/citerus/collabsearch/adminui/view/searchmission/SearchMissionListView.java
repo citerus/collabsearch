@@ -56,18 +56,18 @@ public class SearchMissionListView extends CustomComponent {
 		endMissionButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
 				//TODO should this be change status or remove?
-				SearchMissionService handler = null;
+				SearchMissionService service = null;
 				String itemId = (String) table.getValue();
 				if (itemId != null) {
 					try {
-						handler = new SearchMissionService();
-						handler.endMission(itemId);
+						service = new SearchMissionService();
+						service.endMission(itemId);
 						//table.removeItem(itemId);
 					} catch (Exception e) {
 						e.printStackTrace();
 					} finally {
-						if (handler != null) {
-							handler.cleanUp();
+						if (service != null) {
+							service.cleanUp();
 						}
 					}
 				} else {

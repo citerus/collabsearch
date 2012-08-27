@@ -303,23 +303,9 @@ public class OperationsListView extends CustomComponent {
 		lineBreaker.setContentMode(Label.CONTENT_XHTML);
 		layout.addComponent(lineBreaker);
 		
-		HorizontalLayout locationLayout = new HorizontalLayout();
-		locationLayout.setSpacing(true);
-		Label locationKeyLabel = new Label("<b>Ort:</b>");
-		locationKeyLabel.setContentMode(Label.CONTENT_XHTML);
-		locationLayout.addComponent(locationKeyLabel);
-		Label locationValueLabel = new Label(dto.getLocation());
-		locationLayout.addComponent(locationValueLabel);
-		layout.addComponent(locationLayout);
-		
-		HorizontalLayout dateLayout = new HorizontalLayout();
-		dateLayout.setSpacing(true);
-		Label dateKeyLabel = new Label("<b>Datum:</b>"); 
-		dateKeyLabel.setContentMode(Label.CONTENT_XHTML);
-		dateLayout.addComponent(dateKeyLabel);
-		Label dateValueLabel = new Label(getFormattedDate(dto.getDate())); // dto.getDate().toString()
-		dateLayout.addComponent(dateValueLabel);
-		layout.addComponent(dateLayout);
+		makeFormItem("<b>Ort:</b>", dto.getLocation(), layout);
+		makeFormItem("<b>Datum:</b>", getFormattedDate(dto.getDate()), layout);
+		makeFormItem("<b>Status:</b>", dto.getStatus().getName(), layout);
 		
 		Button lowerRightButton = new Button("Anmäl mig", lowerRightClickListener);
 		layout.addComponent(lowerRightButton);
@@ -327,6 +313,17 @@ public class OperationsListView extends CustomComponent {
 		
 		panel.setContent(layout);
 		return panel;
+	}
+
+	private void makeFormItem(String keyString, String valueString, VerticalLayout layout) {
+		HorizontalLayout subLayout = new HorizontalLayout();
+		subLayout.setSpacing(true);
+		Label formFieldKeyLabel = new Label(keyString);
+		formFieldKeyLabel.setContentMode(Label.CONTENT_XHTML);
+		subLayout.addComponent(formFieldKeyLabel);
+		Label formFieldValueLabel = new Label(valueString);
+		subLayout.addComponent(formFieldValueLabel);
+		layout.addComponent(subLayout);
 	}
 
 	private String getFormattedDate(Date date) {

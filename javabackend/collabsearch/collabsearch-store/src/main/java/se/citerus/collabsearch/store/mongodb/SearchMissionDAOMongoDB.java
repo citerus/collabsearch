@@ -1,4 +1,4 @@
-package se.citerus.collabsearch.adminui.DAL;
+package se.citerus.collabsearch.store.mongodb;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -17,6 +17,7 @@ import se.citerus.collabsearch.model.FileMetadata;
 import se.citerus.collabsearch.model.SearchMission;
 import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.Status;
+import se.citerus.collabsearch.store.facades.SearchMissionDAO;
 
 public class SearchMissionDAOMongoDB implements SearchMissionDAO {
 

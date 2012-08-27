@@ -1,4 +1,4 @@
-package se.citerus.collabsearch.adminui.DAL;
+package se.citerus.collabsearch.store.inmemory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import se.citerus.collabsearch.model.User;
+import se.citerus.collabsearch.store.facades.UserDAO;
 
 public class UserDAOInMemory implements UserDAO {
 	

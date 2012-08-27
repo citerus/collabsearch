@@ -2,11 +2,11 @@ package se.citerus.collabsearch.adminui.logic;
 
 import java.io.IOException;
 
+import se.citerus.collabsearch.store.facades.UserDAO;
+import se.citerus.collabsearch.store.mongodb.UserDAOMongoDB;
+
 import com.mongodb.MongoException;
 import com.mongodb.util.Hash;
-
-import se.citerus.collabsearch.adminui.DAL.UserDAO;
-import se.citerus.collabsearch.adminui.DAL.UserDAOMongoDB;
 
 public class Authenticator {
 	

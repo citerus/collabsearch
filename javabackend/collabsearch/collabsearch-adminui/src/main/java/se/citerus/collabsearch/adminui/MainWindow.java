@@ -123,6 +123,7 @@ public class MainWindow extends Window implements LoginListener, ViewSwitchContr
 	public void switchToSearchOperationEditView(String opName, String missionName) {
 		if (searchOperationEditView == null) {
 			searchOperationEditView = new SearchOperationEditView(this);
+			searchOperationEditView.init();
 		}
 		searchOperationEditView.resetView(opName, missionName);
 		setContent(searchOperationEditView);

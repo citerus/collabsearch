@@ -1,10 +1,19 @@
 package se.citerus.collabsearch.model;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
+@XmlRootElement
 public class Status {
 	
 	private int id;
 	private String name;
 	private String descr;
+	
+	/**
+	 * Serialization ctor.
+	 */
+	public Status() {
+	}
 	
 	public Status(int id, String name, String descr) {
 		super();

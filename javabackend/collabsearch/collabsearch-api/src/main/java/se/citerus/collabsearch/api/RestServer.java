@@ -11,9 +11,11 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.SearchOperationIntro;
+import se.citerus.collabsearch.model.Status;
 import se.citerus.collabsearch.model.interfaces.RestService;
 
 @Path("/ws")
@@ -25,7 +27,7 @@ public class RestServer implements RestService {
 	public String hello() {
 		return "Hello world!" + "\n";
 	}
-	
+
 	@GET
 	@Path("/echo/{input}")
 	@Produces(MediaType.TEXT_PLAIN)
@@ -38,6 +40,7 @@ public class RestServer implements RestService {
 	@Path("/getAllOps")
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	public SearchOperationIntro[] getAllOps() {
+		//TODO get all ops from the db
 		SearchOperationIntro[] array = new SearchOperationIntro[3];
 		array[0] = new SearchOperationIntro("Sökoperation 1", "text...");
 		array[1] = new SearchOperationIntro("Sökoperation 2", "text...");
@@ -52,30 +55,42 @@ public class RestServer implements RestService {
 	public SearchOperation getSearchOperation(@PathParam("name") String name) {
 		//TODO search db for single op with matching name/id
 		SearchOperation op = new SearchOperation(name, "beskrivning här",
-				new Date(System.currentTimeMillis()), "Plats XYZ");
+				new Date(System.currentTimeMillis()), "Plats XYZ",
+				new Status(0, "status 1", "beskrivn..."));
 		return op;
 	}
 
 	@POST
 	@Path("/apply")
 	@Consumes("application/x-www-form-urlencoded")
-	public void applyForSearchOp(
+	public Response applyForSearchOp(
 			@FormParam("opname") String opName, 
 			@FormParam("name") String name, 
 			@FormParam("email") String email, 
 			@FormParam("tele") String tele) {
 		//TODO store application in db
+		System.out.println("SearchOp application received: " + 
+				opName + ", " + name + ", " + email + ", " + tele);
+		Response response = Response
+				.ok()
+				.lastModified(new Date(System.currentTimeMillis()))
+				.build();
+		return response;
 	}
 
 	@GET
 	@Path("/search")
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-	public SearchOperation[] searchForOps(
+	public SearchOperationIntro[] searchForOps(
 			@DefaultValue("") @QueryParam("title") String title, 
 			@DefaultValue("") @QueryParam("location") String location, 
 			@DefaultValue("") @QueryParam("date") String date) {
 		//TODO search db for matching ops
-		return null;
+		SearchOperationIntro[] array = new SearchOperationIntro[3];
+		array[0] = new SearchOperationIntro("Sökoperation 1", "text...");
+		array[1] = new SearchOperationIntro("Sökoperation 2", "text...");
+		array[2] = new SearchOperationIntro("Sökoperation 3", "text...");
+		return array;
 	}
 
 }

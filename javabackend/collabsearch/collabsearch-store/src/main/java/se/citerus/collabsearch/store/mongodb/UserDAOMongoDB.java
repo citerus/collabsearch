@@ -1,4 +1,4 @@
-package se.citerus.collabsearch.adminui.DAL;
+package se.citerus.collabsearch.store.mongodb;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Random;
 
 import se.citerus.collabsearch.model.User;
+import se.citerus.collabsearch.store.facades.UserDAO;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -25,7 +26,7 @@ public class UserDAOMongoDB implements UserDAO {
 	private DBCollection userColl;
 	private DBCollection authColl;
 	private DBCollection roleColl;
-	
+
 	private static final boolean ENABLEUPSERT = true;
 	private static final boolean DISABLEUPSERT = false;
 	private static final boolean ENABLEMULTIUPDATE = true;
@@ -44,7 +45,7 @@ public class UserDAOMongoDB implements UserDAO {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public boolean findUser(String username, char[] password) throws IOException {
 		try {
 			BasicDBObject query = new BasicDBObject("username", username).

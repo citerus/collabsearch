@@ -56,9 +56,12 @@ public class SearchMissionEditView extends CustomComponent {
 	
 	public SearchMissionEditView(final ViewSwitchController listener) {
 		this.listener = listener;
-		buildMainLayout();
+		mainLayout = new VerticalLayout();
 		setCompositionRoot(mainLayout);
-		listener.setMainWindowCaption("Collaborative Search - Redigera sökuppdrag");
+	}
+
+	public void init() {
+		buildMainLayout();
 		
 		//save and store search mission (including files and ops) 
 		saveButton.addListener(new ClickListener() {
@@ -73,6 +76,164 @@ public class SearchMissionEditView extends CustomComponent {
 				listener.switchToSearchMissionListView();
 			}
 		});
+		
+		
+		
+		listener.setMainWindowCaption("Collaborative Search - Redigera sökuppdrag");
+	}
+
+	public void resetView(String selectedSearchMissionName) {
+		if (selectedSearchMissionName != null) { //edit mission mode
+			populateForms(selectedSearchMissionName);
+		} else { //new mission mode
+			titleField.setValue(null);
+			descrField.setValue(descrField.getNullRepresentation());
+			prioField.setValue(prioField.getNullRepresentation());
+			statusField.setValue(null);
+			
+//			fileBeanContainer.removeAllItems();
+//			opsBeanContainer.removeAllItems();
+			
+			clearSavedState();
+			setupSavedState();
+		}
+	}
+
+	private void populateForms(String missionName) {
+		SearchMission mission = null;
+		SearchMissionService handler = null;
+		try {
+			handler = new SearchMissionService();
+			mission = handler.getSearchMissionData(missionName);
+			if (mission == null) {
+				listener.displayError("Fel", "Uppdraget " + missionName + " kunde ej hittas");
+				return;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (handler != null) {
+				handler.cleanUp();
+			}
+		}
+		
+		titleField.setValue(mission.getName());
+		descrField.setValue(mission.getDescription());
+		prioField.setValue(mission.getPrio());
+		statusField.setValue(mission.getStatus().getName());
+		
+		fileBeanContainer.removeAllItems();
+		List<FileMetadata> fileList = mission.getFileList();
+		for (FileMetadata fileMetadata : fileList) {
+			fileBeanContainer.addBean(fileMetadata);
+		}
+		
+		opsBeanContainer.removeAllItems();
+		List<SearchOperation> opsList2 = mission.getOpsList();
+		for (SearchOperation searchOp : opsList2) {
+			opsBeanContainer.addItem(searchOp);
+		}
+	}
+
+	private void buildMainLayout() {
+		mainLayout.setSizeFull();
+		mainLayout.setMargin(false, false, false, true);
+		mainLayout.setSpacing(true);
+		
+		Label headlineLabel = new Label("<h1><b>Redigera sökuppdrag</b></h1>");
+		headlineLabel.setContentMode(Label.CONTENT_XHTML);
+		mainLayout.addComponent(headlineLabel);
+		
+		HorizontalLayout outerLayout = new HorizontalLayout();
+		outerLayout.setWidth("66%");
+		outerLayout.setHeight("75%");
+		
+		VerticalLayout leftFormLayout = new VerticalLayout();
+		leftFormLayout.setWidth("100%");
+		leftFormLayout.setMargin(false, true, false, false);
+		leftFormLayout.setSpacing(true);
+		
+		Label titleLabel = new Label("Titel");
+		titleField = new TextField();
+		makeFormItem(leftFormLayout, titleLabel, titleField, Alignment.MIDDLE_LEFT);
+		titleField.setNullRepresentation("");
+		titleField.setImmediate(true);
+		
+		Label descrLabel = new Label("Beskrivning");
+		descrField = new TextArea();
+		makeFormItem(leftFormLayout, descrLabel, descrField, Alignment.TOP_LEFT);
+		descrField.setNullRepresentation("");
+		descrField.setImmediate(true);
+		
+		Label prioLabel = new Label("Prio");
+		prioField = new TextField();
+		makeFormItem(leftFormLayout, prioLabel, prioField, Alignment.MIDDLE_LEFT);
+		prioField.setNullRepresentation("");
+		prioField.setImmediate(true);
+		
+		Label statusLabel = new Label("Process/Status");
+		statusBeanContainer = new BeanContainer<String, Status>(Status.class);
+		statusBeanContainer.setBeanIdProperty("name");
+		statusField = new ComboBox(null, statusBeanContainer);
+		makeFormItem(leftFormLayout, statusLabel, statusField, Alignment.MIDDLE_LEFT);
+		statusField.setNullSelectionAllowed(false);
+		
+		populateStatusField();
+		
+		//TODO break out file list into separate view
+//		buildFileListLayout(leftFormLayout);
+		
+		outerLayout.addComponent(leftFormLayout);
+		
+		VerticalLayout rightFormLayout = new VerticalLayout();
+		rightFormLayout.setWidth("75%");
+		rightFormLayout.setHeight("100%");
+
+		//TODO break out ops list into separate view
+//		buildOpsListLayout(outerLayout, rightFormLayout);
+		
+		HorizontalLayout buttonLayout = new HorizontalLayout();
+		buttonLayout.setSpacing(true);
+		cancelButton = new Button("Avbryt");
+		buttonLayout.addComponent(cancelButton);
+		
+		saveButton = new Button("Spara");
+		buttonLayout.addComponent(saveButton);
+		
+		rightFormLayout.addComponent(buttonLayout);
+		rightFormLayout.setComponentAlignment(buttonLayout, Alignment.BOTTOM_RIGHT);
+		rightFormLayout.setSpacing(true);
+		
+		outerLayout.addComponent(rightFormLayout);
+		
+		mainLayout.addComponent(outerLayout);
+		
+		setupValidators();
+	}
+
+	private void buildOpsListLayout(HorizontalLayout outerLayout,
+			VerticalLayout rightFormLayout) {
+		opsBeanContainer = new BeanItemContainer<SearchOperation>(SearchOperation.class);
+		opsList = new ListSelect("Operationer", opsBeanContainer);
+		opsList.setWidth("100%");
+		opsList.setNullSelectionAllowed(false);
+		rightFormLayout.addComponent(opsList);
+		
+		HorizontalLayout opsButtons = new HorizontalLayout();
+		opsButtons.setSpacing(true);
+		
+		deleteButton = new Button("Ta bort");
+		opsButtons.addComponent(deleteButton);
+		
+		editButton = new Button("Redigera");
+		opsButtons.addComponent(editButton);
+		
+		addButton = new Button("Lägg till");
+		opsButtons.addComponent(addButton);
+		
+		rightFormLayout.addComponent(opsButtons);
+		rightFormLayout.setComponentAlignment(opsButtons, Alignment.TOP_CENTER);
+		outerLayout.addComponent(rightFormLayout);
 		
 		//add new search operation
 		addButton.addListener(new ClickListener() {
@@ -119,105 +280,7 @@ public class SearchMissionEditView extends CustomComponent {
 		});
 	}
 
-	public void resetView(String selectedSearchMissionName) {
-		if (selectedSearchMissionName != null) { //edit mission mode
-			populateForms(selectedSearchMissionName);
-		} else { //new mission mode
-			titleField.setValue(null);
-			descrField.setValue(descrField.getNullRepresentation());
-			prioField.setValue(prioField.getNullRepresentation());
-			statusField.setValue(null);
-			
-			fileBeanContainer.removeAllItems();
-			opsBeanContainer.removeAllItems();
-			
-			clearSavedState();
-			setupSavedState();
-		}
-	}
-
-	private void populateForms(String missionName) {
-		SearchMission mission = null;
-		SearchMissionService handler = null;
-		try {
-			handler = new SearchMissionService();
-			mission = handler.getSearchMissionData(missionName);
-			if (mission == null) {
-				listener.displayError("Fel", "Uppdraget " + missionName + " kunde ej hittas");
-				return;
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			if (handler != null) {
-				handler.cleanUp();
-			}
-		}
-		
-		titleField.setValue(mission.getName());
-		descrField.setValue(mission.getDescription());
-		prioField.setValue(mission.getPrio());
-		statusField.setValue(mission.getStatus().getName());
-		
-		fileBeanContainer.removeAllItems();
-		List<FileMetadata> fileList = mission.getFileList();
-		for (FileMetadata fileMetadata : fileList) {
-			fileBeanContainer.addBean(fileMetadata);
-		}
-		
-		opsBeanContainer.removeAllItems();
-		List<SearchOperation> opsList2 = mission.getOpsList();
-		for (SearchOperation searchOp : opsList2) {
-			opsBeanContainer.addItem(searchOp);
-		}
-	}
-
-	private void buildMainLayout() {
-		mainLayout = new VerticalLayout();
-		mainLayout.setSizeFull();
-		mainLayout.setMargin(false, false, false, true);
-		mainLayout.setSpacing(true);
-		
-		Label headlineLabel = new Label("<h1><b>Redigera sökuppdrag</b></h1>");
-		headlineLabel.setContentMode(Label.CONTENT_XHTML);
-		mainLayout.addComponent(headlineLabel);
-		
-		HorizontalLayout outerLayout = new HorizontalLayout();
-		outerLayout.setWidth("66%");
-		outerLayout.setHeight("75%");
-		
-		VerticalLayout leftFormLayout = new VerticalLayout();
-		leftFormLayout.setWidth("100%");
-		leftFormLayout.setMargin(false, true, false, false);
-		leftFormLayout.setSpacing(true);
-		
-		Label titleLabel = new Label("Titel");
-		titleField = new TextField();
-		makeFormItem(leftFormLayout, titleLabel, titleField, Alignment.MIDDLE_LEFT);
-		titleField.setNullRepresentation("");
-		titleField.setImmediate(true);
-		
-		Label descrLabel = new Label("Beskrivning");
-		descrField = new TextArea();
-		makeFormItem(leftFormLayout, descrLabel, descrField, Alignment.TOP_LEFT);
-		descrField.setNullRepresentation("");
-		descrField.setImmediate(true);
-		
-		Label prioLabel = new Label("Prio");
-		prioField = new TextField();
-		makeFormItem(leftFormLayout, prioLabel, prioField, Alignment.MIDDLE_LEFT);
-		prioField.setNullRepresentation("");
-		prioField.setImmediate(true);
-		
-		Label statusLabel = new Label("Process/Status");
-		statusBeanContainer = new BeanContainer<String, Status>(Status.class);
-		statusBeanContainer.setBeanIdProperty("name");
-		statusField = new ComboBox(null, statusBeanContainer);
-		makeFormItem(leftFormLayout, statusLabel, statusField, Alignment.MIDDLE_LEFT);
-		statusField.setNullSelectionAllowed(false);
-		
-		populateStatusField();
-		
+	private void buildFileListLayout(VerticalLayout leftFormLayout) {
 		VerticalLayout fileListLayout = new VerticalLayout();
 		fileListLayout.setWidth("100%");
 		
@@ -253,11 +316,6 @@ public class SearchMissionEditView extends CustomComponent {
 		fileUploadHandler.setTableBeanRef(fileBeanContainer);
 		fileUploadHandler.setViewRef(listener);
 		final Upload fileUpload = new Upload(null, fileUploadHandler);
-//		fileUpload.addListener(new StartedListener() {
-//			public void uploadStarted(StartedEvent event) {
-//				startFileUpload(fileUploadHandler);
-//			}
-//		});
 		fileUpload.setButtonCaption(null);
 		fileUpload.addListener((Upload.SucceededListener) fileUploadHandler);
 		fileUpload.addListener((Upload.FailedListener) fileUploadHandler);
@@ -275,50 +333,6 @@ public class SearchMissionEditView extends CustomComponent {
 		fileListLayout.setComponentAlignment(fileButtonsLayout, Alignment.TOP_RIGHT);
 		fileListLayout.setExpandRatio(fileButtonsLayout, 1f);
 		leftFormLayout.addComponent(fileListLayout);
-		
-		outerLayout.addComponent(leftFormLayout);
-		
-		VerticalLayout rightFormLayout = new VerticalLayout();
-		rightFormLayout.setWidth("75%");
-		rightFormLayout.setHeight("100%");
-		
-		opsBeanContainer = new BeanItemContainer<SearchOperation>(SearchOperation.class);
-		opsList = new ListSelect("Operationer", opsBeanContainer);
-		opsList.setWidth("100%");
-		opsList.setNullSelectionAllowed(false);
-		rightFormLayout.addComponent(opsList);
-		
-		HorizontalLayout opsButtons = new HorizontalLayout();
-		opsButtons.setSpacing(true);
-		
-		deleteButton = new Button("Ta bort");
-		opsButtons.addComponent(deleteButton);
-		
-		editButton = new Button("Redigera");
-		opsButtons.addComponent(editButton);
-		
-		addButton = new Button("Lägg till");
-		opsButtons.addComponent(addButton);
-		
-		rightFormLayout.addComponent(opsButtons);
-		rightFormLayout.setComponentAlignment(opsButtons, Alignment.TOP_CENTER);
-		outerLayout.addComponent(rightFormLayout);
-		
-		HorizontalLayout buttonLayout = new HorizontalLayout();
-		buttonLayout.setSpacing(true);
-		cancelButton = new Button("Avbryt");
-		buttonLayout.addComponent(cancelButton);
-		
-		saveButton = new Button("Spara");
-		buttonLayout.addComponent(saveButton);
-		
-		rightFormLayout.addComponent(buttonLayout);
-		rightFormLayout.setComponentAlignment(buttonLayout, Alignment.BOTTOM_RIGHT);
-		rightFormLayout.setSpacing(true);
-		
-		mainLayout.addComponent(outerLayout);
-		
-		setupValidators();
 	}
 	
 	private void populateStatusField() {

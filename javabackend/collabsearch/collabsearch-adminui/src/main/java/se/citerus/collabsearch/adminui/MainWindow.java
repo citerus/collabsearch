@@ -115,6 +115,7 @@ public class MainWindow extends Window implements LoginListener, ViewSwitchContr
 	public void switchToSearchMissionEditView(String selectedSearchMissionName) {
 		if (searchMissionEditView == null) {
 			searchMissionEditView = new SearchMissionEditView(this);
+			searchMissionEditView.init();
 		}
 		searchMissionEditView.resetView(selectedSearchMissionName);
 		setContent(searchMissionEditView);

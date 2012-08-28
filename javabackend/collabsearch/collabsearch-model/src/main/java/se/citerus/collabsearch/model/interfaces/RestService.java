@@ -13,7 +13,7 @@ public interface RestService {
 
 	public SearchOperationIntro[] getAllOps();
 
-	public SearchOperation getSearchOperation(String name);
+	public SearchOperation getSearchOperationByName(String name);
 
 	public Response applyForSearchOp(String opName, String name, String email, String tele);
 

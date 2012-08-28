@@ -16,7 +16,7 @@ public class RestClient implements RestService {
 		return null;
 	}
 
-	public SearchOperation getSearchOperation(String name) {
+	public SearchOperation getSearchOperationByName(String name) {
 		return null;
 	}
 

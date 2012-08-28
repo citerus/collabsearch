@@ -52,11 +52,14 @@ public class RestServer implements RestService {
 	@Path("/getSearchOp/{name}")
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	@Consumes(MediaType.TEXT_PLAIN)
-	public SearchOperation getSearchOperation(@PathParam("name") String name) {
+	public SearchOperation getSearchOperationByName(@PathParam("name") String name) {
 		//TODO search db for single op with matching name/id
+		if (name != null && name.equals("debug_nonexistent_op")) {
+			return null;
+		}
 		SearchOperation op = new SearchOperation(name, "beskrivning här",
-				new Date(System.currentTimeMillis()), "Plats XYZ",
-				new Status(0, "status 1", "beskrivn..."));
+			new Date(System.currentTimeMillis()), "Plats XYZ",
+			new Status(0, "status 1", "beskrivn..."));
 		return op;
 	}
 
@@ -86,6 +89,9 @@ public class RestServer implements RestService {
 			@DefaultValue("") @QueryParam("location") String location, 
 			@DefaultValue("") @QueryParam("date") String date) {
 		//TODO search db for matching ops
+		if (title != null && title.equals("debug_nonexistent_op")) {
+			return null;
+		}
 		SearchOperationIntro[] array = new SearchOperationIntro[3];
 		array[0] = new SearchOperationIntro("Sökoperation 1", "text...");
 		array[1] = new SearchOperationIntro("Sökoperation 2", "text...");

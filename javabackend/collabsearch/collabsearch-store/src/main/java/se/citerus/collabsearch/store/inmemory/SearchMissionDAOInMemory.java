@@ -8,9 +8,11 @@ import java.util.Collections;
 import java.util.List;
 
 import se.citerus.collabsearch.model.FileMetadata;
+import se.citerus.collabsearch.model.Group;
 import se.citerus.collabsearch.model.SearchMission;
 import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.Status;
+import se.citerus.collabsearch.model.Zone;
 import se.citerus.collabsearch.store.facades.SearchMissionDAO;
 
 public class SearchMissionDAOInMemory implements SearchMissionDAO {
@@ -62,21 +64,6 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 			}
 		}
 		return null;
-	}
-
-	public void addOrModifyMission(SearchMission mission) throws IOException {
-		for (SearchMission listedMission : missionsList) {
-			if (mission.getName().equals(listedMission)) {
-				//edit the existing mission
-				listedMission.setDescription(mission.getDescription());
-				listedMission.setPrio(mission.getPrio());
-				listedMission.setStatus(mission.getStatus());
-				return;
-			}
-		}
-		
-		//else, add a new mission
-		missionsList.add(mission);
 	}
 
 	public List<SearchOperation> getAllSearchOpsForMission(String missionName) {
@@ -147,15 +134,36 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 	}
 	
 	private void addMockOps(List<SearchOperation> opsList) {
-		opsList.add(new SearchOperation("Operation 1", "beskrivn...", 
+		List<Group> groups = new ArrayList<Group>();
+		groups.add(new Group("Grupp A"));
+		groups.add(new Group("Grupp B"));
+		groups.add(new Group("Grupp C"));
+		
+		List<Zone> zones = new ArrayList<Zone>();
+		zones.add(new Zone("Zon Alfa"));
+		zones.add(new Zone("Zon Beta"));
+		zones.add(new Zone("Zon Gamma"));
+		
+		SearchOperation searchOp = new SearchOperation("Operation 1", "beskrivn...", 
 				new Date(System.currentTimeMillis()), "Plats X", 
-				new Status(0, "status 1", "beskrivn...")));
-		opsList.add(new SearchOperation("Operation 2", "beskrivn...", 
+				new Status(0, "status 1", "beskrivn..."));
+		searchOp.setGroups(groups);
+		searchOp.setZones(zones);
+		opsList.add(searchOp);
+		
+		searchOp = new SearchOperation("Operation 2", "beskrivn...", 
 				new Date(System.currentTimeMillis()+86400000L), "Plats Y", 
-				new Status(1, "status 2", "beskrivn...")));
-		opsList.add(new SearchOperation("Operation 3", "beskrivn...", 
+				new Status(1, "status 2", "beskrivn..."));
+		searchOp.setGroups(groups);
+		searchOp.setZones(zones);
+		opsList.add(searchOp);
+		
+		searchOp = new SearchOperation("Operation 3", "beskrivn...", 
 				new Date(System.currentTimeMillis()+(2*86400000L)), "Plats Z", 
-				new Status(2, "status 3", "beskrivn...")));
+				new Status(2, "status 3", "beskrivn..."));
+		searchOp.setGroups(groups);
+		searchOp.setZones(zones);
+		opsList.add(searchOp);
 	}
 
 	public void addFileMetadata(String missionName, FileMetadata fileMetaData) throws IOException {
@@ -239,5 +247,24 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 			}
 		}
 		throw new IOException("Status " + statusName + " ej funnen");
+	}
+
+	@Override
+	public void addNewSearchMission(SearchMission mission) throws IOException {
+		missionsList.add(mission);
+	}
+
+	@Override
+	public void editExistingMission(SearchMission mission, String missionName)
+			throws IOException {
+		for (SearchMission listedMission : missionsList) {
+			if (missionName.equals(listedMission.getName())) {
+				listedMission.setName(mission.getName());
+				listedMission.setDescription(mission.getDescription());
+				listedMission.setPrio(mission.getPrio());
+				listedMission.setStatus(mission.getStatus());
+				return;
+			}
+		}
 	}
 }

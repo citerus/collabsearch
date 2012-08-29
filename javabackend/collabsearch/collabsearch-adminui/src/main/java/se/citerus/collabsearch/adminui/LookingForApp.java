@@ -15,12 +15,15 @@
  */
 package se.citerus.collabsearch.adminui;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.mongodb.Mongo;
 import com.vaadin.Application;
 import com.vaadin.terminal.gwt.server.HttpServletRequestListener;
+import com.vaadin.terminal.gwt.server.WebApplicationContext;
+import com.vaadin.terminal.gwt.server.WebBrowser;
 import com.vaadin.ui.Window;
 
 /**
@@ -29,17 +32,17 @@ import com.vaadin.ui.Window;
 @SuppressWarnings("serial")
 public class LookingForApp extends Application implements HttpServletRequestListener {
 	private Window window;
-	
+
 	private static ThreadLocal<LookingForApp> threadLocal = new ThreadLocal<LookingForApp>();
-	
+
 	@Override
 	public void init() {
 		setInstance(this);
-		//Mongo mongo = new Mongo(); //TODO refactor to use single connector (spring service!)
 		window = new MainWindow();
+		((MainWindow)window).initWindow();
 		setMainWindow(window);
 	}
-	
+
 	public static LookingForApp getInstance() {
 		return threadLocal.get();
 	}

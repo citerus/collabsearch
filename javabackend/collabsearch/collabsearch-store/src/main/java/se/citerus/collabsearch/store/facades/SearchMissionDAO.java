@@ -15,8 +15,6 @@ public interface SearchMissionDAO {
 	public void disconnect();
 
 	public void endMission(String missionName) throws IOException;
-	
-	public void addOrModifyMission(SearchMission mission) throws IOException;
 
 	public List<SearchOperation> getAllSearchOpsForMission(String missionName) throws IOException;
 	
@@ -33,6 +31,10 @@ public interface SearchMissionDAO {
 	public void deleteSearchOperation(String searchOpName, String missionName) throws IOException;
 
 	public void addOrModifySearchOperation(SearchOperation operation, String missionName) throws IOException;
+	
+	public void addNewSearchMission(SearchMission mission) throws IOException;
+	
+	public void editExistingMission(SearchMission mission, String missionName) throws IOException;
 
 	public Status findStatus(String statusName) throws IOException;
 }

@@ -53,8 +53,12 @@ public class SearchMissionService { //TODO refactor into spring service
 		return searchMissionDAL.findOperation(name, missionName);
 	}
 
-	public void editMission(SearchMission mission) throws Exception {
-		searchMissionDAL.addOrModifyMission(mission);
+	public void addOrModifyMission(SearchMission mission, String missionName) throws Exception {
+		if (missionName == null) {
+			searchMissionDAL.addNewSearchMission(mission);
+		} else {
+			searchMissionDAL.editExistingMission(mission, missionName);
+		}
 	}
 
 	public void addFileToMission(String mission, FileMetadata metadata) throws Exception {
@@ -67,18 +71,6 @@ public class SearchMissionService { //TODO refactor into spring service
 
 	public void deleteSearchOperation(String searchOpName, String missionName) throws Exception {
 		searchMissionDAL.deleteSearchOperation(searchOpName, missionName);
-	}
-
-	public void clearSavedState() {
-		if (searchMissionDAL instanceof SearchMissionDAOInMemory) {
-			((SearchMissionDAOInMemory)searchMissionDAL).clearNewMissionContainer();
-		}
-	}
-
-	public void setupSavedState() {
-		if (searchMissionDAL instanceof SearchMissionDAOInMemory) {
-			((SearchMissionDAOInMemory)searchMissionDAL).initNewMissionContainer();
-		}
 	}
 
 	public void editSearchOp(SearchOperation operation, String missionName) throws Exception {

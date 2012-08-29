@@ -1,6 +1,8 @@
 package se.citerus.collabsearch.model;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -12,10 +14,14 @@ public class SearchOperation {
 	private String location;
 	private Status status;
 	
+	private List<Zone> zones;
+	private List<Group> groups;
+	
 	/**
 	 * Serialization ctor.
 	 */
 	public SearchOperation() {
+		//Constructor intentionally left empty.
 	}
 
 	public SearchOperation(String title, String descr, 
@@ -24,7 +30,10 @@ public class SearchOperation {
 		this.descr = descr;
 		this.date = date;
 		this.location = location;
-		this.setStatus(status);
+		this.status = status;
+		
+		zones = new ArrayList<Zone>();
+		groups = new ArrayList<Group>();
 	}
 
 	public String getTitle() {
@@ -65,6 +74,22 @@ public class SearchOperation {
 	
 	public void setStatus(Status status) {
 		this.status = status;
+	}
+
+	public List<Zone> getZones() {
+		return zones;
+	}
+
+	public void setZones(List<Zone> zones) {
+		this.zones = zones;
+	}
+
+	public List<Group> getGroups() {
+		return groups;
+	}
+
+	public void setGroups(List<Group> groups) {
+		this.groups = groups;
 	}
 
 	@Override

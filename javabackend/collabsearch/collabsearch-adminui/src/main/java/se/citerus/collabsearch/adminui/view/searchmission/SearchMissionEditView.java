@@ -53,7 +53,8 @@ public class SearchMissionEditView extends CustomComponent {
 	private Button deleteButton;
 	private Button editButton;
 	private Button addButton;
-	
+	private String originalMissionName;
+
 	public SearchMissionEditView(final ViewSwitchController listener) {
 		this.listener = listener;
 		mainLayout = new VerticalLayout();
@@ -72,30 +73,23 @@ public class SearchMissionEditView extends CustomComponent {
 		//cancel actions and return to search mission list
 		cancelButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				clearSavedState();
 				listener.switchToSearchMissionListView();
 			}
 		});
-		
-		
 		
 		listener.setMainWindowCaption("Collaborative Search - Redigera sökuppdrag");
 	}
 
 	public void resetView(String selectedSearchMissionName) {
 		if (selectedSearchMissionName != null) { //edit mission mode
+			originalMissionName = selectedSearchMissionName;
 			populateForms(selectedSearchMissionName);
 		} else { //new mission mode
+			originalMissionName = null;
 			titleField.setValue(null);
 			descrField.setValue(descrField.getNullRepresentation());
 			prioField.setValue(prioField.getNullRepresentation());
 			statusField.setValue(null);
-			
-//			fileBeanContainer.removeAllItems();
-//			opsBeanContainer.removeAllItems();
-			
-			clearSavedState();
-			setupSavedState();
 		}
 	}
 
@@ -121,18 +115,6 @@ public class SearchMissionEditView extends CustomComponent {
 		descrField.setValue(mission.getDescription());
 		prioField.setValue(mission.getPrio());
 		statusField.setValue(mission.getStatus().getName());
-		
-		fileBeanContainer.removeAllItems();
-		List<FileMetadata> fileList = mission.getFileList();
-		for (FileMetadata fileMetadata : fileList) {
-			fileBeanContainer.addBean(fileMetadata);
-		}
-		
-		opsBeanContainer.removeAllItems();
-		List<SearchOperation> opsList2 = mission.getOpsList();
-		for (SearchOperation searchOp : opsList2) {
-			opsBeanContainer.addItem(searchOp);
-		}
 	}
 
 	private void buildMainLayout() {
@@ -145,8 +127,7 @@ public class SearchMissionEditView extends CustomComponent {
 		mainLayout.addComponent(headlineLabel);
 		
 		HorizontalLayout outerLayout = new HorizontalLayout();
-		outerLayout.setWidth("66%");
-		outerLayout.setHeight("75%");
+		outerLayout.setWidth("40%");
 		
 		VerticalLayout leftFormLayout = new VerticalLayout();
 		leftFormLayout.setWidth("100%");
@@ -178,16 +159,12 @@ public class SearchMissionEditView extends CustomComponent {
 		makeFormItem(leftFormLayout, statusLabel, statusField, Alignment.MIDDLE_LEFT);
 		statusField.setNullSelectionAllowed(false);
 		
-		populateStatusField();
+		populateStatusComboBox();
 		
 		//TODO break out file list into separate view
 //		buildFileListLayout(leftFormLayout);
 		
 		outerLayout.addComponent(leftFormLayout);
-		
-		VerticalLayout rightFormLayout = new VerticalLayout();
-		rightFormLayout.setWidth("75%");
-		rightFormLayout.setHeight("100%");
 
 		//TODO break out ops list into separate view
 //		buildOpsListLayout(outerLayout, rightFormLayout);
@@ -200,12 +177,9 @@ public class SearchMissionEditView extends CustomComponent {
 		saveButton = new Button("Spara");
 		buttonLayout.addComponent(saveButton);
 		
-		rightFormLayout.addComponent(buttonLayout);
-		rightFormLayout.setComponentAlignment(buttonLayout, Alignment.BOTTOM_RIGHT);
-		rightFormLayout.setSpacing(true);
-		
-		outerLayout.addComponent(rightFormLayout);
-		
+		leftFormLayout.addComponent(buttonLayout);
+		leftFormLayout.setComponentAlignment(buttonLayout, Alignment.BOTTOM_RIGHT);
+				
 		mainLayout.addComponent(outerLayout);
 		
 		setupValidators();
@@ -240,7 +214,7 @@ public class SearchMissionEditView extends CustomComponent {
 			public void buttonClick(ClickEvent event) {
 				String missionTitle = (String) titleField.getValue();
 				if (missionTitle != null) {
-					commitMission(missionTitle);
+//					commitMission(missionTitle);
 					listener.switchToSearchOperationEditView(null, missionTitle);
 				} else {
 					listener.displayError("Fel: Sökuppdragsnamn saknas", 
@@ -254,7 +228,7 @@ public class SearchMissionEditView extends CustomComponent {
 				String missionTitle = (String) titleField.getValue();
 				String selectedOp = opsList.getValue().toString();
 				if (missionTitle != null && selectedOp != null) {
-					commitMission(missionTitle);
+//					commitMission(missionTitle);
 					listener.switchToSearchOperationEditView(selectedOp, missionTitle);
 				} else {
 					listener.displayError("Fel: Sökuppdragsnamn saknas", 
@@ -335,7 +309,7 @@ public class SearchMissionEditView extends CustomComponent {
 		leftFormLayout.addComponent(fileListLayout);
 	}
 	
-	private void populateStatusField() {
+	private void populateStatusComboBox() {
 		statusBeanContainer.removeAllItems();
 		SearchMissionService handler = new SearchMissionService();
 		List<Status> listOfStatuses = null;
@@ -402,7 +376,7 @@ public class SearchMissionEditView extends CustomComponent {
 		}
 	}
 	
-	private boolean fieldsValid() {
+	private boolean allFieldsValid() {
 		AbstractField[] fields = {titleField, descrField, prioField, statusField};
 		for (AbstractField field : fields) {
 			if (!field.isValid()) {
@@ -416,34 +390,10 @@ public class SearchMissionEditView extends CustomComponent {
 		titleField.addValidator(new StringLengthValidator(
 				"Titeln måste vara mellan 1-99 tecken", 1, 99, false));
 		titleField.setRequired(true);
-//		descrField.addValidator(new StringLengthValidator(
-//				"Beskrivningen måste vara mellan 1-140 tecken", 1, 140, false));
 		descrField.setRequired(true);
 		prioField.addValidator(new IntegerValidator("Prioriteringstalet måste vara ett heltal"));
 		prioField.setRequired(true);
 		statusField.setRequired(true);
-	}
-	
-	private void clearSavedState() {
-		SearchMissionService handler = new SearchMissionService();
-		try {
-			handler.clearSavedState();
-		} catch (Exception e) {
-			listener.displayError("Fel", e.getMessage());
-		} finally {
-			handler.cleanUp();
-		}
-	}
-
-	private void setupSavedState() {
-		SearchMissionService handler = new SearchMissionService();
-		try {
-			handler.setupSavedState();
-		} catch (Exception e) {
-			listener.displayError("Fel", e.getMessage());
-		} finally {
-			handler.cleanUp();
-		}
 	}
 
 	public void refreshOpsTable() {
@@ -457,7 +407,7 @@ public class SearchMissionEditView extends CustomComponent {
 	
 	private void saveSearchMissionData(final ViewSwitchController listener) {
 		//popup dialogue here?
-		if (fieldsValid()) {
+		if (allFieldsValid()) {
 			SearchMissionService handler = null;
 			try {
 				handler = new SearchMissionService();
@@ -469,8 +419,7 @@ public class SearchMissionEditView extends CustomComponent {
 						prio, 
 						status
 				);
-				handler.editMission(mission);
-				clearSavedState();
+				handler.addOrModifyMission(mission, originalMissionName);
 				listener.switchToSearchMissionListView();
 			} catch (Exception e) {
 				listener.displayError("Fel", "Ett fel uppstod vid sparandet " +
@@ -482,19 +431,6 @@ public class SearchMissionEditView extends CustomComponent {
 			}
 		} else {
 			listener.displayError("Fel", "Ett eller flera fält är inte korrekt ifyllda");
-		}
-	}
-
-	private void commitMission(String missionTitle) {
-		SearchMission mission = new SearchMission();
-		mission.setName(missionTitle);
-		SearchMissionService service = new SearchMissionService();
-		try {
-			service.editMission(mission);
-		} catch (Exception e) {
-			listener.displayError("Fel", e.getMessage());
-		} finally {
-			service.cleanUp();
 		}
 	}
 }

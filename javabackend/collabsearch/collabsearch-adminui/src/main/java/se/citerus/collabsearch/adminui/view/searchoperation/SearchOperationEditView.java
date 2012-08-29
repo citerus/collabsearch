@@ -78,7 +78,8 @@ public class SearchOperationEditView extends CustomComponent {
 								status);
 						missionService.editSearchOp(op, missionName);
 						listener.refreshOpsTable();
-						listener.returnToSearchMissionEditView();
+//						listener.returnToSearchMissionEditView();
+						listener.switchToSearchMissionListView();
 					} catch (Exception e) {
 						listener.displayError("Fel", e.getMessage());
 					} finally {
@@ -96,7 +97,8 @@ public class SearchOperationEditView extends CustomComponent {
 		});
 		cancelButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				listener.returnToSearchMissionEditView();
+//				listener.returnToSearchMissionEditView();
+				listener.switchToSearchMissionListView();
 			}
 		});
 	}
@@ -111,9 +113,8 @@ public class SearchOperationEditView extends CustomComponent {
 
 	public void resetView(String opName, String missionName) {
 		if (opName != null) { //existing operation
-			//find operation
 			SearchMissionService service = null;
-			try {
+			try { //find operation
 				service = new SearchMissionService();
 				SearchOperation searchOp = service.getSearchOp(opName, missionName);
 				if (searchOp != null) {

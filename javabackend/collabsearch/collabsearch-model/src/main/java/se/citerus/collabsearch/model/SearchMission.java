@@ -11,19 +11,17 @@ public class SearchMission {
 	
 	private List<FileMetadata> fileList = new ArrayList<FileMetadata>();
 	private List<SearchOperation> opsList = new ArrayList<SearchOperation>();
-		
+	
+	/** Constructor for new search mission state saving. */
+	public SearchMission() {
+		//this ctor intentionally left empty
+	}
+
 	public SearchMission(String name, String description, int prio, Status status) {
 		this.name = name;
 		this.description = description;
 		this.prio = prio;
 		this.status = status;
-	}
-
-	/**
-	 * Constructor for new search mission state saving.
-	 */
-	public SearchMission() {
-		//this ctor intentionally left empty
 	}
 
 	public String getName() {
@@ -79,4 +77,11 @@ public class SearchMission {
 		return name + ", " + description + ", " + status;
 	}
 	
+	/**
+	 * Distills the SearchMission member variables into an Object[] array of strings and integers.
+	 * @return an Objectt[] {String, String, int, String}
+	 */
+	public Object[] toObjectArray() {
+		return new Object[] {name, description, prio, status.getName()};
+	}
 }

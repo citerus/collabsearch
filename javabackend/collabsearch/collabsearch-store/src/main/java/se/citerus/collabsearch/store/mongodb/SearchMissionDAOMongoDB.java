@@ -60,9 +60,6 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO {
 		
 	}
 
-	public void addOrModifyMission(SearchMission mission) throws IOException {
-	}
-
 	public List<SearchOperation> getAllSearchOpsForMission(String missionName)
 			throws IOException {
 		return null;
@@ -99,6 +96,15 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO {
 
 	public Status findStatus(String statusName) throws IOException {
 		return null;
+	}
+
+	@Override
+	public void addNewSearchMission(SearchMission mission) throws IOException {
+	}
+
+	@Override
+	public void editExistingMission(SearchMission mission, String missionName)
+			throws IOException {
 	}
 
 }

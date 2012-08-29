@@ -31,6 +31,8 @@ public interface ViewSwitchController {
 	 */
 	public void setMainWindowCaption(String caption);
 	
+	public void switchToLoginView();
+	
 	public void switchToWelcomeView();
 	
 	public void switchToUserListView();
@@ -49,12 +51,22 @@ public interface ViewSwitchController {
 	 */
 	public void switchToSearchMissionEditView(String selectedSearchMissionName);
 
-	public void switchToSearchOperationEditView(String selectedSearchOperationName, String missionTitle);
-
-	public void switchToGroupEditView(String opName);
+	public void switchToSearchOperationEditView(String selectedSearchOperationName, String missionName);
 	
-	public void returnToSearchMissionEditView();
+	/**
+	 * Switches to the file mgmt view, with a reference to the mission whose files will be managed.
+	 * @param missionName the name of the Search Mission whose files will be managed.
+	 */
+	public void switchToFileManagementView(String missionName);
+	
+	public void switchToZoneEditView(String opName);
+	
+	public void switchToGroupEditView(String opName);
+		
+//	public void returnToSearchMissionEditView();
 
 	public void refreshOpsTable();
+	
+	public void refreshMissionTable();
 
 }

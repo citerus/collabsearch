@@ -20,7 +20,7 @@ import se.citerus.collabsearch.model.interfaces.RestService;
 
 @Path("/ws")
 public class RestServer implements RestService {
-
+	//TODO needs SearchOpDAOMongoDB impl
 	@GET
 	@Path("/hello")
 	@Produces(MediaType.TEXT_PLAIN)

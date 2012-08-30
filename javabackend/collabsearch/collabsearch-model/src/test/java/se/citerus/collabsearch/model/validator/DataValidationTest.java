@@ -1,4 +1,4 @@
-package se.citerus.collabsearch.adminui;
+package se.citerus.collabsearch.model.validator;
 
 import static org.junit.Assert.fail;
 

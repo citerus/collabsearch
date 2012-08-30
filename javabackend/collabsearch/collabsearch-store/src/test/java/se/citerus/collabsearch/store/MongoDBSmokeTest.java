@@ -15,12 +15,12 @@ import junit.framework.TestSuite;
 /**
  * Unit test for simple App.
  */
-public class SmokeTest extends TestCase {
+public class MongoDBSmokeTest extends TestCase {
 	/**
 	 * Create the test case
 	 * @param testName name of the test case
 	 */
-	public SmokeTest(String testName) {
+	public MongoDBSmokeTest(String testName) {
 		super(testName);
 	}
 
@@ -28,7 +28,7 @@ public class SmokeTest extends TestCase {
 	 * @return the suite of tests being tested
 	 */
 	public static Test suite() {
-		return new TestSuite(SmokeTest.class);
+		return new TestSuite(MongoDBSmokeTest.class);
 	}
 
 	/**

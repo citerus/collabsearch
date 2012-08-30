@@ -30,7 +30,6 @@ import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 public class RestClientTest {
 
-	private static WebResource service;
 	private static Client client;
 	
 	/** Contains the URL: http://localhost:8080/collabsearch-api/rest/ws */
@@ -40,7 +39,7 @@ public class RestClientTest {
 	public static void setUpBeforeClass() throws Exception {
 		ClientConfig config = new DefaultClientConfig();
 		client = Client.create(config);
-		service = client.resource(
+		WebResource service = client.resource(
 			UriBuilder.fromUri("http://localhost:8080/collabsearch-api").build());
 		basicPath = service.path("rest").path("ws");
 	}

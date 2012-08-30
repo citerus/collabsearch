@@ -59,7 +59,7 @@ public interface ViewSwitchController {
 	 */
 	public void switchToFileManagementView(String missionName);
 	
-	public void switchToZoneEditView(String opName);
+	public void switchToZoneEditView(String zoneId, String opName);
 	
 	public void switchToGroupEditView(String opName);
 		

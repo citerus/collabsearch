@@ -186,12 +186,12 @@ public class MainWindow extends Window implements LoginListener, ViewSwitchContr
 	}
 
 	@Override
-	public void switchToZoneEditView(String opName) {
+	public void switchToZoneEditView(String zoneId, String opName) {
 		if (zoneEditView == null) {
 			zoneEditView = new ZoneEditView(this);
 			zoneEditView.init();
 		}
-		zoneEditView.resetView();
+		zoneEditView.resetView(); //TODO lägg till zoneId
 		setContent(zoneEditView);
 	}
 

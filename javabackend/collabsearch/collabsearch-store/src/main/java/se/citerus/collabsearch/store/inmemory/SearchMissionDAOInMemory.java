@@ -45,7 +45,7 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 			throw new IOException("Sökuppdraget " + name + " ej funnet");
 		}
 		
-		mission.setStatus(findStatusByName("Avslutat"));
+		mission.setStatus(findStatusByName("Avslutat uppdrag"));
 	}
 
 	private Status findStatusByName(String name) {

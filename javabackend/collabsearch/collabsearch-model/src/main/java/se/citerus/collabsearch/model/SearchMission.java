@@ -76,12 +76,4 @@ public class SearchMission {
 	public String toString() {
 		return name + ", " + description + ", " + status;
 	}
-	
-	/**
-	 * Distills the SearchMission member variables into an Object[] array of strings and integers.
-	 * @return an Objectt[] {String, String, int, String}
-	 */
-	public Object[] toObjectArray() {
-		return new Object[] {name, description, prio, status.getName()};
-	}
 }

@@ -22,4 +22,26 @@ public class SearchOperationDAOMongoDB implements SearchOperationDAO {
 	public void disconnect() {
 	}
 
+	@Override
+	public void endMission(String opName, String missionName) {
+	}
+
+	@Override
+	public String getZoneIdByName(String zoneName, String opName) {
+		return null;
+	}
+
+	@Override
+	public void deleteZone(String zoneId) {
+	}
+
+	@Override
+	public String getGroupIdByName(String groupName, String opName) {
+		return null;
+	}
+
+	@Override
+	public void deleteGroup(String groupId) {
+	}
+
 }

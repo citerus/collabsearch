@@ -19,11 +19,9 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 	
 	private static List<SearchMission> missionsList;
 	private static List<Status> statusList;
-	
-	private static SearchMission newMission;
-	
+		
 	public SearchMissionDAOInMemory() {
-		if (missionsList == null && statusList == null) {
+		if (missionsList == null) {
 			missionsList = new ArrayList<SearchMission>();
 			statusList = new ArrayList<Status>();
 			addMockStatuses();
@@ -66,27 +64,8 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 		return null;
 	}
 
-	public List<SearchOperation> getAllSearchOpsForMission(String missionName) {
-		SearchMission mission = findMission(missionName);
-		return mission.getOpsList();
-	}
-
 	public List<Status> getAllStatuses() throws IOException {
 		return statusList;
-	}
-
-	public SearchOperation findOperation(String opName, String missionName) {
-		for (SearchMission mission : missionsList) {
-			if (mission.getName().equals(missionName)) {
-				List<SearchOperation> opsList = mission.getOpsList();
-				for (SearchOperation operation : opsList) {
-					if (operation.getTitle().equals(opName)) {
-						return operation;
-					}
-				}
-			}
-		}
-		return null;
 	}
 
 	private void addMockStatuses() {
@@ -165,6 +144,34 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 		searchOp.setZones(zones);
 		opsList.add(searchOp);
 	}
+	
+	public Status findStatus(String statusName) throws IOException {
+		for (Status status : statusList) {
+			if (status.getName().equals(statusName)) {
+				return status;
+			}
+		}
+		throw new IOException("Status " + statusName + " ej funnen");
+	}
+	
+	@Override
+	public void addNewSearchMission(SearchMission mission) throws IOException {
+		missionsList.add(mission);
+	}
+	
+	@Override
+	public void editExistingMission(SearchMission mission, String missionName)
+			throws IOException {
+		for (SearchMission listedMission : missionsList) {
+			if (missionName.equals(listedMission.getName())) {
+				listedMission.setName(mission.getName());
+				listedMission.setDescription(mission.getDescription());
+				listedMission.setPrio(mission.getPrio());
+				listedMission.setStatus(mission.getStatus());
+				return;
+			}
+		}
+	}
 
 	public void addFileMetadata(String missionName, FileMetadata fileMetaData) throws IOException {
 //		SearchMission mission = findMission(missionName);
@@ -173,8 +180,6 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 //		}
 //		
 //		mission.getFileList().add(fileMetaData);
-		
-		
 	}
 
 	public void deleteFileMetadata(String filename, String missionName) throws IOException {
@@ -192,14 +197,29 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 		}
 	}
 
+	public List<SearchOperation> getAllSearchOpsForMission(String missionName) {
+		SearchMission mission = findMission(missionName);
+		return mission.getOpsList();
+	}
+
+	public SearchOperation findOperation(String opName, String missionName) {
+		for (SearchMission mission : missionsList) {
+			if (mission.getName().equals(missionName)) {
+				List<SearchOperation> opsList = mission.getOpsList();
+				for (SearchOperation operation : opsList) {
+					if (operation.getTitle().equals(opName)) {
+						return operation;
+					}
+				}
+			}
+		}
+		return null;
+	}
+
 	public void deleteSearchOperation(String searchOpName, String missionName) throws IOException {
 		SearchMission mission = findMission(missionName);
 		if (mission == null) {
-			if (newMission != null && newMission.getName().equals(missionName)) {
-				mission = newMission;
-			} else {
-				throw new IOException("Sökuppdraget " + missionName + " ej funnet");
-			}
+			throw new IOException("Sökuppdraget " + missionName + " ej funnet");
 		}
 		
 		List<SearchOperation> opsList = mission.getOpsList();
@@ -211,22 +231,10 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 		}
 	}
 
-	public void clearNewMissionContainer() {
-		newMission = null;
-	}
-
-	public void initNewMissionContainer() {
-		newMission = new SearchMission();
-	}
-
 	public void addOrModifySearchOperation(SearchOperation operation, String missionName) throws IOException {
 		SearchMission mission = findMission(missionName);
 		if (mission == null) {
-			if (newMission != null && newMission.getName().equals(missionName)) {
-				mission = newMission;
-			} else {
-				throw new IOException("Sökuppdraget " + missionName + " ej funnet");
-			}
+			throw new IOException("Sökuppdraget " + missionName + " ej funnet");
 		}
 		
 		List<SearchOperation> opsList = mission.getOpsList();
@@ -238,33 +246,5 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 		}
 		
 		opsList.add(operation);
-	}
-
-	public Status findStatus(String statusName) throws IOException {
-		for (Status status : statusList) {
-			if (status.getName().equals(statusName)) {
-				return status;
-			}
-		}
-		throw new IOException("Status " + statusName + " ej funnen");
-	}
-
-	@Override
-	public void addNewSearchMission(SearchMission mission) throws IOException {
-		missionsList.add(mission);
-	}
-
-	@Override
-	public void editExistingMission(SearchMission mission, String missionName)
-			throws IOException {
-		for (SearchMission listedMission : missionsList) {
-			if (missionName.equals(listedMission.getName())) {
-				listedMission.setName(mission.getName());
-				listedMission.setDescription(mission.getDescription());
-				listedMission.setPrio(mission.getPrio());
-				listedMission.setStatus(mission.getStatus());
-				return;
-			}
-		}
 	}
 }

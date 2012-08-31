@@ -4,6 +4,7 @@ import java.util.List;
 
 import se.citerus.collabsearch.adminui.ViewSwitchController;
 import se.citerus.collabsearch.adminui.logic.SearchMissionService;
+import se.citerus.collabsearch.adminui.logic.SearchOperationService;
 import se.citerus.collabsearch.model.FileMetadata;
 import se.citerus.collabsearch.model.Group;
 import se.citerus.collabsearch.model.SearchMission;
@@ -167,66 +168,54 @@ public class SearchMissionListView extends CustomComponent {
 				Item item = treeTable.getItem(itemId);
 				NodeType type = (NodeType) item.getItemProperty("type").getValue();
 				if (action == ACTION_ADDITEM) {
-					switch (type) {
-						case MISSION: listener.switchToSearchMissionEditView(null); break;
-						case OPERATIONROOT: {
-							String missionName = treeTable.getItem(treeTable.getParent(itemId)).getItemProperty("name").getValue().toString();
-							listener.switchToSearchOperationEditView(null, missionName); 
-							break;
-						}
-						case OPERATION: {
-							String missionName = treeTable.getItem(treeTable.getParent(treeTable.getParent(itemId))).getItemProperty("name").getValue().toString();
-							listener.switchToSearchOperationEditView(null, missionName);
-							break;
-						}
-						case FILEROOT: 
-						case FILE: 
-						case ZONEROOT: {
-							String opName = treeTable.getItem(treeTable.getParent(itemId)).getItemProperty("name").getValue().toString();
-							listener.switchToZoneEditView("", opName);
-							break;
-						}
-						case ZONE: {
-							String opName = treeTable.getItem(treeTable.getParent(treeTable.getParent(itemId))).getItemProperty("name").getValue().toString();
-							listener.switchToZoneEditView("", opName);
-							break;
-						}
-						case GROUPROOT: 
-						case GROUP: 
-						default: break;
-					}
+					handleAddActions(itemId, type);
 				} else if (action == ACTION_EDITITEM) {
-					
+					handleEditActions(itemId, item, type);
 				} else if (action == ACTION_REMOVEITEM) {
-					
+					handleRemoveActions(itemId, item, type);
 				} else if (action == ACTION_ENDITEM) {
-					
+					handleEndActions(itemId, item, type);
 				}
 			}
-			
+
 			@Override
 			public Action[] getActions(Object target, Object sender) {
-				if (target == null) {
+				try {
+					NodeType type = (NodeType) treeTable.getItem(target)
+							.getItemProperty("type").getValue();
+					switch (type) {
+						case MISSION: return addEditEndMenu;
+						case OPERATIONROOT: return addMenu;
+						case OPERATION: return addEditRemoveEndMenu;
+						case FILEROOT: return addMenu;
+						case FILE: return addRemoveMenu;
+						case ZONEROOT: return addMenu;
+						case ZONE: return addEditRemoveMenu;
+						case GROUPROOT: return addMenu;
+						case GROUP: return addEditRemoveMenu;
+						default: return emptyMenu;
+					}
+				} catch (NullPointerException e) {
 					return emptyMenu;
-				}
-				int itemId = (Integer) target;
-				Item item = treeTable.getItem(itemId);
-				NodeType type = (NodeType) item.getItemProperty("type").getValue();
-				switch (type) {
-					case MISSION: return addEditEndMenu;
-					case OPERATIONROOT: return addMenu;
-					case OPERATION: return addEditRemoveEndMenu;
-					case FILEROOT: return addMenu;
-					case FILE: return addRemoveMenu;
-					case ZONEROOT: return addMenu;
-					case ZONE: return addEditRemoveMenu;
-					case GROUPROOT: return addMenu;
-					case GROUP: return addEditRemoveMenu;
-					default: return emptyMenu;
 				}
 			}
 		};
 		treeTable.addActionHandler(contextMenuHandler);
+	}
+
+	private String getParentName(int depth, int originalItemId) {
+		String string = null;
+		try {
+			Object itemId = originalItemId;
+			for (int i = 0; i < depth; i++) {
+				itemId = treeTable.getParent(itemId);
+			}
+			string = treeTable.getItem(itemId).getItemProperty("name").getValue().toString();
+		} catch (Exception e) {
+			e.printStackTrace();
+			listener.displayError("Fel", "Inget sökuppdrag funnet för det markerade objektet.");
+		}
+		return string;
 	}
 
 	private void buildMainLayout() {
@@ -399,6 +388,205 @@ public class SearchMissionListView extends CustomComponent {
 
 	public void resetView() {
 		populateTreeTable();
+	}
+
+	private void handleAddActions(int itemId, NodeType type) {
+		switch (type) {
+			case MISSION: {
+				listener.switchToSearchMissionEditView(null);
+				break;
+			}
+			case OPERATIONROOT: {
+				String missionName = getParentName(1, itemId);
+				listener.switchToSearchOperationEditView(null, missionName);
+				break;
+			}
+			case OPERATION: {
+				String missionName = getParentName(2, itemId);
+				listener.switchToSearchOperationEditView(null, missionName);
+				break;
+			}
+			case FILEROOT: {
+				String missionName = getParentName(1, itemId);
+				listener.switchToFileManagementView(missionName, null);
+				break;
+			}
+			case FILE: {
+				String missionName = getParentName(2, itemId);
+				listener.switchToFileManagementView(missionName, null);
+				break;
+			}
+			case ZONEROOT: {
+				String opName = getParentName(1, itemId);
+				listener.switchToZoneEditView(null, opName);
+				break;
+			}
+			case ZONE: {
+				String opName = getParentName(2, itemId);
+				listener.switchToZoneEditView(null, opName);
+				break;
+			}
+			case GROUPROOT: {
+				String opName = getParentName(1, itemId);
+				String missionName = getParentName(3, itemId);
+				listener.switchToGroupEditView(null, opName, missionName);
+				break;
+			}
+			case GROUP: {
+				String opName = getParentName(2, itemId);
+				String missionName = getParentName(4, itemId);
+				listener.switchToGroupEditView(null, opName, missionName);
+				break;
+			}
+			default: break;
+		}
+	}
+
+	private void handleEditActions(int itemId, Item item, NodeType type) {
+		String itemName = item.getItemProperty("name").getValue().toString();
+		if (type == NodeType.MISSION) {
+			listener.switchToSearchMissionEditView(itemName);
+		} else if (type == NodeType.OPERATION) {
+			String missionName = getParentName(2, itemId);
+			listener.switchToSearchOperationEditView(itemName, missionName);
+		} else if (type == NodeType.ZONE) {
+			String opName = getParentName(2, itemId);
+			String missionName = getParentName(4, itemId);
+			String zoneId = null;
+			SearchOperationService service = null;
+			try {
+				service = new SearchOperationService();
+				zoneId = service.resolveZoneId(itemName, opName, missionName);
+				listener.switchToZoneEditView(zoneId, opName);
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				if (service != null) {
+					service.cleanUp();
+				}
+			}
+		} else if (type == NodeType.GROUP) {
+			String missionName = getParentName(4, itemId);
+			String opName = getParentName(2, itemId);
+			String groupId = null;
+			SearchOperationService service = null;
+			try {
+				service = new SearchOperationService();
+				groupId = service.resolveZoneId(itemName, opName, missionName);
+				listener.switchToGroupEditView(groupId, opName, missionName);
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				if (service != null) {
+					service.cleanUp();
+				}
+			}
+		}
+	}
+	
+	private void handleRemoveActions(int itemId, Item item, NodeType type) {
+		String itemName = item.getItemProperty("name").getValue().toString();
+		String missionName = null;
+		if (type == NodeType.FILE) {
+			missionName = getParentName(2, itemId);
+			SearchMissionService service = null;
+			try {
+				service = new SearchMissionService();
+				service.deleteFile(itemName, missionName);
+				treeTable.removeItem(itemId);
+			} catch (Exception e) {
+				e.printStackTrace();
+				listener.displayError("Filraderingen misslyckades", e.getMessage());
+			} finally {
+				if (service != null) {
+					service.cleanUp();
+				}
+			}
+		} else if (type == NodeType.OPERATION) {
+			missionName = getParentName(2, itemId);
+			SearchMissionService service = null;
+			try {
+				service = new SearchMissionService();
+				service.deleteSearchOperation(itemName, missionName);
+				treeTable.removeItem(itemId);
+			} catch (Exception e) {
+				e.printStackTrace();
+				listener.displayError("Operationsborttagningen misslyckades", e.getMessage());
+			} finally {
+				if (service != null) {
+					service.cleanUp();
+				}
+			}
+		} else if (type == NodeType.ZONE) {
+			missionName = getParentName(4, itemId);
+			SearchOperationService service = null;
+			try {
+				service = new SearchOperationService();
+				String opName = getParentName(2, itemId);
+				String zoneId = service.resolveZoneId(itemName, opName, missionName);
+				service.deleteZone(zoneId);
+			} catch (Exception e) {
+				e.printStackTrace();
+				listener.displayError("Zonborttagningen misslyckades", e.getMessage());
+			} finally {
+				if (service != null) {
+					service.cleanUp();
+				}
+			}
+		} else if (type == NodeType.GROUP) {
+			missionName = getParentName(4, itemId);
+			SearchOperationService service = null;
+			try {
+				service = new SearchOperationService();
+				String opName = getParentName(2, itemId);
+				String groupId = service.resolveGroupId(itemName, opName, missionName);
+				service.deleteGroup(groupId);
+			} catch (Exception e) {
+				e.printStackTrace();
+				listener.displayError("Gruppborttagningen misslyckades", e.getMessage());
+			} finally {
+				if (service != null) {
+					service.cleanUp();
+				}
+			}
+		}
+	}
+
+	private void handleEndActions(int itemId, Item item, NodeType type) {
+		String itemName = item.getItemProperty("name").getValue().toString();
+		if (type == NodeType.MISSION) {
+			SearchMissionService service = null;
+			try {
+				service = new SearchMissionService();
+				service.endMission(itemName);
+				//TODO update treetable
+			} catch (Exception e) {
+				e.printStackTrace();
+				listener.displayError("Fel", e.getMessage());
+			} finally {
+				if (service != null) {
+					service.cleanUp();
+				}
+			}
+		} else if (type == NodeType.OPERATION) {
+			SearchOperationService service = null;
+			try {
+				service = new SearchOperationService();
+				String missionName = getParentName(2, itemId);
+				service.endOperation(itemName, missionName);
+				//TODO update treetable
+			} catch (Exception e) {
+				e.printStackTrace();
+				listener.displayError("Fel", e.getMessage());
+			} finally {
+				if (service != null) {
+					service.cleanUp();
+				}
+			}
+		} else {
+			listener.displayNotification("Ogiltig markering", 
+					"Endast sökuppdrag eller sökoperationer kan avslutas.");
+		}
 	}
 	
 }

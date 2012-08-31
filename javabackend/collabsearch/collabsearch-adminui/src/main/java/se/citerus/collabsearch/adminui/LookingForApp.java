@@ -15,6 +15,8 @@
  */
 package se.citerus.collabsearch.adminui;
 
+import java.util.Locale;
+
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -38,6 +40,12 @@ public class LookingForApp extends Application implements HttpServletRequestList
 	@Override
 	public void init() {
 		setInstance(this);
+		
+		WebApplicationContext context = (WebApplicationContext) getContext();
+		Locale locale = context.getBrowser().getLocale();
+		setLocale(locale);
+		System.out.println("Current locale: " + locale);
+		
 		window = new MainWindow();
 		((MainWindow)window).initWindow();
 		setMainWindow(window);

@@ -27,4 +27,44 @@ public class SearchOperationService { //TODO refactor into spring service
 	public void cleanUp() {
 		searchOperationDAO.disconnect();
 	}
+
+	public void endOperation(String opName, String missionName) throws Exception {
+		if ((opName != null && !opName.equals("")) 
+				&& (missionName != null && !missionName.equals(""))) {
+			searchOperationDAO.endMission(opName, missionName);
+			return;
+		}
+		throw new Exception("Felaktigt operations- eller uppdragsnamn");
+	}
+
+	public String resolveZoneId(String zoneName, String opName, String missionName) throws Exception {
+		if ((zoneName != null) && !zoneName.equals("") 
+				&& (opName != null) && !opName.equals("")
+				&& (missionName != null) && !missionName.equals("")) {
+			return searchOperationDAO.getZoneIdByName(zoneName, opName);
+		}
+		throw new Exception("Felaktigt zon-, operations- eller uppdragsnamn");
+	}
+
+	public void deleteZone(String zoneId) throws Exception {
+		if (zoneId != null) {
+			searchOperationDAO.deleteZone(zoneId);
+		}
+	}
+
+	public String resolveGroupId(String groupName, String opName,
+			String missionName) throws Exception {
+		if ((groupName != null) && !groupName.equals("") 
+				&& (opName != null) && !opName.equals("")
+				&& (missionName != null) && !missionName.equals("")) {
+			return searchOperationDAO.getGroupIdByName(groupName, opName);
+		}
+		throw new Exception("Felaktigt zon-, operations- eller uppdragsnamn");
+	}
+
+	public void deleteGroup(String groupId) throws Exception {
+		if (groupId != null) {
+			searchOperationDAO.deleteGroup(groupId);
+		}
+	}
 }

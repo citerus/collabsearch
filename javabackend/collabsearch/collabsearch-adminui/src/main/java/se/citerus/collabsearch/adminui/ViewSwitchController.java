@@ -56,15 +56,14 @@ public interface ViewSwitchController {
 	/**
 	 * Switches to the file mgmt view, with a reference to the mission whose files will be managed.
 	 * @param missionName the name of the Search Mission whose files will be managed.
+	 * @param fileName 
 	 */
-	public void switchToFileManagementView(String missionName);
+	public void switchToFileManagementView(String missionName, String fileName);
 	
 	public void switchToZoneEditView(String zoneId, String opName);
 	
-	public void switchToGroupEditView(String opName);
-		
-//	public void returnToSearchMissionEditView();
-
+	public void switchToGroupEditView(String groupId, String opName, String missionName);
+	
 	public void refreshOpsTable();
 	
 	public void refreshMissionTable();

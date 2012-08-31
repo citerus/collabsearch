@@ -51,11 +51,7 @@ public class MainWindow extends Window implements LoginListener, ViewSwitchContr
 			if (authenticator.login(event.getLoginParameter("username"), 
 	        		event.getLoginParameter("password").toCharArray())) {
 				LookingForApp.getInstance().setUser(event.getLoginParameter("username"));
-	        	if (debugMode) { //XXX debugging code
-	        		switchToGroupEditView("Sökuppdrag 1 (test)");
-	        	} else {
-	        		switchToWelcomeView();
-	        	}
+	        	switchToWelcomeView();
 	        } else {
 	        	displayNotification("Inloggning misslyckades", "Fel användarnamn eller lösenord");
 	        }
@@ -150,20 +146,14 @@ public class MainWindow extends Window implements LoginListener, ViewSwitchContr
 	}
 
 	@Override
-	public void switchToGroupEditView(String opName) {
+	public void switchToGroupEditView(String groupId, String opName, String missionName) {
 		if (groupEditView == null) {
 			groupEditView = new GroupEditView(this);
 			groupEditView.init();
 		}
-		groupEditView.resetView(opName);
+		groupEditView.resetView(groupId, opName, missionName);
 		setContent(groupEditView);
 	}
-
-//	@Override
-//	public void returnToSearchMissionEditView() {
-//		//return to searchMissionEditView without clearing state
-//		setContent(searchMissionEditView);
-//	}
 
 	@Override
 	public void refreshOpsTable() {
@@ -171,12 +161,12 @@ public class MainWindow extends Window implements LoginListener, ViewSwitchContr
 	}
 
 	@Override
-	public void switchToFileManagementView(String missionName) {
+	public void switchToFileManagementView(String missionName, String fileName) {
 		if (fileMgmtView == null) {
 			fileMgmtView = new FileManagementView(this);
 			fileMgmtView.init();
 		}
-		fileMgmtView.resetView();
+		fileMgmtView.resetView(missionName, fileName);
 		setContent(fileMgmtView);
 	}
 
@@ -191,7 +181,7 @@ public class MainWindow extends Window implements LoginListener, ViewSwitchContr
 			zoneEditView = new ZoneEditView(this);
 			zoneEditView.init();
 		}
-		zoneEditView.resetView(); //TODO lägg till zoneId
+		zoneEditView.resetView(zoneId, opName);
 		setContent(zoneEditView);
 	}
 

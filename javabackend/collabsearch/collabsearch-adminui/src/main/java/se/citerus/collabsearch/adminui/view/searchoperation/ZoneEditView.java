@@ -17,7 +17,7 @@ public class ZoneEditView extends CustomComponent {
 		
 	}
 
-	public void resetView() {
+	public void resetView(String zoneId, String opName) {
 		
 	}
 

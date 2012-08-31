@@ -12,10 +12,12 @@ public class SearchOperationDAOInMemory implements SearchOperationDAO {
 	private ArrayList<Status> statusList;
 
 	public SearchOperationDAOInMemory() {
-		statusList = new ArrayList<Status>();
-		statusList.add(new Status(0, "Ej påbörjad", "beskrivning här"));
-		statusList.add(new Status(1, "Sökning inledd", "beskrivning här"));
-		statusList.add(new Status(2, "Sökning avslutad", "beskrivning här"));
+		if (statusList == null) {
+			statusList = new ArrayList<Status>();
+			statusList.add(new Status(0, "Ej påbörjad", "beskrivning här"));
+			statusList.add(new Status(1, "Sökning inledd", "beskrivning här"));
+			statusList.add(new Status(2, "Sökning avslutad", "beskrivning här"));
+		}
 	}
 	
 	public List<Status> getAllSearchOpStatuses() throws IOException {
@@ -36,6 +38,29 @@ public class SearchOperationDAOInMemory implements SearchOperationDAO {
 
 	public void disconnect() {
 		//not applicable
+	}
+
+	@Override
+	public void endMission(String opName, String missionName) {
+		
+	}
+
+	@Override
+	public String getZoneIdByName(String zoneName, String opName) {
+		return null;
+	}
+
+	@Override
+	public void deleteZone(String zoneId) {
+	}
+
+	@Override
+	public String getGroupIdByName(String groupName, String opName) {
+		return null;
+	}
+
+	@Override
+	public void deleteGroup(String groupId) {
 	}
 	
 }

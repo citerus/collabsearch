@@ -140,10 +140,10 @@ public class GroupEditView extends CustomComponent {
 
 	}
 
-	public void resetView(String opName) {
+	public void resetView(String groupId, String opName, String missionName) {
 		//get group data from db
 		
-		//convert to hierarchicContainer format
+		//convert to HierarchicContainer format
 		
 		//refresh tree container
 		//orgTree.setContainerDataSource(newDataSource);

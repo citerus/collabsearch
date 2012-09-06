@@ -3,9 +3,8 @@ package se.citerus.collabsearch.store.inmemory;
 import java.io.IOException;
 import java.sql.Date;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 import se.citerus.collabsearch.model.FileMetadata;
 import se.citerus.collabsearch.model.Group;
@@ -16,10 +15,10 @@ import se.citerus.collabsearch.model.Zone;
 import se.citerus.collabsearch.store.facades.SearchMissionDAO;
 
 public class SearchMissionDAOInMemory implements SearchMissionDAO {
-	
+
 	private static List<SearchMission> missionsList;
 	private static List<Status> statusList;
-		
+
 	public SearchMissionDAOInMemory() {
 		if (missionsList == null) {
 			missionsList = new ArrayList<SearchMission>();
@@ -37,13 +36,17 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 		//nop
 	}
 
-	public void endMission(String name) throws IOException {
-		SearchMission mission = findMission(name);
+	public String endMission(String missionId) throws IOException {
+		SearchMission mission = findMission(missionId);
 		if (mission == null) {
-			throw new IOException("Sökuppdraget " + name + " ej funnet");
+			throw new IOException("Sökuppdraget " + missionId + " ej funnet");
 		}
 		
-		mission.setStatus(findStatusByName("Avslutat uppdrag"));
+		//below solution not to be used in the mongodb dao impl
+		final String endStatusName = "Avslutat uppdrag";
+		mission.setStatus(findStatusByName(endStatusName));
+		
+		return endStatusName;
 	}
 
 	private Status findStatusByName(String name) {
@@ -55,9 +58,9 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 		return null;
 	}
 
-	public SearchMission findMission(String name) {
+	public SearchMission findMission(String missionId) {
 		for (SearchMission listedMission : missionsList) {
-			if (name.equals(listedMission.getName())) {
+			if (missionId.equals(listedMission.getId())) {
 				return listedMission;
 			}
 		}
@@ -97,13 +100,15 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 		List<SearchOperation> opsList = new ArrayList<SearchOperation>();
 		addMockOps(opsList);
 		
-		SearchMission sm1 = new SearchMission("Sökuppdrag 1", "text...", 1, statusList.get(0));
+		Random r = new Random();
+		
+		SearchMission sm1 = new SearchMission("" + r.nextLong(), "Sökuppdrag 1", "text...", 1, statusList.get(0));
 		sm1.setFileList(fileList);
 		sm1.setOpsList(opsList);
-		SearchMission sm2 = new SearchMission("Sökuppdrag 2", "text...", 5, statusList.get(1));
+		SearchMission sm2 = new SearchMission("" + r.nextLong(), "Sökuppdrag 2", "text...", 5, statusList.get(1));
 		sm2.setFileList(fileList);
 		sm2.setOpsList(opsList);
-		SearchMission sm3 = new SearchMission("Sökuppdrag 3", "text...", 10, statusList.get(2));
+		SearchMission sm3 = new SearchMission("" + r.nextLong(), "Sökuppdrag 3", "text...", 10, statusList.get(2));
 		sm3.setFileList(fileList);
 		sm3.setOpsList(opsList);
 		
@@ -123,21 +128,26 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 		zones.add(new Zone("Zon Beta"));
 		zones.add(new Zone("Zon Gamma"));
 		
-		SearchOperation searchOp = new SearchOperation("Operation 1", "beskrivn...", 
+		Random r = new Random();
+		
+		SearchOperation searchOp = new SearchOperation(
+				"" + r.nextLong() ,"Operation 1", "beskrivn...", 
 				new Date(System.currentTimeMillis()), "Plats X", 
 				new Status(0, "status 1", "beskrivn..."));
 		searchOp.setGroups(groups);
 		searchOp.setZones(zones);
 		opsList.add(searchOp);
 		
-		searchOp = new SearchOperation("Operation 2", "beskrivn...", 
+		searchOp = new SearchOperation(
+				"" + r.nextLong(), "Operation 2", "beskrivn...", 
 				new Date(System.currentTimeMillis()+86400000L), "Plats Y", 
 				new Status(1, "status 2", "beskrivn..."));
 		searchOp.setGroups(groups);
 		searchOp.setZones(zones);
 		opsList.add(searchOp);
 		
-		searchOp = new SearchOperation("Operation 3", "beskrivn...", 
+		searchOp = new SearchOperation(
+				"" + r.nextLong(), "Operation 3", "beskrivn...", 
 				new Date(System.currentTimeMillis()+(2*86400000L)), "Plats Z", 
 				new Status(2, "status 3", "beskrivn..."));
 		searchOp.setGroups(groups);
@@ -156,14 +166,17 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 	
 	@Override
 	public void addNewSearchMission(SearchMission mission) throws IOException {
+		if (mission.getId() == null) {
+			mission.setId("" + new Random().nextLong());
+		}
 		missionsList.add(mission);
 	}
 	
 	@Override
-	public void editExistingMission(SearchMission mission, String missionName)
+	public void editExistingMission(SearchMission mission, String missionId)
 			throws IOException {
 		for (SearchMission listedMission : missionsList) {
-			if (missionName.equals(listedMission.getName())) {
+			if (missionId.equals(listedMission.getName())) {
 				listedMission.setName(mission.getName());
 				listedMission.setDescription(mission.getDescription());
 				listedMission.setPrio(mission.getPrio());
@@ -197,14 +210,14 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 		}
 	}
 
-	public List<SearchOperation> getAllSearchOpsForMission(String missionName) {
-		SearchMission mission = findMission(missionName);
+	public List<SearchOperation> getAllSearchOpsForMission(String missionId) {
+		SearchMission mission = findMission(missionId);
 		return mission.getOpsList();
 	}
 
-	public SearchOperation findOperation(String opName, String missionName) {
+	public SearchOperation findOperation(String opName, String missionId) {
 		for (SearchMission mission : missionsList) {
-			if (mission.getName().equals(missionName)) {
+			if (mission.getId().equals(missionId)) {
 				List<SearchOperation> opsList = mission.getOpsList();
 				for (SearchOperation operation : opsList) {
 					if (operation.getTitle().equals(opName)) {
@@ -216,10 +229,10 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 		return null;
 	}
 
-	public void deleteSearchOperation(String searchOpName, String missionName) throws IOException {
-		SearchMission mission = findMission(missionName);
+	public void deleteSearchOperation(String searchOpName, String missionId) throws IOException {
+		SearchMission mission = findMission(missionId);
 		if (mission == null) {
-			throw new IOException("Sökuppdraget " + missionName + " ej funnet");
+			throw new IOException("Sökuppdraget " + missionId + " ej funnet");
 		}
 		
 		List<SearchOperation> opsList = mission.getOpsList();
@@ -231,15 +244,15 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 		}
 	}
 
-	public void addOrModifySearchOperation(SearchOperation operation, String missionName) throws IOException {
-		SearchMission mission = findMission(missionName);
+	public void addOrModifySearchOperation(SearchOperation operation, String missionId) throws IOException {
+		SearchMission mission = findMission(missionId);
 		if (mission == null) {
-			throw new IOException("Sökuppdraget " + missionName + " ej funnet");
+			throw new IOException("Sökuppdraget " + missionId + " ej funnet");
 		}
 		
 		List<SearchOperation> opsList = mission.getOpsList();
 		for (int i = 0; i < opsList.size(); i++) {
-			if (opsList.get(i).getTitle().equals(operation)) {
+			if (opsList.get(i).getTitle().equals(operation.getTitle())) {
 				opsList.set(i, operation);
 				return;
 			}

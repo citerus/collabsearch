@@ -28,11 +28,11 @@ public class SearchOperationService { //TODO refactor into spring service
 		searchOperationDAO.disconnect();
 	}
 
-	public void endOperation(String opName, String missionName) throws Exception {
+	public String endOperation(String opName, String missionName) throws Exception {
 		if ((opName != null && !opName.equals("")) 
 				&& (missionName != null && !missionName.equals(""))) {
-			searchOperationDAO.endMission(opName, missionName);
-			return;
+			String statusName = searchOperationDAO.endOperation(opName, missionName);
+			return statusName;
 		}
 		throw new Exception("Felaktigt operations- eller uppdragsnamn");
 	}

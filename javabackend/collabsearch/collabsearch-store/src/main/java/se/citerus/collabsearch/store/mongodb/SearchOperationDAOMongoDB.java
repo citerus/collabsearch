@@ -23,7 +23,8 @@ public class SearchOperationDAOMongoDB implements SearchOperationDAO {
 	}
 
 	@Override
-	public void endMission(String opName, String missionName) {
+	public String endOperation(String opName, String missionName) {
+		return null;
 	}
 
 	@Override

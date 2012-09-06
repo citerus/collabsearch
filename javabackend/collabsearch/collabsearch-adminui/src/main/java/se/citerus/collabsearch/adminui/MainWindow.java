@@ -156,11 +156,6 @@ public class MainWindow extends Window implements LoginListener, ViewSwitchContr
 	}
 
 	@Override
-	public void refreshOpsTable() {
-		searchMissionEditView.refreshOpsTable();
-	}
-
-	@Override
 	public void switchToFileManagementView(String missionName, String fileName) {
 		if (fileMgmtView == null) {
 			fileMgmtView = new FileManagementView(this);
@@ -171,7 +166,7 @@ public class MainWindow extends Window implements LoginListener, ViewSwitchContr
 	}
 
 	@Override
-	public void refreshMissionTable() {
+	public void refreshMissionTree() {
 		searchMissionListView.refreshMissionTree();
 	}
 

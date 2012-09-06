@@ -41,6 +41,7 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO {
 			while (cursor.hasNext()) {
 				BasicDBObject dbo = (BasicDBObject) cursor.next();
 				list.add(new SearchMission(
+						dbo.getObjectId("_id").toString(),
 						dbo.getString("name"), 
 						dbo.getString("description"), 
 						dbo.getInt("prio"), 
@@ -56,8 +57,8 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO {
 		mongo.close();
 	}
 
-	public void endMission(String name) throws IOException {
-		
+	public String endMission(String name) throws IOException {
+		return null;
 	}
 
 	public List<SearchOperation> getAllSearchOpsForMission(String missionName)

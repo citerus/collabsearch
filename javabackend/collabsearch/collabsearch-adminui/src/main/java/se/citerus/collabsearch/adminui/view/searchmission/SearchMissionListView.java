@@ -81,7 +81,7 @@ public class SearchMissionListView extends CustomComponent {
 		});
 		editButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				try {
+				try { //add more nodetypes or remove?
 					String missionTitle = null;
 					NodeType type = NodeType.UNDEFINED;
 					Item item = treeTable.getItem(treeTable.getValue());
@@ -148,11 +148,13 @@ public class SearchMissionListView extends CustomComponent {
 			}
 		});	
 		
+		//create menu items
 		ACTION_ADDITEM = new Action("Lägg till");
 		ACTION_REMOVEITEM = new Action("Ta bort");
 		ACTION_EDITITEM = new Action("Redigera");
 		ACTION_ENDITEM = new Action("Avsluta");
 		
+		//create menus
 		addMenu = new Action[] { ACTION_ADDITEM };
 		addRemoveMenu = new Action[] { ACTION_ADDITEM, ACTION_REMOVEITEM };
 		addEditEndMenu = new Action[] { ACTION_ADDITEM, ACTION_EDITITEM, ACTION_ENDITEM };
@@ -160,6 +162,7 @@ public class SearchMissionListView extends CustomComponent {
 		addEditRemoveMenu = new Action[] { ACTION_ADDITEM, ACTION_EDITITEM, ACTION_REMOVEITEM };
 		emptyMenu = new Action[] {};
 		
+		//setup menu listener
 		contextMenuHandler = new Handler() {
 			@Override
 			public void handleAction(Action action, Object sender, Object target) {
@@ -183,7 +186,7 @@ public class SearchMissionListView extends CustomComponent {
 				try {
 					NodeType type = (NodeType) treeTable.getItem(target)
 							.getItemProperty("type").getValue();
-					switch (type) {
+					switch (type) { //setup different menus depending on tree branch
 						case MISSION: return addEditEndMenu;
 						case OPERATIONROOT: return addMenu;
 						case OPERATION: return addEditRemoveEndMenu;
@@ -311,7 +314,7 @@ public class SearchMissionListView extends CustomComponent {
 				
 				itemId++; //increase itemId for Operations node
 				int opsParentId = itemId;
-				setItemProperties(opsParentId, "Operationer", NodeType.OPERATIONROOT);
+				setupItemProperties(opsParentId, "Operationer", NodeType.OPERATIONROOT);
 				treeTable.setParent(opsParentId, missionItemId);
 				
 				//add ops, set parent to above SearchMission itemid
@@ -328,12 +331,12 @@ public class SearchMissionListView extends CustomComponent {
 					//add zone parent label
 					itemId++;
 					int zoneParentId = itemId;
-					setItemProperties(zoneParentId, "Zoner", NodeType.ZONEROOT);
+					setupItemProperties(zoneParentId, "Zoner", NodeType.ZONEROOT);
 					treeTable.setParent(zoneParentId, opItemId);
 					//add zones
 					for (Zone zone : op.getZones()) {
 						itemId++;
-						setItemProperties(itemId, zone.getName(), NodeType.ZONE);
+						setupItemProperties(itemId, zone.getName(), NodeType.ZONE);
 						treeTable.setParent(itemId, zoneParentId);
 						treeTable.setChildrenAllowed(itemId, false);
 					}
@@ -341,12 +344,12 @@ public class SearchMissionListView extends CustomComponent {
 					//add group parent label
 					itemId++;
 					int groupParentId = itemId;
-					setItemProperties(groupParentId, "Grupper", NodeType.GROUPROOT);
+					setupItemProperties(groupParentId, "Grupper", NodeType.GROUPROOT);
 					treeTable.setParent(itemId, opItemId);
 					//add groups
 					for (Group group : op.getGroups()) {
 						itemId++;
-						setItemProperties(itemId, group.getName(), NodeType.GROUP);
+						setupItemProperties(itemId, group.getName(), NodeType.GROUP);
 						treeTable.setParent(itemId, groupParentId);
 						treeTable.setChildrenAllowed(itemId, false);
 					}
@@ -354,13 +357,13 @@ public class SearchMissionListView extends CustomComponent {
 				
 				itemId++; //increase itemId for Files node
 				int filesParentId = itemId;
-				setItemProperties(filesParentId, "Filer", NodeType.FILEROOT);
+				setupItemProperties(filesParentId, "Filer", NodeType.FILEROOT);
 				treeTable.setParent(filesParentId, missionItemId);
 				
 				//add files, set parent to above file itemid
 				for (FileMetadata file : mission.getFileList()) {
 					itemId++;
-					setItemProperties(itemId, file.getFilename(), NodeType.FILE);
+					setupItemProperties(itemId, file.getFilename(), NodeType.FILE);
 					treeTable.setParent(itemId, filesParentId);
 					treeTable.setChildrenAllowed(itemId, false);
 				}
@@ -380,7 +383,7 @@ public class SearchMissionListView extends CustomComponent {
 		}
 	}
 	
-	private void setItemProperties(int itemId, String name, NodeType type) {
+	private void setupItemProperties(int itemId, String name, NodeType type) {
 		Item item = treeTable.addItem(itemId);
 		item.getItemProperty("name").setValue(name);
 		item.getItemProperty("type").setValue(type);
@@ -525,6 +528,7 @@ public class SearchMissionListView extends CustomComponent {
 				String opName = getParentName(2, itemId);
 				String zoneId = service.resolveZoneId(itemName, opName, missionName);
 				service.deleteZone(zoneId);
+				treeTable.removeItem(itemId);
 			} catch (Exception e) {
 				e.printStackTrace();
 				listener.displayError("Zonborttagningen misslyckades", e.getMessage());
@@ -558,8 +562,8 @@ public class SearchMissionListView extends CustomComponent {
 			SearchMissionService service = null;
 			try {
 				service = new SearchMissionService();
-				service.endMission(itemName);
-				//TODO update treetable
+				String statusName = service.endMission(itemName);
+				item.getItemProperty("status").setValue(statusName);
 			} catch (Exception e) {
 				e.printStackTrace();
 				listener.displayError("Fel", e.getMessage());
@@ -573,8 +577,8 @@ public class SearchMissionListView extends CustomComponent {
 			try {
 				service = new SearchOperationService();
 				String missionName = getParentName(2, itemId);
-				service.endOperation(itemName, missionName);
-				//TODO update treetable
+				String statusName = service.endOperation(itemName, missionName);
+				item.getItemProperty("status").setValue(statusName);
 			} catch (Exception e) {
 				e.printStackTrace();
 				listener.displayError("Fel", e.getMessage());

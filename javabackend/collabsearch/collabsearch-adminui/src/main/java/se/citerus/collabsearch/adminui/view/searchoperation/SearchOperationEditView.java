@@ -44,11 +44,12 @@ public class SearchOperationEditView extends CustomComponent {
 	private TextField titleField;
 	private TextArea descrField;
 	private DateField dateField;
-	private String missionName;
 	private Label headerLabel;
 	private TextField locationField;
 	private ComboBox statusField;
 	private BeanContainer<String, Status> statusBeanContainer;
+
+	private String missionName;
 
 	public SearchOperationEditView(final ViewSwitchController listener) {
 		mainLayout = new VerticalLayout();
@@ -68,20 +69,18 @@ public class SearchOperationEditView extends CustomComponent {
 					try {
 						missionService = new SearchMissionService();
 						opService = new SearchOperationService();
-						//TODO replace "" with (String) locationField.getValue()
 						Status status = opService.getSearchOpStatusByName((String)statusField.getValue());
 						SearchOperation op = new SearchOperation(
+								null, 
 								(String) titleField.getValue(), 
 								(String) descrField.getValue(), 
 								(Date) dateField.getValue(), 
 								(String) locationField.getValue(),
 								status);
 						missionService.editSearchOp(op, missionName);
-						listener.refreshOpsTable();
-//						listener.returnToSearchMissionEditView();
 						listener.switchToSearchMissionListView();
 					} catch (Exception e) {
-						listener.displayError("Fel", e.getMessage());
+						listener.displayError("Sparningsfel", e.getMessage());
 					} finally {
 						if (missionService != null) {
 							missionService.cleanUp();
@@ -91,7 +90,7 @@ public class SearchOperationEditView extends CustomComponent {
 						}
 					}
 				} else {
-					listener.displayError("Fel", "Ett eller flera fält är inte korrekt ifyllda");
+					listener.displayError("Valideringsfel", "Ett eller flera fält är inte korrekt ifyllda");
 				}
 			}
 		});
@@ -112,7 +111,11 @@ public class SearchOperationEditView extends CustomComponent {
 	}
 
 	public void resetView(String opName, String missionName) {
+		this.missionName = null;
+		
 		if (opName != null) { //existing operation
+			this.missionName = missionName;
+			
 			SearchMissionService service = null;
 			try { //find operation
 				service = new SearchMissionService();
@@ -122,9 +125,11 @@ public class SearchOperationEditView extends CustomComponent {
 					titleField.setValue(searchOp.getTitle());
 					descrField.setValue(searchOp.getDescr());
 					dateField.setValue(searchOp.getDate());
+					locationField.setValue(searchOp.getLocation());
+					statusField.setValue(searchOp.getStatus().getName());
 				}
 			} catch (Exception e) {
-				listener.displayError("Fel", e.getMessage());
+				listener.displayError("Fel vid skapandet av fönstret", e.getMessage());
 			} finally {
 				if (service != null) {
 					service.cleanUp();
@@ -139,6 +144,8 @@ public class SearchOperationEditView extends CustomComponent {
 			titleField.setValue(null);
 			descrField.setValue(null);
 			dateField.setValue(null);
+			locationField.setValue(null);
+			statusField.setValue(null);
 			
 			headerLabel.setValue("<h1><b>" + "Ny sökoperation" + "</b></h1>");
 		}
@@ -202,27 +209,16 @@ public class SearchOperationEditView extends CustomComponent {
 		
 		populateStatusField();
 		
-		HorizontalLayout upperButtonLayout = new HorizontalLayout();
-		upperButtonLayout.setSpacing(true);
-		
-		zoneButton = new Button("Hantera zoner");
-		zoneButton.setEnabled(false);
-		upperButtonLayout.addComponent(zoneButton);
-		
-		groupButton = new Button("Hantera grupper");
-		groupButton.setEnabled(false);
-		upperButtonLayout.addComponent(groupButton);
-		
-		subLayout.addComponent(upperButtonLayout);
-		
 		HorizontalLayout lowerButtonLayout = new HorizontalLayout();
 		lowerButtonLayout.setSpacing(true);
 		
 		saveButton = new Button("Spara");
 		lowerButtonLayout.addComponent(saveButton);
+		lowerButtonLayout.setComponentAlignment(saveButton, Alignment.TOP_RIGHT);
 		
 		cancelButton = new Button("Avbryt");
 		lowerButtonLayout.addComponent(cancelButton);
+		lowerButtonLayout.setComponentAlignment(cancelButton, Alignment.TOP_RIGHT);
 		
 		subLayout.addComponent(lowerButtonLayout);
 		
@@ -252,7 +248,7 @@ public class SearchOperationEditView extends CustomComponent {
 			statusBeanContainer.addAll(listOfStatuses);
 		} catch (Exception e) {
 			e.printStackTrace();
-			listener.displayError("Fel", "Inga statusar funna!");
+			listener.displayError("Fel vid statushämtning", "Inga statusar funna!");
 		}
 	}
 }

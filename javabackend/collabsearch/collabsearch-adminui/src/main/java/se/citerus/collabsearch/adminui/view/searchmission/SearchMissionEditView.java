@@ -161,13 +161,7 @@ public class SearchMissionEditView extends CustomComponent {
 		
 		populateStatusComboBox();
 		
-		//TODO break out file list into separate view
-//		buildFileListLayout(leftFormLayout);
-		
 		outerLayout.addComponent(leftFormLayout);
-
-		//TODO break out ops list into separate view
-//		buildOpsListLayout(outerLayout, rightFormLayout);
 		
 		HorizontalLayout buttonLayout = new HorizontalLayout();
 		buttonLayout.setSpacing(true);
@@ -414,6 +408,7 @@ public class SearchMissionEditView extends CustomComponent {
 				int prio = Integer.parseInt(prioField.getValue().toString());
 				Status status = handler.getStatusByName(statusField.getValue().toString());
 				SearchMission mission = new SearchMission(
+						null,
 						(String) titleField.getValue(), 
 						(String) descrField.getValue(), 
 						prio, 

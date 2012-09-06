@@ -8,6 +8,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
 public class SearchOperation {
+	private String id;
 	private String title;
 	private String descr;
 	private Date date;
@@ -24,8 +25,9 @@ public class SearchOperation {
 		//Constructor intentionally left empty.
 	}
 
-	public SearchOperation(String title, String descr, 
+	public SearchOperation(String id, String title, String descr, 
 			Date date, String location, Status status) {
+		this.id = id;
 		this.title = title;
 		this.descr = descr;
 		this.date = date;
@@ -34,6 +36,14 @@ public class SearchOperation {
 		
 		zones = new ArrayList<Zone>();
 		groups = new ArrayList<Group>();
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
 	}
 
 	public String getTitle() {

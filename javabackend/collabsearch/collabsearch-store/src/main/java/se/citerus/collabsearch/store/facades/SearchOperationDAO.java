@@ -23,7 +23,7 @@ public interface SearchOperationDAO {
 
 	public void disconnect();
 
-	public void endMission(String opName, String missionName);
+	public String endOperation(String opName, String missionName);
 
 	public String getZoneIdByName(String zoneName, String opName);
 

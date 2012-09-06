@@ -63,9 +63,7 @@ public interface ViewSwitchController {
 	public void switchToZoneEditView(String zoneId, String opName);
 	
 	public void switchToGroupEditView(String groupId, String opName, String missionName);
-	
-	public void refreshOpsTable();
-	
-	public void refreshMissionTable();
+		
+	public void refreshMissionTree();
 
 }

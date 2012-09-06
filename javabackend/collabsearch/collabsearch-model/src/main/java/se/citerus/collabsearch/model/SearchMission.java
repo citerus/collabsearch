@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SearchMission {
+	private String id;
 	private String name;
 	private String description;
 	private int prio;
@@ -16,12 +17,21 @@ public class SearchMission {
 	public SearchMission() {
 		//this ctor intentionally left empty
 	}
-
-	public SearchMission(String name, String description, int prio, Status status) {
+	
+	public SearchMission(String id, String name, String description, int prio, Status status) {
+		this.id = id;
 		this.name = name;
 		this.description = description;
 		this.prio = prio;
 		this.status = status;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
 	}
 
 	public String getName() {

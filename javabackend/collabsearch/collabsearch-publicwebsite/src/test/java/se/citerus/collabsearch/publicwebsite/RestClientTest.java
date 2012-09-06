@@ -172,7 +172,7 @@ public class RestClientTest {
 					.get(SearchOperation.class);
 		} catch (UniformInterfaceException e) {
 			//expected
-			assertTrue("Got incorrect (Error 204) response", correctResponse(e));
+			assertTrue("Got incorrect (non-error 204) response", correctResponse(e, 204));
 		} catch (ClientHandlerException e) {
 			fail(e.getMessage());
 		}
@@ -195,7 +195,7 @@ public class RestClientTest {
 			fail(e.getMessage());
 		}
 	}
-	
+
 	@Test
 	public void testSearchForOps() {
 		SearchOperationIntro[] opIntro = null;
@@ -212,7 +212,7 @@ public class RestClientTest {
 					.get(SearchOperationIntro[].class);
 			assertNotNull(opIntro);
 		} catch (UniformInterfaceException e) {
-			assertTrue("Got incorrect (Error 204) response", correctResponse(e));
+			assertTrue("Got incorrect (non-error 204) response", correctResponse(e, 204));
 		} catch (ClientHandlerException e) {
 			fail(e.getMessage());
 		}
@@ -226,16 +226,16 @@ public class RestClientTest {
 			assertNotNull(opIntro);
 		} catch (UniformInterfaceException e) {
 			//expected
-			assertTrue("Got incorrect (Error 204) response", correctResponse(e));
+			assertTrue("Got incorrect (non-error 204) response", correctResponse(e, 204));
 		} catch (ClientHandlerException e) {
 			fail(e.getMessage());
 		}
 	}
 
-	private boolean correctResponse(UniformInterfaceException e) {
+	private boolean correctResponse(UniformInterfaceException e, int expectedErrorCode) {
 		ClientResponse response = e.getResponse();
 		assertNotNull("Response was null, expected ClientResponse instance", response);
-		assertEquals("Did not get a 204 response", response.getStatus(), 204);
+		assertEquals("Did not get a " + expectedErrorCode + " response", response.getStatus(), expectedErrorCode);
 		return true;
 	}
 }

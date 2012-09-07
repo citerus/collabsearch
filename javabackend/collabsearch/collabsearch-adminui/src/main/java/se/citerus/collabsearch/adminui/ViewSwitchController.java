@@ -47,9 +47,9 @@ public interface ViewSwitchController {
 
 	/**
 	 * Switches to the search mission management view, loading the data of the included search mission.
-	 * @param selectedSearchMissionName the Search Mission name with which to query the database.
+	 * @param missionId the Search Mission name with which to query the database.
 	 */
-	public void switchToSearchMissionEditView(String selectedSearchMissionName);
+	public void switchToSearchMissionEditView(String missionId);
 
 	public void switchToSearchOperationEditView(String selectedSearchOperationName, String missionName);
 	

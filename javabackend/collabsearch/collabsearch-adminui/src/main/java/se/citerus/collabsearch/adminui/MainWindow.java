@@ -126,12 +126,12 @@ public class MainWindow extends Window implements LoginListener, ViewSwitchContr
 	}
 
 	@Override
-	public void switchToSearchMissionEditView(String selectedSearchMissionName) {
+	public void switchToSearchMissionEditView(String missionId) {
 		if (searchMissionEditView == null) {
 			searchMissionEditView = new SearchMissionEditView(this);
 			searchMissionEditView.init();
 		}
-		searchMissionEditView.resetView(selectedSearchMissionName);
+		searchMissionEditView.resetView(missionId);
 		setContent(searchMissionEditView);
 	}
 
@@ -156,12 +156,12 @@ public class MainWindow extends Window implements LoginListener, ViewSwitchContr
 	}
 
 	@Override
-	public void switchToFileManagementView(String missionName, String fileName) {
+	public void switchToFileManagementView(String missionId, String fileName) {
 		if (fileMgmtView == null) {
 			fileMgmtView = new FileManagementView(this);
 			fileMgmtView.init();
 		}
-		fileMgmtView.resetView(missionName, fileName);
+		fileMgmtView.resetView(missionId);
 		setContent(fileMgmtView);
 	}
 

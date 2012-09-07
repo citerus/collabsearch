@@ -1,10 +1,20 @@
 package se.citerus.collabsearch.model;
 
 public class Zone {
+	private String id;
 	private String name;
 
-	public Zone(String name) {
+	public Zone(String id, String name) {
+		this.setId(id);
 		this.name = name;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
 	}
 
 	public String getName() {

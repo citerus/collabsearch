@@ -49,7 +49,7 @@ public class SearchOperationEditView extends CustomComponent {
 	private ComboBox statusField;
 	private BeanContainer<String, Status> statusBeanContainer;
 
-	private String missionName;
+	private String missionId;
 
 	public SearchOperationEditView(final ViewSwitchController listener) {
 		mainLayout = new VerticalLayout();
@@ -77,7 +77,7 @@ public class SearchOperationEditView extends CustomComponent {
 								(Date) dateField.getValue(), 
 								(String) locationField.getValue(),
 								status);
-						missionService.editSearchOp(op, missionName);
+						missionService.editSearchOp(op, missionId);
 						listener.switchToSearchMissionListView();
 					} catch (Exception e) {
 						listener.displayError("Sparningsfel", e.getMessage());
@@ -110,16 +110,14 @@ public class SearchOperationEditView extends CustomComponent {
 		return false;
 	}
 
-	public void resetView(String opName, String missionName) {
-		this.missionName = null;
+	public void resetView(String opName, String missionId) {
+		this.missionId = missionId;
 		
-		if (opName != null) { //existing operation
-			this.missionName = missionName;
-			
+		if (opName != null) { //existing operation			
 			SearchMissionService service = null;
 			try { //find operation
 				service = new SearchMissionService();
-				SearchOperation searchOp = service.getSearchOp(opName, missionName);
+				SearchOperation searchOp = service.getSearchOp(opName, missionId);
 				if (searchOp != null) {
 					//load data from operation into fields
 					titleField.setValue(searchOp.getTitle());
@@ -137,9 +135,7 @@ public class SearchOperationEditView extends CustomComponent {
 			}
 			
 			headerLabel.setValue("<h1><b>" + "Redigera sökoperation" + "</b></h1>");
-		} else { //new operation
-			this.missionName = missionName;
-			
+		} else { //new operation			
 			//empty all fields
 			titleField.setValue(null);
 			descrField.setValue(null);

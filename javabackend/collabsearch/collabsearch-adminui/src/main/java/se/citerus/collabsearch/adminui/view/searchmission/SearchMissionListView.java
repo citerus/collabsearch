@@ -82,14 +82,14 @@ public class SearchMissionListView extends CustomComponent {
 		editButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
 				try { //add more nodetypes or remove?
-					String missionTitle = null;
+					String missionId = null;
 					NodeType type = NodeType.UNDEFINED;
 					Item item = treeTable.getItem(treeTable.getValue());
-					missionTitle = item.getItemProperty("name").getValue().toString();
+					missionId = item.getItemProperty("id").getValue().toString();
 					type = (NodeType) item.getItemProperty("type").getValue();
 					if (type == NodeType.MISSION) {
-						if (missionTitle != null) {
-							listener.switchToSearchMissionEditView(missionTitle);
+						if (missionId != null) {
+							listener.switchToSearchMissionEditView(missionId);
 						} else {
 							listener.displayNotification("Inget sökuppdrag markerat", 
 									"Du måste markera ett sökuppdrag för redigering");
@@ -111,16 +111,16 @@ public class SearchMissionListView extends CustomComponent {
 			public void buttonClick(ClickEvent event) {
 				try {
 					SearchMissionService service = null;
-					String missionTitle = null;
+					String missionId = null;
 					NodeType type = NodeType.UNDEFINED;
 					Item item = treeTable.getItem(treeTable.getValue());
-					missionTitle = item.getItemProperty("name").getValue().toString();
+					missionId = item.getItemProperty("id").getValue().toString();
 					type = (NodeType) item.getItemProperty("type").getValue();
 					if (type == NodeType.MISSION) {
-						if (missionTitle != null) {
+						if (missionId != null) {
 							try {
 								service = new SearchMissionService();
-								service.endMission(missionTitle);
+								service.endMission(missionId);
 							} catch (Exception e) {
 								e.printStackTrace();
 								listener.displayError("Fel", e.getMessage());
@@ -166,18 +166,21 @@ public class SearchMissionListView extends CustomComponent {
 		contextMenuHandler = new Handler() {
 			@Override
 			public void handleAction(Action action, Object sender, Object target) {
-				System.out.println("in handleAction, target: " + target + " sender: " + sender);
-				int itemId = (Integer) target;
-				Item item = treeTable.getItem(itemId);
-				NodeType type = (NodeType) item.getItemProperty("type").getValue();
-				if (action == ACTION_ADDITEM) {
-					handleAddActions(itemId, type);
-				} else if (action == ACTION_EDITITEM) {
-					handleEditActions(itemId, item, type);
-				} else if (action == ACTION_REMOVEITEM) {
-					handleRemoveActions(itemId, item, type);
-				} else if (action == ACTION_ENDITEM) {
-					handleEndActions(itemId, item, type);
+				if (target == null) {
+					handleAddActions(0, NodeType.MISSION);
+				} else {
+					int itemId = (Integer) target;
+					Item item = treeTable.getItem(itemId);
+					NodeType type = (NodeType) item.getItemProperty("type").getValue();
+					if (action == ACTION_ADDITEM) {
+						handleAddActions(itemId, type);
+					} else if (action == ACTION_EDITITEM) {
+						handleEditActions(itemId, item, type);
+					} else if (action == ACTION_REMOVEITEM) {
+						handleRemoveActions(itemId, item, type);
+					} else if (action == ACTION_ENDITEM) {
+						handleEndActions(itemId, item, type);
+					}
 				}
 			}
 
@@ -199,14 +202,14 @@ public class SearchMissionListView extends CustomComponent {
 						default: return emptyMenu;
 					}
 				} catch (NullPointerException e) {
-					return emptyMenu;
+					return addMenu;
 				}
 			}
 		};
 		treeTable.addActionHandler(contextMenuHandler);
 	}
 
-	private String getParentName(int depth, int originalItemId) {
+	private String getParentProperty(int depth, int originalItemId, String propertyId) {
 		String string = null;
 		try {
 			Object itemId = originalItemId;
@@ -247,17 +250,18 @@ public class SearchMissionListView extends CustomComponent {
 		treeTable = new TreeTable();
 		treeTable.setSelectable(true);
 		treeTable.setSizeFull();
+		treeTable.addContainerProperty("id", String.class, "");
 		treeTable.addContainerProperty("name", String.class, "");
 		treeTable.addContainerProperty("descr", String.class, "");
 		treeTable.addContainerProperty("prio", Integer.class, "");
 		treeTable.addContainerProperty("status", String.class, "");
 		treeTable.addContainerProperty("type", NodeType.class, NodeType.UNDEFINED);
 		treeTable.setVisibleColumns(new Object[]{"name", "descr", "prio", "status"});
-		treeTable.setColumnHeaders(new String[]{"Namn","Beskrivning","Prioritet","Status"});
+		treeTable.setColumnHeaders(new String[]{"Namn", "Beskrivning", "Prioritet", "Status"});
 		treeTable.setImmediate(true);
 		innerLayout.addComponent(treeTable);
 		
-		populateTreeTable();
+//		populateTreeTable();
 		
 		HorizontalLayout buttonLayout = new HorizontalLayout();
 		buttonLayout.setSpacing(true);
@@ -308,13 +312,14 @@ public class SearchMissionListView extends CustomComponent {
 				missionItem.getItemProperty("prio").setValue(mission.getPrio());
 				missionItem.getItemProperty("status").setValue(mission.getStatus().getName());
 				missionItem.getItemProperty("type").setValue(NodeType.MISSION);
+				missionItem.getItemProperty("id").setValue(mission.getId());
 				
 				//allow children
 				treeTable.setChildrenAllowed(missionItemId, true);
 				
 				itemId++; //increase itemId for Operations node
 				int opsParentId = itemId;
-				setupItemProperties(opsParentId, "Operationer", NodeType.OPERATIONROOT);
+				setupItemProperties(opsParentId, "Operationer", NodeType.OPERATIONROOT, null);
 				treeTable.setParent(opsParentId, missionItemId);
 				
 				//add ops, set parent to above SearchMission itemid
@@ -326,17 +331,18 @@ public class SearchMissionListView extends CustomComponent {
 					opItem.getItemProperty("descr").setValue(op.getDescr());
 					opItem.getItemProperty("status").setValue(op.getStatus());
 					opItem.getItemProperty("type").setValue(NodeType.OPERATION);
+					opItem.getItemProperty("id").setValue(op.getId());
 					treeTable.setParent(itemId, opsParentId);
 					
 					//add zone parent label
 					itemId++;
 					int zoneParentId = itemId;
-					setupItemProperties(zoneParentId, "Zoner", NodeType.ZONEROOT);
+					setupItemProperties(zoneParentId, "Zoner", NodeType.ZONEROOT, null);
 					treeTable.setParent(zoneParentId, opItemId);
 					//add zones
 					for (Zone zone : op.getZones()) {
 						itemId++;
-						setupItemProperties(itemId, zone.getName(), NodeType.ZONE);
+						setupItemProperties(itemId, zone.getName(), NodeType.ZONE, zone.getId());
 						treeTable.setParent(itemId, zoneParentId);
 						treeTable.setChildrenAllowed(itemId, false);
 					}
@@ -344,12 +350,12 @@ public class SearchMissionListView extends CustomComponent {
 					//add group parent label
 					itemId++;
 					int groupParentId = itemId;
-					setupItemProperties(groupParentId, "Grupper", NodeType.GROUPROOT);
+					setupItemProperties(groupParentId, "Grupper", NodeType.GROUPROOT, null);
 					treeTable.setParent(itemId, opItemId);
 					//add groups
 					for (Group group : op.getGroups()) {
 						itemId++;
-						setupItemProperties(itemId, group.getName(), NodeType.GROUP);
+						setupItemProperties(itemId, group.getName(), NodeType.GROUP, group.getId());
 						treeTable.setParent(itemId, groupParentId);
 						treeTable.setChildrenAllowed(itemId, false);
 					}
@@ -357,13 +363,13 @@ public class SearchMissionListView extends CustomComponent {
 				
 				itemId++; //increase itemId for Files node
 				int filesParentId = itemId;
-				setupItemProperties(filesParentId, "Filer", NodeType.FILEROOT);
+				setupItemProperties(filesParentId, "Filer", NodeType.FILEROOT, null);
 				treeTable.setParent(filesParentId, missionItemId);
 				
 				//add files, set parent to above file itemid
 				for (FileMetadata file : mission.getFileList()) {
 					itemId++;
-					setupItemProperties(itemId, file.getFilename(), NodeType.FILE);
+					setupItemProperties(itemId, file.getFilename(), NodeType.FILE, file.getId());
 					treeTable.setParent(itemId, filesParentId);
 					treeTable.setChildrenAllowed(itemId, false);
 				}
@@ -383,10 +389,11 @@ public class SearchMissionListView extends CustomComponent {
 		}
 	}
 	
-	private void setupItemProperties(int itemId, String name, NodeType type) {
+	private void setupItemProperties(int itemId, String name, NodeType type, String id) {
 		Item item = treeTable.addItem(itemId);
 		item.getItemProperty("name").setValue(name);
 		item.getItemProperty("type").setValue(type);
+		item.getItemProperty("id").setValue(type);
 	}
 
 	public void resetView() {
@@ -400,44 +407,44 @@ public class SearchMissionListView extends CustomComponent {
 				break;
 			}
 			case OPERATIONROOT: {
-				String missionName = getParentName(1, itemId);
-				listener.switchToSearchOperationEditView(null, missionName);
+				String missionName = getParentProperty(1, itemId, "name");
+				listener.switchToSearchOperationEditView(null, missionName); //TODO change missionname to id
 				break;
 			}
 			case OPERATION: {
-				String missionName = getParentName(2, itemId);
-				listener.switchToSearchOperationEditView(null, missionName);
+				String missionName = getParentProperty(2, itemId, "name");
+				listener.switchToSearchOperationEditView(null, missionName); //TODO change missionname to id
 				break;
 			}
 			case FILEROOT: {
-				String missionName = getParentName(1, itemId);
-				listener.switchToFileManagementView(missionName, null);
+				String missionId = getParentProperty(1, itemId, "id");
+				listener.switchToFileManagementView(missionId, null);
 				break;
 			}
 			case FILE: {
-				String missionName = getParentName(2, itemId);
-				listener.switchToFileManagementView(missionName, null);
+				String missionId = getParentProperty(2, itemId, "id");
+				listener.switchToFileManagementView(missionId, null);
 				break;
 			}
 			case ZONEROOT: {
-				String opName = getParentName(1, itemId);
+				String opName = getParentProperty(1, itemId, "name");
 				listener.switchToZoneEditView(null, opName);
 				break;
 			}
 			case ZONE: {
-				String opName = getParentName(2, itemId);
+				String opName = getParentProperty(2, itemId, "name");
 				listener.switchToZoneEditView(null, opName);
 				break;
 			}
 			case GROUPROOT: {
-				String opName = getParentName(1, itemId);
-				String missionName = getParentName(3, itemId);
+				String opName = getParentProperty(1, itemId, "name");
+				String missionName = getParentProperty(3, itemId, "name");
 				listener.switchToGroupEditView(null, opName, missionName);
 				break;
 			}
 			case GROUP: {
-				String opName = getParentName(2, itemId);
-				String missionName = getParentName(4, itemId);
+				String opName = getParentProperty(2, itemId, "name");
+				String missionName = getParentProperty(4, itemId, "name");
 				listener.switchToGroupEditView(null, opName, missionName);
 				break;
 			}
@@ -450,11 +457,11 @@ public class SearchMissionListView extends CustomComponent {
 		if (type == NodeType.MISSION) {
 			listener.switchToSearchMissionEditView(itemName);
 		} else if (type == NodeType.OPERATION) {
-			String missionName = getParentName(2, itemId);
-			listener.switchToSearchOperationEditView(itemName, missionName);
+			String missionName = getParentProperty(2, itemId, "name");
+			listener.switchToSearchOperationEditView(itemName, missionName); //TODO change missionname to id
 		} else if (type == NodeType.ZONE) {
-			String opName = getParentName(2, itemId);
-			String missionName = getParentName(4, itemId);
+			String opName = getParentProperty(2, itemId, "name");
+			String missionName = getParentProperty(4, itemId, "name");
 			String zoneId = null;
 			SearchOperationService service = null;
 			try {
@@ -469,8 +476,8 @@ public class SearchMissionListView extends CustomComponent {
 				}
 			}
 		} else if (type == NodeType.GROUP) {
-			String missionName = getParentName(4, itemId);
-			String opName = getParentName(2, itemId);
+			String missionName = getParentProperty(4, itemId, "name");
+			String opName = getParentProperty(2, itemId, "name");
 			String groupId = null;
 			SearchOperationService service = null;
 			try {
@@ -491,11 +498,11 @@ public class SearchMissionListView extends CustomComponent {
 		String itemName = item.getItemProperty("name").getValue().toString();
 		String missionName = null;
 		if (type == NodeType.FILE) {
-			missionName = getParentName(2, itemId);
+			String missionId = getParentProperty(2, itemId, "id");
 			SearchMissionService service = null;
 			try {
 				service = new SearchMissionService();
-				service.deleteFile(itemName, missionName);
+				service.deleteFile(itemName, missionId);
 				treeTable.removeItem(itemId);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -506,7 +513,7 @@ public class SearchMissionListView extends CustomComponent {
 				}
 			}
 		} else if (type == NodeType.OPERATION) {
-			missionName = getParentName(2, itemId);
+			missionName = getParentProperty(2, itemId, "name");
 			SearchMissionService service = null;
 			try {
 				service = new SearchMissionService();
@@ -521,11 +528,11 @@ public class SearchMissionListView extends CustomComponent {
 				}
 			}
 		} else if (type == NodeType.ZONE) {
-			missionName = getParentName(4, itemId);
+			missionName = getParentProperty(4, itemId, "name");
 			SearchOperationService service = null;
 			try {
 				service = new SearchOperationService();
-				String opName = getParentName(2, itemId);
+				String opName = getParentProperty(2, itemId, "name");
 				String zoneId = service.resolveZoneId(itemName, opName, missionName);
 				service.deleteZone(zoneId);
 				treeTable.removeItem(itemId);
@@ -538,11 +545,11 @@ public class SearchMissionListView extends CustomComponent {
 				}
 			}
 		} else if (type == NodeType.GROUP) {
-			missionName = getParentName(4, itemId);
+			missionName = getParentProperty(4, itemId, "name");
 			SearchOperationService service = null;
 			try {
 				service = new SearchOperationService();
-				String opName = getParentName(2, itemId);
+				String opName = getParentProperty(2, itemId, "name");
 				String groupId = service.resolveGroupId(itemName, opName, missionName);
 				service.deleteGroup(groupId);
 			} catch (Exception e) {
@@ -564,6 +571,7 @@ public class SearchMissionListView extends CustomComponent {
 				service = new SearchMissionService();
 				String statusName = service.endMission(itemName);
 				item.getItemProperty("status").setValue(statusName);
+				treeTable.requestRepaintAll();
 			} catch (Exception e) {
 				e.printStackTrace();
 				listener.displayError("Fel", e.getMessage());
@@ -576,7 +584,7 @@ public class SearchMissionListView extends CustomComponent {
 			SearchOperationService service = null;
 			try {
 				service = new SearchOperationService();
-				String missionName = getParentName(2, itemId);
+				String missionName = getParentProperty(2, itemId, "name");
 				String statusName = service.endOperation(itemName, missionName);
 				item.getItemProperty("status").setValue(statusName);
 			} catch (Exception e) {

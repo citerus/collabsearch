@@ -48,12 +48,8 @@ public class SearchMissionEditView extends CustomComponent {
 	private TextField prioField;
 	private ComboBox statusField;
 	private BeanContainer<String, Status> statusBeanContainer;
-	private BeanItemContainer<SearchOperation> opsBeanContainer;
-	private ListSelect opsList;
-	private Button deleteButton;
-	private Button editButton;
-	private Button addButton;
-	private String originalMissionName;
+	
+	private String missionId;
 
 	public SearchMissionEditView(final ViewSwitchController listener) {
 		this.listener = listener;
@@ -73,34 +69,34 @@ public class SearchMissionEditView extends CustomComponent {
 		//cancel actions and return to search mission list
 		cancelButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
+				missionId = null;
 				listener.switchToSearchMissionListView();
 			}
 		});
-		
-		listener.setMainWindowCaption("Collaborative Search - Redigera sökuppdrag");
 	}
 
-	public void resetView(String selectedSearchMissionName) {
-		if (selectedSearchMissionName != null) { //edit mission mode
-			originalMissionName = selectedSearchMissionName;
-			populateForms(selectedSearchMissionName);
+	public void resetView(String missionId) {
+		if (missionId != null) { //edit mission mode
+			this.missionId = missionId;
+			populateForms(missionId);
+			listener.setMainWindowCaption("Collaborative Search - Redigera sökuppdrag");
 		} else { //new mission mode
-			originalMissionName = null;
 			titleField.setValue(null);
 			descrField.setValue(descrField.getNullRepresentation());
 			prioField.setValue(prioField.getNullRepresentation());
 			statusField.setValue(null);
+			listener.setMainWindowCaption("Collaborative Search - Nytt sökuppdrag");
 		}
 	}
 
-	private void populateForms(String missionName) {
+	private void populateForms(String missionId) {
 		SearchMission mission = null;
 		SearchMissionService handler = null;
 		try {
 			handler = new SearchMissionService();
-			mission = handler.getSearchMissionData(missionName);
+			mission = handler.getSearchMissionData(missionId);
 			if (mission == null) {
-				listener.displayError("Fel", "Uppdraget " + missionName + " kunde ej hittas");
+				listener.displayError("Fel", "Uppdraget " + missionId + " kunde ej hittas");
 				return;
 			}
 		} catch (Exception e) {
@@ -179,75 +175,6 @@ public class SearchMissionEditView extends CustomComponent {
 		setupValidators();
 	}
 
-	private void buildOpsListLayout(HorizontalLayout outerLayout,
-			VerticalLayout rightFormLayout) {
-		opsBeanContainer = new BeanItemContainer<SearchOperation>(SearchOperation.class);
-		opsList = new ListSelect("Operationer", opsBeanContainer);
-		opsList.setWidth("100%");
-		opsList.setNullSelectionAllowed(false);
-		rightFormLayout.addComponent(opsList);
-		
-		HorizontalLayout opsButtons = new HorizontalLayout();
-		opsButtons.setSpacing(true);
-		
-		deleteButton = new Button("Ta bort");
-		opsButtons.addComponent(deleteButton);
-		
-		editButton = new Button("Redigera");
-		opsButtons.addComponent(editButton);
-		
-		addButton = new Button("Lägg till");
-		opsButtons.addComponent(addButton);
-		
-		rightFormLayout.addComponent(opsButtons);
-		rightFormLayout.setComponentAlignment(opsButtons, Alignment.TOP_CENTER);
-		outerLayout.addComponent(rightFormLayout);
-		
-		//add new search operation
-		addButton.addListener(new ClickListener() {
-			public void buttonClick(ClickEvent event) {
-				String missionTitle = (String) titleField.getValue();
-				if (missionTitle != null) {
-//					commitMission(missionTitle);
-					listener.switchToSearchOperationEditView(null, missionTitle);
-				} else {
-					listener.displayError("Fel: Sökuppdragsnamn saknas", 
-							"Sökuppdraget måste namnges innan operationer kan läggas till");
-				}
-			}
-		});
-		//edit existing search operation
-		editButton.addListener(new ClickListener() {
-			public void buttonClick(ClickEvent event) {
-				String missionTitle = (String) titleField.getValue();
-				String selectedOp = opsList.getValue().toString();
-				if (missionTitle != null && selectedOp != null) {
-//					commitMission(missionTitle);
-					listener.switchToSearchOperationEditView(selectedOp, missionTitle);
-				} else {
-					listener.displayError("Fel: Sökuppdragsnamn saknas", 
-							"Sökuppdraget måste namnges innan operationer kan redigeras");
-				}
-			}
-		});
-		//delete search operation
-		deleteButton.addListener(new ClickListener() {
-			public void buttonClick(ClickEvent event) {
-				Object itemId = opsList.getValue();
-				opsList.removeItem(itemId);
-				SearchMissionService handler = new SearchMissionService();
-				try {
-					handler.deleteSearchOperation(itemId.toString(), 
-							titleField.getValue().toString());
-				} catch (Exception e) {
-					listener.displayError("Fel", e.getMessage());
-				} finally {
-					handler.cleanUp();
-				}
-			}
-		});
-	}
-
 	private void buildFileListLayout(VerticalLayout leftFormLayout) {
 		VerticalLayout fileListLayout = new VerticalLayout();
 		fileListLayout.setWidth("100%");
@@ -281,7 +208,6 @@ public class SearchMissionEditView extends CustomComponent {
 		HorizontalLayout fileButtonsLayout = new HorizontalLayout();
 		
 		final FileUploadHandler fileUploadHandler = new FileUploadHandler();
-		fileUploadHandler.setTableBeanRef(fileBeanContainer);
 		fileUploadHandler.setViewRef(listener);
 		final Upload fileUpload = new Upload(null, fileUploadHandler);
 		fileUpload.setButtonCaption(null);
@@ -364,7 +290,7 @@ public class SearchMissionEditView extends CustomComponent {
 				listener.displayError("Filuppladdning", 
 						"Sökuppdraget måste namnges innan filuppladdningar kan genomföras.");
 			} else {
-				handler.setParentMissionName(missionTitle);
+				handler.setParentMissionId(missionTitle);
 				fileUpload.submitUpload();
 			}
 		}
@@ -389,15 +315,6 @@ public class SearchMissionEditView extends CustomComponent {
 		prioField.setRequired(true);
 		statusField.setRequired(true);
 	}
-
-	public void refreshOpsTable() {
-		opsBeanContainer.removeAllItems();
-		SearchMissionService service = new SearchMissionService();
-		List<SearchOperation> list = service.getListOfSearchOps(titleField.getValue().toString());
-		if (list != null) {
-			opsBeanContainer.addAll(list);
-		}
-	}
 	
 	private void saveSearchMissionData() {
 		//popup dialogue here?
@@ -408,13 +325,14 @@ public class SearchMissionEditView extends CustomComponent {
 				int prio = Integer.parseInt(prioField.getValue().toString());
 				Status status = handler.getStatusByName(statusField.getValue().toString());
 				SearchMission mission = new SearchMission(
-						null,
+						missionId, 
 						(String) titleField.getValue(), 
 						(String) descrField.getValue(), 
 						prio, 
 						status
 				);
-				handler.addOrModifyMission(mission, originalMissionName);
+				handler.addOrModifyMission(mission, missionId);
+				missionId = null;
 				listener.switchToSearchMissionListView();
 			} catch (Exception e) {
 				listener.displayError("Fel", "Ett fel uppstod vid sparandet " +

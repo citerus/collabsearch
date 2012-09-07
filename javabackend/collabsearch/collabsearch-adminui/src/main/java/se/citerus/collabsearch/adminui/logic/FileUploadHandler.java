@@ -3,6 +3,8 @@ package se.citerus.collabsearch.adminui.logic;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.nio.file.FileAlreadyExistsException;
+import java.util.Random;
 
 import se.citerus.collabsearch.adminui.ViewSwitchController;
 import se.citerus.collabsearch.model.FileMetadata;
@@ -17,9 +19,8 @@ import com.vaadin.ui.Upload.SucceededEvent;
 public class FileUploadHandler implements Upload.SucceededListener,
 		Upload.FailedListener, Upload.Receiver {
 
-	private static final String FILEPATH = "/tmp/uploads/"; //TODO change filepath to search mission specific path
-	private String parentMissionName;
-	private BeanContainer<String, FileMetadata> fileBeanContainer;
+	private static final String UPLOADDIR = "/tmp/uploads/"; //TODO change filepath to search mission specific path
+	private String parentMissionId;
 	private File file;
 	private FileMetadata metadata;
 	private ViewSwitchController listener;
@@ -27,14 +28,20 @@ public class FileUploadHandler implements Upload.SucceededListener,
 	public OutputStream receiveUpload(String filename, String mimeType) {
 		FileOutputStream fos = null;
 		
-		File uploadDir = new File(FILEPATH);
+		File uploadDir = new File(UPLOADDIR);
 		if (!uploadDir.exists()) {
 			uploadDir.mkdir();
 		}
 		
-		file = new File(FILEPATH + filename);
+		String filepath = UPLOADDIR + parentMissionId + "/" + filename;
+		file = new File(filepath);
+		if (file.exists()) {
+			System.err.println("File " + filename + " already exists for this mission");
+			return null;
+		}
 		//check if file exists here?
-		metadata = new FileMetadata(filename, mimeType, FILEPATH);
+		String debugId = "" + new Random().nextLong(); //TODO to be replaced with better solution
+		metadata = new FileMetadata(debugId, filename, mimeType, UPLOADDIR);
 		try {
 			fos = new FileOutputStream(file);
 		} catch (Exception e) {
@@ -53,35 +60,36 @@ public class FileUploadHandler implements Upload.SucceededListener,
 		SearchMissionService handler = null;
 		try {
 			handler = new SearchMissionService();
-			handler.addFileToMission(parentMissionName, metadata);
+			handler.addFileToMission(parentMissionId, metadata);
 		} catch (RuntimeException e) {
 			listener.displayError("Filöverföring", "Ett uppdragsnamn måste bestämmas innan filer kan laddas upp");
 		} catch (Exception e) {
 			listener.displayError("Fel", e.getMessage());
 		} finally {
-			handler.cleanUp();
+			if (handler != null) {
+				handler.cleanUp();
+			}
+			parentMissionId = null;
+			metadata = null;
+			file = null;
 		}
-		
-		//add file to list
-		fileBeanContainer.addBean(metadata);
 		
 		listener.displayNotification("Filuppladdning", "Filöverföringen lyckades.");
 	}
 	
 	public void uploadFailed(FailedEvent event) {
 		listener.displayError("Filuppladdning", "Filöverföringen misslyckades.");
+		parentMissionId = null;
+		metadata = null;
+		file = null;
 	}
 
 	public String getParentMissionName() {
-		return parentMissionName;
+		return parentMissionId;
 	}
 
-	public void setParentMissionName(String parentMissionName) {
-		this.parentMissionName = parentMissionName;
-	}
-
-	public void setTableBeanRef(BeanContainer<String, FileMetadata> fileBeanContainer) {
-		this.fileBeanContainer = fileBeanContainer;
+	public void setParentMissionId(String parentMissionName) {
+		this.parentMissionId = parentMissionName;
 	}
 
 	public void setViewRef(ViewSwitchController listener) {

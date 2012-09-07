@@ -42,7 +42,7 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 			throw new IOException("Sökuppdraget " + missionId + " ej funnet");
 		}
 		
-		//below solution not to be used in the mongodb dao impl
+		//to be replaced with db-stored status table/collection
 		final String endStatusName = "Avslutat uppdrag";
 		mission.setStatus(findStatusByName(endStatusName));
 		
@@ -94,8 +94,8 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 
 	private void addMockMissions() {
 		List<FileMetadata> fileList = new ArrayList<FileMetadata>();
-		fileList.add(new FileMetadata("fil1.pdf", "application/pdf", "/tmp/uploads/"));
-		fileList.add(new FileMetadata("fil2.png", "image/png", "/tmp/uploads/"));
+		fileList.add(new FileMetadata("1", "fil1.pdf", "application/pdf", "/tmp/uploads/"));
+		fileList.add(new FileMetadata("2", "fil2.png", "image/png", "/tmp/uploads/"));
 		
 		List<SearchOperation> opsList = new ArrayList<SearchOperation>();
 		addMockOps(opsList);
@@ -118,17 +118,17 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 	}
 	
 	private void addMockOps(List<SearchOperation> opsList) {
+		Random r = new Random();
+		
 		List<Group> groups = new ArrayList<Group>();
-		groups.add(new Group("Grupp A"));
-		groups.add(new Group("Grupp B"));
-		groups.add(new Group("Grupp C"));
+		groups.add(new Group("" + r.nextLong(), "Grupp A"));
+		groups.add(new Group("" + r.nextLong(), "Grupp B"));
+		groups.add(new Group("" + r.nextLong(), "Grupp C"));
 		
 		List<Zone> zones = new ArrayList<Zone>();
-		zones.add(new Zone("Zon Alfa"));
-		zones.add(new Zone("Zon Beta"));
-		zones.add(new Zone("Zon Gamma"));
-		
-		Random r = new Random();
+		zones.add(new Zone("" + r.nextLong(), "Zon Alfa"));
+		zones.add(new Zone("" + r.nextLong(), "Zon Beta"));
+		zones.add(new Zone("" + r.nextLong(), "Zon Gamma"));
 		
 		SearchOperation searchOp = new SearchOperation(
 				"" + r.nextLong() ,"Operation 1", "beskrivn...", 
@@ -166,7 +166,7 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 	
 	@Override
 	public void addNewSearchMission(SearchMission mission) throws IOException {
-		if (mission.getId() == null) {
+		if (mission.getId() == null || mission.equals("")) {
 			mission.setId("" + new Random().nextLong());
 		}
 		missionsList.add(mission);
@@ -176,7 +176,7 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 	public void editExistingMission(SearchMission mission, String missionId)
 			throws IOException {
 		for (SearchMission listedMission : missionsList) {
-			if (missionId.equals(listedMission.getName())) {
+			if (missionId.equals(listedMission.getId())) {
 				listedMission.setName(mission.getName());
 				listedMission.setDescription(mission.getDescription());
 				listedMission.setPrio(mission.getPrio());
@@ -186,13 +186,13 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 		}
 	}
 
-	public void addFileMetadata(String missionName, FileMetadata fileMetaData) throws IOException {
-//		SearchMission mission = findMission(missionName);
-//		if (mission == null) {
-//			throw new IOException("Sökuppdraget " + missionName + " ej funnet");
-//		}
-//		
-//		mission.getFileList().add(fileMetaData);
+	public void addFileMetadata(String missionId, FileMetadata fileMetaData) throws IOException {
+		SearchMission mission = findMission(missionId);
+		if (mission == null) {
+			throw new IOException("Sökuppdraget ej funnet");
+		}
+		
+		mission.getFileList().add(fileMetaData);
 	}
 
 	public void deleteFileMetadata(String filename, String missionName) throws IOException {

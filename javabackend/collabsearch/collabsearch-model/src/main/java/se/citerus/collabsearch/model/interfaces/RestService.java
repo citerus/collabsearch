@@ -11,11 +11,11 @@ import se.citerus.collabsearch.model.SearchOperationIntro;
  */
 public interface RestService {
 
-	public SearchOperationIntro[] getAllOps();
+	public SearchOperationIntro[] getAllOps() throws Exception;
 
-	public SearchOperation getSearchOperationByName(String name);
+	public SearchOperation getSearchOperationById(String name) throws Exception;
 
-	public Response applyForSearchOp(String opName, String name, String email, String tele);
+	public Response applyForSearchOp(String opName, String name, String email, String tele) throws Exception;
 
-	public SearchOperationIntro[] searchForOps(String title, String location, String date);
+	public SearchOperationIntro[] searchForOps(String title, String location, String date) throws Exception;
 }

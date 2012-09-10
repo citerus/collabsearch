@@ -1,5 +1,6 @@
 package se.citerus.collabsearch.adminui.logic;
 
+import java.io.IOException;
 import java.util.List;
 
 import se.citerus.collabsearch.model.Status;
@@ -25,7 +26,11 @@ public class SearchOperationService { //TODO refactor into spring service
 	}
 
 	public void cleanUp() {
-		searchOperationDAO.disconnect();
+		try {
+			searchOperationDAO.disconnect();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public String endOperation(String opName, String missionName) throws Exception {

@@ -40,5 +40,7 @@ public interface SearchMissionDAO {
 	public void deleteSearchOperation(String searchOpName, String missionId) throws IOException;
 	
 	public void addOrModifySearchOperation(SearchOperation operation, String missionId) throws IOException;
+
+	public FileMetadata getFileMetadata(String filename, String missionId);
 	
 }

@@ -1,5 +1,6 @@
 package se.citerus.collabsearch.api;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.Random;
 
@@ -20,39 +21,31 @@ import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.SearchOperationIntro;
 import se.citerus.collabsearch.model.Status;
 import se.citerus.collabsearch.model.interfaces.RestService;
+import se.citerus.collabsearch.store.facades.SearchOperationDAO;
+import se.citerus.collabsearch.store.mongodb.SearchOperationDAOMongoDB;
 
 @Path("/ws")
 public class RestServer implements RestService {
-	//TODO needs SearchOpDAOMongoDB impl
+	private SearchOperationDAO dao;
 	
-	@GET
-	@Path("/hello")
-	@Produces(MediaType.TEXT_PLAIN)
-	public String hello() {
-		return "Hello world!" + "\n";
-	}
-
-	@GET
-	@Path("/echo/{input}")
-	@Produces(MediaType.TEXT_PLAIN)
-	@Consumes(MediaType.TEXT_PLAIN)
-	public String echo(@PathParam("input") String input) {
-		return "Hello " + input + "\n";
+	public RestServer() {
+		try {
+			dao = new SearchOperationDAOMongoDB();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	@GET
 	@Path("/getAllOps")
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	public SearchOperationIntro[] getAllOps() {
-		//TODO get all ops from the db
-		SearchOperationIntro[] array = new SearchOperationIntro[3];
-		array[0] = new SearchOperationIntro("Sökoperation 1", "text...");
-		array[1] = new SearchOperationIntro("Sökoperation 2", "text...");
-		array[2] = new SearchOperationIntro("Sökoperation 3", "text...");
-		if (array == null) {
-			throw new WebApplicationException(404);
-		} else if (array.length == 0) {
-			throw new WebApplicationException(404);
+		SearchOperationIntro[] array = null;
+		try {
+			array = dao.getAllSearchOps();
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new WebApplicationException(500);
 		}
 		return array;
 	}
@@ -61,20 +54,21 @@ public class RestServer implements RestService {
 	@Path("/getSearchOp/{name}")
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	@Consumes(MediaType.TEXT_PLAIN)
-	public SearchOperation getSearchOperationByName(@PathParam("name") String name) {
-		//TODO search db for single op with matching name/id
-		if (name == null) {
+	public SearchOperation getSearchOperationById(@PathParam("name") String id) {
+		if (id == null) {
 			throw new WebApplicationException(404);
 		}
-		if (name != null && name.equals("debug_nonexistent_op")) {
+		SearchOperation searchOperation = null;
+		try {
+			searchOperation = dao.getSearchOpById(id);
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new WebApplicationException(500);
+		}
+		if (searchOperation == null) {
 			throw new WebApplicationException(404);
 		}
-		Random r = new Random();
-		SearchOperation op = new SearchOperation("" + r.nextLong(), 
-			name, "beskrivning här",
-			new Date(System.currentTimeMillis()), "Plats XYZ",
-			new Status(0, "status 1", "beskrivn..."));
-		return op;
+		return searchOperation;
 	}
 
 	@POST
@@ -85,16 +79,16 @@ public class RestServer implements RestService {
 			@FormParam("name") String name, 
 			@FormParam("email") String email, 
 			@FormParam("tele") String tele) {
-		//TODO store application in db
-		if (opName == null) { //if the operation was not found
-			throw new WebApplicationException(404);
-		}
-		System.out.println("SearchOp application received: " + 
-				opName + ", " + name + ", " + email + ", " + tele);
-		Response response = Response
-				.ok()
+		Response response = null;
+		try {
+			dao.assignUserToSearchOp(opName, name, email, tele);
+			response = Response.ok()
 				.lastModified(new Date(System.currentTimeMillis()))
 				.build();
+		} catch (IOException e) {
+			e.printStackTrace();
+			response = Response.serverError().build();
+		}
 		return response;
 	}
 
@@ -105,20 +99,18 @@ public class RestServer implements RestService {
 			@DefaultValue("") @QueryParam("title") String title, 
 			@DefaultValue("") @QueryParam("location") String location, 
 			@DefaultValue("") @QueryParam("date") String date) {
-		//TODO search db for matching ops
-		if (title != null && title.equals("debug_nonexistent_op")) {
+
+		SearchOperationIntro[] array = null;
+		try {
+			array = dao.getSearchOpsByFilter(title, location, date);
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new WebApplicationException(500);
+		}
+		if (array == null || array.length == 0) {
 			throw new WebApplicationException(404);
 		}
-		SearchOperationIntro[] array = new SearchOperationIntro[3];
-		array[0] = new SearchOperationIntro("Sökoperation 1", "text...");
-		array[1] = new SearchOperationIntro("Sökoperation 2", "text...");
-		array[2] = new SearchOperationIntro("Sökoperation 3", "text...");
-		if (array == null) {
-			throw new WebApplicationException(404);
-		} else if (array.length == 0) {
-			throw new WebApplicationException(404);
-		}
-		return array;
+ 		return array;
 	}
 
 }

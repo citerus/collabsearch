@@ -17,8 +17,8 @@ public class Controller implements ControllerListener {
 		view = new View(this, mainWindow);
 	}
 
-	public SearchOperation fireReadMoreEvent(String header) {
-		return model.getSearchOpByName(header);
+	public SearchOperation fireReadMoreEvent(String id) {
+		return model.getSearchOpById(id);
 	}
 
 	public void submitSearchOpApplication(String selectedOp, String name, String tele,

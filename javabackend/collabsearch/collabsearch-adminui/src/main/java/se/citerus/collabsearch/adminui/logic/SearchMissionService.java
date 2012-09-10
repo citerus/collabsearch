@@ -1,5 +1,7 @@
 package se.citerus.collabsearch.adminui.logic;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 
@@ -65,8 +67,17 @@ public class SearchMissionService { //TODO refactor into spring service
 		searchMissionDAL.addFileMetadata(missionId, metadata);
 	}
 
-	public void deleteFile(String filename, String missionId) throws Exception {
-		searchMissionDAL.deleteFileMetadata(filename, missionId);
+	public void deleteFile(String filename, String missionId) throws Exception {		
+		try {
+			FileMetadata metadata = searchMissionDAL.getFileMetadata(filename, missionId);
+			File file = new File(metadata.getFilePath());
+			file.delete();
+			searchMissionDAL.deleteFileMetadata(filename, missionId);
+		} catch (SecurityException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	public void deleteSearchOperation(String searchOpName, String missionId) throws Exception {

@@ -24,7 +24,6 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO {
 	private Mongo mongo;
 	private DBCollection missionColl;
 	private DBCollection statusColl;
-	private DBCollection operationsColl;
 
 	public SearchMissionDAOMongoDB() throws Exception {
 		mongo = new Mongo();
@@ -106,6 +105,11 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO {
 	@Override
 	public void editExistingMission(SearchMission mission, String missionName)
 			throws IOException {
+	}
+
+	@Override
+	public FileMetadata getFileMetadata(String filename, String missionId) {
+		return null;
 	}
 
 }

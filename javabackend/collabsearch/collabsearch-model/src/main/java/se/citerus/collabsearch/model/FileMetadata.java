@@ -29,6 +29,9 @@ public class FileMetadata {
 		this.mimeType = mimeType;
 	}
 
+	/**
+	 * Returns the complete filepath, e.g /uploads/{missionid}/{filename}.
+	 */
 	public String getFilePath() {
 		return filePath;
 	}

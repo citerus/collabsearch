@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import se.citerus.collabsearch.model.SearchOperation;
+import se.citerus.collabsearch.model.SearchOperationIntro;
 import se.citerus.collabsearch.model.Status;
 
 public interface SearchOperationDAO {
@@ -17,11 +18,13 @@ public interface SearchOperationDAO {
 //	
 //	public void addOrModifySearchOperation(SearchOperation operation, String missionName) throws IOException;
 	
+	public SearchOperationIntro[] getAllSearchOps() throws IOException;
+	
 	public List<Status> getAllSearchOpStatuses() throws IOException;
 
 	public Status getSearchOpStatusByName(String statusName) throws IOException;
 
-	public void disconnect();
+	public void disconnect() throws IOException;
 
 	public String endOperation(String opName, String missionName);
 
@@ -32,5 +35,12 @@ public interface SearchOperationDAO {
 	public String getGroupIdByName(String groupName, String opName);
 
 	public void deleteGroup(String groupId);
+
+	public SearchOperation getSearchOpById(String name) throws IOException;
+
+	public void assignUserToSearchOp(String opName, String name, String email,
+			String tele) throws IOException;
+
+	public SearchOperationIntro[] getSearchOpsByFilter(String title, String location, String date) throws IOException;
 	
 }

@@ -201,7 +201,8 @@ public class SearchMissionListView extends CustomComponent {
 						case GROUP: return addEditRemoveMenu;
 						default: return emptyMenu;
 					}
-				} catch (NullPointerException e) {
+				//NPE is thrown when menu is requested from the blank treetable
+				} catch (NullPointerException e) { 
 					return addMenu;
 				}
 			}
@@ -216,7 +217,7 @@ public class SearchMissionListView extends CustomComponent {
 			for (int i = 0; i < depth; i++) {
 				itemId = treeTable.getParent(itemId);
 			}
-			string = treeTable.getItem(itemId).getItemProperty("name").getValue().toString();
+			string = treeTable.getItem(itemId).getItemProperty(propertyId).getValue().toString();
 		} catch (Exception e) {
 			e.printStackTrace();
 			listener.displayError("Fel", "Inget sökuppdrag funnet för det markerade objektet.");

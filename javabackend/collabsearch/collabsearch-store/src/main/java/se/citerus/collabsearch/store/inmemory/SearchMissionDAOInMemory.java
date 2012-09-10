@@ -3,6 +3,7 @@ package se.citerus.collabsearch.store.inmemory;
 import java.io.IOException;
 import java.sql.Date;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -93,32 +94,32 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 	}
 
 	private void addMockMissions() {
-		List<FileMetadata> fileList = new ArrayList<FileMetadata>();
-		fileList.add(new FileMetadata("1", "fil1.pdf", "application/pdf", "/tmp/uploads/"));
-		fileList.add(new FileMetadata("2", "fil2.png", "image/png", "/tmp/uploads/"));
-		
-		List<SearchOperation> opsList = new ArrayList<SearchOperation>();
-		addMockOps(opsList);
-		
 		Random r = new Random();
 		
 		SearchMission sm1 = new SearchMission("" + r.nextLong(), "Sökuppdrag 1", "text...", 1, statusList.get(0));
-		sm1.setFileList(fileList);
-		sm1.setOpsList(opsList);
+		sm1.setFileList(addMockFiles(r));
+		sm1.setOpsList(addMockOps(r));
 		SearchMission sm2 = new SearchMission("" + r.nextLong(), "Sökuppdrag 2", "text...", 5, statusList.get(1));
-		sm2.setFileList(fileList);
-		sm2.setOpsList(opsList);
+		sm2.setFileList(addMockFiles(r));
+		sm2.setOpsList(addMockOps(r));
 		SearchMission sm3 = new SearchMission("" + r.nextLong(), "Sökuppdrag 3", "text...", 10, statusList.get(2));
-		sm3.setFileList(fileList);
-		sm3.setOpsList(opsList);
+		sm3.setFileList(addMockFiles(r));
+		sm3.setOpsList(addMockOps(r));
 		
 		missionsList.add(sm1);
 		missionsList.add(sm2);
 		missionsList.add(sm3);
 	}
 	
-	private void addMockOps(List<SearchOperation> opsList) {
-		Random r = new Random();
+	private List<FileMetadata> addMockFiles(Random r) {
+		List<FileMetadata> list = new ArrayList<FileMetadata>();
+		list.add(new FileMetadata("" + r.nextLong(), "fil1.pdf", "application/pdf", "/tmp/uploads/")); 
+		list.add(new FileMetadata("" + r.nextLong(), "fil2.png", "image/png", "/tmp/uploads/"));
+		return list;
+	}
+	
+	private List<SearchOperation> addMockOps(Random r) {		
+		List<SearchOperation> opsList = new ArrayList<SearchOperation>();
 		
 		List<Group> groups = new ArrayList<Group>();
 		groups.add(new Group("" + r.nextLong(), "Grupp A"));
@@ -153,6 +154,8 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 		searchOp.setGroups(groups);
 		searchOp.setZones(zones);
 		opsList.add(searchOp);
+		
+		return opsList;
 	}
 	
 	public Status findStatus(String statusName) throws IOException {
@@ -182,30 +185,6 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 				listedMission.setPrio(mission.getPrio());
 				listedMission.setStatus(mission.getStatus());
 				return;
-			}
-		}
-	}
-
-	public void addFileMetadata(String missionId, FileMetadata fileMetaData) throws IOException {
-		SearchMission mission = findMission(missionId);
-		if (mission == null) {
-			throw new IOException("Sökuppdraget ej funnet");
-		}
-		
-		mission.getFileList().add(fileMetaData);
-	}
-
-	public void deleteFileMetadata(String filename, String missionName) throws IOException {
-		SearchMission mission = findMission(missionName);
-		if (mission == null) {
-			throw new IOException("Sökuppdraget " + missionName + " ej funnet");
-		}
-		
-		List<FileMetadata> fileList = mission.getFileList();
-		for (int i = 0; i < fileList.size(); i++) {
-			if (fileList.get(i).getFilename().equals(filename)) {
-				fileList.remove(i);
-				break;
 			}
 		}
 	}
@@ -259,5 +238,42 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 		}
 		
 		opsList.add(operation);
+	}
+	
+	public void addFileMetadata(String missionId, FileMetadata fileMetaData) throws IOException {
+		SearchMission mission = findMission(missionId);
+		if (mission == null) {
+			throw new IOException("Sökuppdraget ej funnet");
+		}
+		
+		mission.getFileList().add(fileMetaData);
+	}
+	
+	public void deleteFileMetadata(String filename, String missionName) throws IOException {
+		SearchMission mission = findMission(missionName);
+		if (mission == null) {
+			throw new IOException("Sökuppdraget " + missionName + " ej funnet");
+		}
+		
+		List<FileMetadata> fileList = mission.getFileList();
+		for (int i = 0; i < fileList.size(); i++) {
+			if (fileList.get(i).getFilename().equals(filename)) {
+				fileList.remove(i);
+				break;
+			}
+		}
+	}
+
+	@Override
+	public FileMetadata getFileMetadata(String filename, String missionId) {
+		SearchMission mission = findMission(missionId);
+		if (mission != null) {
+			for (FileMetadata metadata : mission.getFileList()) {
+				if (metadata.getFilename().equals(filename)) {
+					return metadata;
+				}
+			}
+		}
+		return null;
 	}
 }

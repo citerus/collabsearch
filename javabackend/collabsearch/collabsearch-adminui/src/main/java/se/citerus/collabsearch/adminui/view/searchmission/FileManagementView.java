@@ -18,7 +18,6 @@ import com.vaadin.ui.VerticalLayout;
 public class FileManagementView extends CustomComponent {
 	private final ViewSwitchController listener;
 	private VerticalLayout mainLayout;
-	private String missionId;
 	private Button uploadButton;
 	private Button cancelButton;
 	private FileUploadHandler fileUploadHandler;
@@ -53,7 +52,6 @@ public class FileManagementView extends CustomComponent {
 		uploadButton = new Button("Ladda upp fil");
 		uploadButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				fileUploadHandler.setParentMissionId(missionId);
 				fileUpload.submitUpload();
 			}
 		});
@@ -76,7 +74,6 @@ public class FileManagementView extends CustomComponent {
 	}
 
 	public void resetView(String missionId) {
-		this.missionId = missionId;
 		fileUploadHandler.setParentMissionId(missionId);
 	}
 }

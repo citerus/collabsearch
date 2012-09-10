@@ -175,60 +175,6 @@ public class SearchMissionEditView extends CustomComponent {
 		setupValidators();
 	}
 
-	private void buildFileListLayout(VerticalLayout leftFormLayout) {
-		VerticalLayout fileListLayout = new VerticalLayout();
-		fileListLayout.setWidth("100%");
-		
-		fileBeanContainer = new BeanContainer<String, FileMetadata>(FileMetadata.class);
-		fileBeanContainer.setBeanIdProperty("filename");
-		
-		Table filesTable = new Table("Bifogade filer");
-		filesTable.setHeight("150px");
-		filesTable.setWidth("100%");
-		filesTable.setContainerDataSource(fileBeanContainer);
-		filesTable.setVisibleColumns(new Object[]{"filename"});
-		filesTable.setColumnHeaders(new String[]{"Filnamn"});
-		filesTable.addGeneratedColumn("", new ColumnGenerator() {
-			public Object generateCell(final Table source, final Object itemId, Object columnId) {
-				Button deleteButton = new Button("Ta bort");
-				deleteButton.addListener(new ClickListener() {
-					public void buttonClick(ClickEvent event) {
-						removeFile(source.getContainerDataSource(), itemId);
-					}
-				});
-				return deleteButton;
-			}
-		});
-		filesTable.setColumnExpandRatio("filename", 2f);
-		filesTable.setColumnReorderingAllowed(false);
-		filesTable.setColumnCollapsingAllowed(false);
-		filesTable.setSelectable(true);
-		fileListLayout.addComponent(filesTable);
-		
-		HorizontalLayout fileButtonsLayout = new HorizontalLayout();
-		
-		final FileUploadHandler fileUploadHandler = new FileUploadHandler();
-		fileUploadHandler.setViewRef(listener);
-		final Upload fileUpload = new Upload(null, fileUploadHandler);
-		fileUpload.setButtonCaption(null);
-		fileUpload.addListener((Upload.SucceededListener) fileUploadHandler);
-		fileUpload.addListener((Upload.FailedListener) fileUploadHandler);
-		fileButtonsLayout.addComponent(fileUpload);
-		
-		Button uploadButton = new Button("Ladda upp fil");
-		uploadButton.addListener(new ClickListener() {
-			public void buttonClick(ClickEvent event) {
-				startFileUpload(fileUploadHandler, fileUpload);
-			}
-		});
-		fileButtonsLayout.addComponent(uploadButton);
-		fileListLayout.addComponent(fileButtonsLayout);
-		
-		fileListLayout.setComponentAlignment(fileButtonsLayout, Alignment.TOP_RIGHT);
-		fileListLayout.setExpandRatio(fileButtonsLayout, 1f);
-		leftFormLayout.addComponent(fileListLayout);
-	}
-	
 	private void populateStatusComboBox() {
 		statusBeanContainer.removeAllItems();
 		SearchMissionService handler = new SearchMissionService();
@@ -254,46 +200,6 @@ public class SearchMissionEditView extends CustomComponent {
 		layout.setComponentAlignment(field, Alignment.TOP_RIGHT);
 		layout.setExpandRatio(field, 2f);
 		formLayout.addComponent(layout);
-	}
-	
-	private void removeFile(Container container, Object itemId) {
-		String missionName = (String) titleField.getValue();
-		if (missionName != null) {
-			SearchMissionService handler = null;
-			try {
-				handler = new SearchMissionService();
-				String filename = itemId.toString();
-				handler.deleteFile(filename, missionName);
-				
-				File file = new File("tmp/uploads" + itemId.toString());
-				boolean fileDeletionStatus = file.delete();
-				System.out.println("File " + filename + " was " + 
-						(fileDeletionStatus == true ? "deleted" : "not deleted"));
-			} catch (Exception e) {
-				e.printStackTrace();
-			} finally {
-				if (handler != null) {
-					handler.cleanUp();
-				}
-			}
-			container.removeItem(itemId);
-		} else {
-			listener.displayError("Filuppladdning", 
-					"Sökuppdraget måste namnges innan filer kan tas bort.");
-		}
-	}
-	
-	private void startFileUpload(FileUploadHandler handler, Upload fileUpload) {
-		String missionTitle = (String) titleField.getValue();
-		if (missionTitle != null) {
-			if ("".equals(missionTitle) || missionTitle.length() == 0) {
-				listener.displayError("Filuppladdning", 
-						"Sökuppdraget måste namnges innan filuppladdningar kan genomföras.");
-			} else {
-				handler.setParentMissionId(missionTitle);
-				fileUpload.submitUpload();
-			}
-		}
 	}
 	
 	private boolean allFieldsValid() {

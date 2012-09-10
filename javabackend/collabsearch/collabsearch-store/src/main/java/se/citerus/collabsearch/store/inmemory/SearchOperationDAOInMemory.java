@@ -3,7 +3,10 @@ package se.citerus.collabsearch.store.inmemory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
+import se.citerus.collabsearch.model.SearchOperation;
+import se.citerus.collabsearch.model.SearchOperationIntro;
 import se.citerus.collabsearch.model.Status;
 import se.citerus.collabsearch.store.facades.SearchOperationDAO;
 
@@ -37,7 +40,7 @@ public class SearchOperationDAOInMemory implements SearchOperationDAO {
 	}
 
 	public void disconnect() {
-		//not applicable
+		//not applicable to the in-memory impl 
 	}
 
 	@Override
@@ -61,6 +64,32 @@ public class SearchOperationDAOInMemory implements SearchOperationDAO {
 
 	@Override
 	public void deleteGroup(String groupId) {
+	}
+
+	@Override
+	public SearchOperationIntro[] getAllSearchOps() throws IOException {
+		Random r = new Random();
+		SearchOperationIntro[] array = new SearchOperationIntro[3];
+		array[0] = new SearchOperationIntro("" + r.nextLong(), "Sökoperation 1", "text...");
+		array[1] = new SearchOperationIntro("" + r.nextLong(), "Sökoperation 2", "text...");
+		array[2] = new SearchOperationIntro("" + r.nextLong(), "Sökoperation 3", "text...");
+		return array;
+	}
+
+	@Override
+	public SearchOperation getSearchOpById(String name) throws IOException {
+		return null;
+	}
+
+	@Override
+	public void assignUserToSearchOp(String opName, String name, String email,
+			String tele) throws IOException {
+	}
+
+	@Override
+	public SearchOperationIntro[] getSearchOpsByFilter(String title,
+			String location, String date) throws IOException {
+		return null;
 	}
 	
 }

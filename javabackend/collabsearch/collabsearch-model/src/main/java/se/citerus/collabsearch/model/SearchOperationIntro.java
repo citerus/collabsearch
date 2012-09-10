@@ -2,8 +2,15 @@ package se.citerus.collabsearch.model;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
+/**
+ * A lighter version of the SearchOperation class meant to be used in
+ * the public interface to provide an introduction to a search operation
+ * with the user able to request more information based.
+ * @author Ola Rende
+ */
 @XmlRootElement
 public class SearchOperationIntro {
+	private String id;
 	private String title;
 	private String descr;
 
@@ -14,9 +21,18 @@ public class SearchOperationIntro {
 		//intentionally left empty
 	}
 	
-	public SearchOperationIntro(String title, String descr) {
+	public SearchOperationIntro(String id, String title, String descr) {
+		this.id = id;
 		this.title = title;
 		this.descr = descr;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
 	}
 
 	public String getTitle() {

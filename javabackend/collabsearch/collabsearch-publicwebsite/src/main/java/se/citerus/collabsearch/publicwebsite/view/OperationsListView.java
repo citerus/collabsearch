@@ -68,6 +68,8 @@ public class OperationsListView extends CustomComponent {
 					String email = (String) emailField.getValue();
 					listener.submitSearchOpApplication(selectedOp, name, tele, email);
 					resetAndCloseApplyMePopup();
+					listener.showTrayNotification("Anmälan till sökoperation", 
+							"Du är nu anmäld till sökoperationen.");
 				} else {
 					listener.showTrayNotification("Valideringsfel", 
 							"Ett eller flera av fälten innehåller felaktiga värden.");
@@ -108,7 +110,7 @@ public class OperationsListView extends CustomComponent {
 		SearchOperationIntro[] opsArray = listener.getAllSearchOpsIntros();
 		for (int i = 0; i < opsArray.length; i++) {
 			SearchOperationIntro dto = opsArray[i];
-			addRowComponent(dto.getTitle(), dto.getDescr(), "Läs mer");
+			addRowComponent(dto.getId(), dto.getTitle(), dto.getDescr(), "Läs mer");
 		}
 	}
 
@@ -245,11 +247,11 @@ public class OperationsListView extends CustomComponent {
 		layout.setComponentAlignment(advSearchCommitButton, Alignment.MIDDLE_CENTER);
 	}
 
-	private Component buildContractedRowComponent(String opTitle, String opDescr, 
+	private Component buildContractedRowComponent(String id, String opTitle, String opDescr, 
 			String buttonText, ClickListener lowerRightClickListener) {
 		Panel panel = new Panel();
 		panel.setWidth("100%");
-		panel.setData(opTitle);
+		panel.setData(id);
 		
 		VerticalLayout layout = new VerticalLayout();
 		layout.setWidth("100%");
@@ -278,7 +280,7 @@ public class OperationsListView extends CustomComponent {
 			ClickListener lowerRightClickListener, ClickListener contractClickListener) {
 		Panel panel = new Panel();
 		panel.setWidth("100%");
-		panel.setData(dto.getTitle());
+		panel.setData(dto.getId());
 		
 		VerticalLayout layout = new VerticalLayout();
 		layout.setWidth("100%");
@@ -337,19 +339,19 @@ public class OperationsListView extends CustomComponent {
 	 * @param descr the body (a short description) of the row
 	 * @param buttonText the text of the "Show more" button
 	 */
-	private void addRowComponent(final String opTitle, String descr, String buttonText) {
+	private void addRowComponent(final String id, String opTitle, String descr, String buttonText) {
 		Component listRowComponent = buildContractedRowComponent(
-			opTitle, descr, buttonText, 
-			new ReadMoreClickListener(opTitle)
+			id, opTitle, descr, buttonText, 
+			new ReadMoreClickListener(id)
 		);
 		componentsList.add(listRowComponent);
 		listLayout.addComponent(listRowComponent);
 	}
 
-	private void expandRowComponent(final String opTitle, SearchOperation dto) {
-		Component oldComponent = getCurrentRowComponent(opTitle, componentsList);
+	private void expandRowComponent(String opId, SearchOperation dto) {
+		Component oldComponent = getCurrentRowComponent(opId, componentsList);
 		Component newComponent = buildExpandedRowComponent(dto, 
-			new ApplyMeClickListener(opTitle), new ContractClickListener(opTitle)
+			new ApplyMeClickListener(opId), new ContractClickListener(opId)
 		);
 		listLayout.replaceComponent(oldComponent, newComponent);
 		componentsList.set(componentsList.indexOf(oldComponent), newComponent);
@@ -365,16 +367,16 @@ public class OperationsListView extends CustomComponent {
 
 	/**
 	 * Retrieves a row component currently shown in the UI.
-	 * @param opTitle The title of the component contents
+	 * @param opId The title of the component contents
 	 * @param list The list holding the component
 	 * @return the currently visible component or null if none is found.
 	 */
-	private Component getCurrentRowComponent(final String opTitle, List<Component> list) {
+	private Component getCurrentRowComponent(String opId, List<Component> list) {
 		Component oldComponent = null;
 		for (Component comp : list) {
 			Panel panel = (Panel) comp;
-			String name = (String) panel.getData();
-			if (name.equals(opTitle)) {
+			String id = (String) panel.getData();
+			if (id.equals(opId)) {
 				oldComponent = comp;
 				break;
 			}
@@ -382,12 +384,12 @@ public class OperationsListView extends CustomComponent {
 		return oldComponent;
 	}
 
-	private Component getExpandedComponent(String opTitle, List<Component> list) {
+	private Component getExpandedComponent(String opId, List<Component> list) {
 		Component oldComponent = null;
 		for (int i = 0; i < list.size(); i++) {
 			Panel panel = (Panel) list.get(i);
-			String name = (String) panel.getData();
-			if (name.equals(opTitle)) {
+			String id = (String) panel.getData();
+			if (id.equals(opId)) {
 				oldComponent = list.remove(i);
 				break;
 			}
@@ -431,7 +433,7 @@ public class OperationsListView extends CustomComponent {
 		if (searchOpsArray != null) {
 			for (int i = 0; i < searchOpsArray.length; i++) {
 				SearchOperationIntro opIntro = searchOpsArray[i];
-				addRowComponent(opIntro.getTitle(), opIntro.getDescr(), "Läs mer");
+				addRowComponent(opIntro.getId(), opIntro.getTitle(), opIntro.getDescr(), "Läs mer");
 			}
 		} else {
 			listener.showTrayNotification("Sökning", "Inga sökuppdrag med namnet " + searchString + " funna");
@@ -470,7 +472,7 @@ public class OperationsListView extends CustomComponent {
 		if (searchOpsArray != null) {
 			for (int i = 0; i < searchOpsArray.length; i++) {
 				SearchOperationIntro opIntro = searchOpsArray[i];
-				addRowComponent(opIntro.getTitle(), opIntro.getDescr(), "Läs mer");
+				addRowComponent(opIntro.getId(), opIntro.getTitle(), opIntro.getDescr(), "Läs mer");
 			}
 		} else {
 			listener.showTrayNotification("Sökning", "Inga sökuppdrag funna med de valda söktermerna");
@@ -496,34 +498,38 @@ public class OperationsListView extends CustomComponent {
 	}
 
 	private class ApplyMeClickListener implements ClickListener {
-		private final String opTitle;
-		public ApplyMeClickListener(String opTitle) {
-			this.opTitle = opTitle;
+		private final String opId;
+		public ApplyMeClickListener(String opId) {
+			this.opId = opId;
 		}
 		public void buttonClick(ClickEvent event) {
-			selectedOp = opTitle;
+			selectedOp = opId;
 			OperationsListView.this.getWindow().addWindow(applyWindow);
 		}
 	}
 
 	private class ReadMoreClickListener implements ClickListener {
-		private final String opTitle;
-		public ReadMoreClickListener(String opTitle) {
-			this.opTitle = opTitle;
+		private final String opId;
+		public ReadMoreClickListener(String opId) {
+			this.opId = opId;
 		}
 		public void buttonClick(ClickEvent event) {
-			SearchOperation dto = listener.fireReadMoreEvent(opTitle);
-			expandRowComponent(opTitle, dto);
+			SearchOperation dto = listener.fireReadMoreEvent(opId);
+			if (dto != null) {
+				expandRowComponent(opId, dto);
+			} else {
+				listener.showErrorMessage("Fel", "Fel vid hätmning av sökoperationsdatat");
+			}
 		}
 	}
 
 	private class ContractClickListener implements ClickListener {
-		private final String opTitle;
-		public ContractClickListener(String opTitle) {
-			this.opTitle = opTitle;
+		private final String opId;
+		public ContractClickListener(String opId) {
+			this.opId = opId;
 		}
 		public void buttonClick(ClickEvent event) {
-			contractRowComponent(opTitle);
+			contractRowComponent(opId);
 		}
 	}
 }

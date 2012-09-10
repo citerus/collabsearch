@@ -13,54 +13,53 @@ public class Model {
 
 	public Model(ControllerListener listener) {
 		this.listener = listener;
+		restClient = new RestClient();
 	}
 
-	public SearchOperation getSearchOpByName(String searchOpName){
-		return new SearchOperation(
-				null, 
-				searchOpName,
-				"Lorem ipsum dolor sit amet, consectetur adipisicing elit, "
-						+ "sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. "
-						+ "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris "
-						+ "nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in "
-						+ "reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. "
-						+ "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui "
-						+ "officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit " 
-						+ "amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt "
-						+ "ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud "
-						+ "exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. "
-						+ "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum "
-						+ "dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non "
-						+ "proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-				new Date(System.currentTimeMillis()), 
-				"Plats XYZ", new Status(0, "Sökande pågår", "beskrivning här..."));
+	public SearchOperation getSearchOpById(String searchOpId){
+		SearchOperation op = null;
+		try {
+			op = restClient.getSearchOperationById(searchOpId);
+		} catch (Exception e) {
+			listener.showErrorMessage("Fel", "Fel vid hämtning av sökuppdraget");
+		}
+		return op;
 	}
 
 	public void submitSearchOpApplication(String selectedOp, String name,
 			String tele, String email){
-		System.out.println("Received application for searchop " + selectedOp
-				+ " from " + name + " with tele " + tele + " and email " + email);
+		try {
+			restClient.applyForSearchOp(selectedOp, name, email, tele);
+		} catch (Exception e) {
+			listener.showErrorMessage("Fel", "Anmälan till sökoperationen misslyckades");
+		}
 	}
 
 	public SearchOperationIntro[] getAllSearchOps(){
-		SearchOperationIntro[] array = new SearchOperationIntro[6];
-		for (int i = 0; i < array.length; i++) {
-			array[i] = new SearchOperationIntro(
-				"Sökoperation " + (i+1), "kort beskrivning");
+		try {
+			return restClient.getAllOps();
+		} catch (Exception e) {
+			listener.showErrorMessage("Fel", "Sökoperationerna kunde inte hämtas från servern");
 		}
-		return array;
+		return null;
 	}
 
-	public SearchOperationIntro[] getSearchOpsByName(String searchString){
-		SearchOperationIntro[] array = new SearchOperationIntro[1];
-		array[0] = new SearchOperationIntro("Sökoperation X", "kort beskrivning av Sökoperation X här...");
-		return array;
+	public SearchOperationIntro[] getSearchOpsByName(String opName){
+		try {
+			return restClient.searchForOps(opName, null, null);
+		} catch (Exception e) {
+			listener.showErrorMessage("Fel", "Fel uppstod vid kontakt med servern");
+		}
+		return null;
 	}
 
-	public SearchOperationIntro[] getSearchOpsByFilter(String name,
+	public SearchOperationIntro[] getSearchOpsByFilter(String opName,
 			String location, long date){
-		SearchOperationIntro[] array = new SearchOperationIntro[1];
-		array[0] = new SearchOperationIntro("Sökoperation Y", "kort beskrivning av Sökoperation Y här...");
-		return array;
+		try {
+			return restClient.searchForOps(opName, location, "" + date);
+		} catch (Exception e) {
+			listener.showErrorMessage("Fel", "Fel uppstod vid kontakt med servern");
+		}
+		return null;
 	}
 }

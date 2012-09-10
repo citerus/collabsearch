@@ -21,27 +21,25 @@ public class FileUploadHandler implements Upload.SucceededListener,
 
 	private static final String UPLOADDIR = "/tmp/uploads/"; //TODO change filepath to search mission specific path
 	private String parentMissionId;
-	private File file;
 	private FileMetadata metadata;
 	private ViewSwitchController listener;
 
 	public OutputStream receiveUpload(String filename, String mimeType) {
 		FileOutputStream fos = null;
 		
-		File uploadDir = new File(UPLOADDIR);
+		File uploadDir = new File(UPLOADDIR + parentMissionId);
 		if (!uploadDir.exists()) {
 			uploadDir.mkdir();
 		}
 		
-		String filepath = UPLOADDIR + parentMissionId + "/" + filename;
-		file = new File(filepath);
+		File file = new File(uploadDir.getPath() + "/" + filename);
 		if (file.exists()) {
 			System.err.println("File " + filename + " already exists for this mission");
 			return null;
 		}
 		//check if file exists here?
-		String debugId = "" + new Random().nextLong(); //TODO to be replaced with better solution
-		metadata = new FileMetadata(debugId, filename, mimeType, UPLOADDIR);
+		String debugFileId = "" + new Random().nextLong(); //TODO to be replaced with better solution
+		metadata = new FileMetadata(debugFileId, filename, mimeType, file.getPath());
 		try {
 			fos = new FileOutputStream(file);
 		} catch (Exception e) {
@@ -62,8 +60,10 @@ public class FileUploadHandler implements Upload.SucceededListener,
 			handler = new SearchMissionService();
 			handler.addFileToMission(parentMissionId, metadata);
 		} catch (RuntimeException e) {
-			listener.displayError("Filöverföring", "Ett uppdragsnamn måste bestämmas innan filer kan laddas upp");
+			e.printStackTrace();
+			listener.displayError("Fel", "Ett fel uppstod vid filöverföringen");
 		} catch (Exception e) {
+			e.printStackTrace();
 			listener.displayError("Fel", e.getMessage());
 		} finally {
 			if (handler != null) {
@@ -71,7 +71,6 @@ public class FileUploadHandler implements Upload.SucceededListener,
 			}
 			parentMissionId = null;
 			metadata = null;
-			file = null;
 		}
 		
 		listener.displayNotification("Filuppladdning", "Filöverföringen lyckades.");
@@ -81,15 +80,14 @@ public class FileUploadHandler implements Upload.SucceededListener,
 		listener.displayError("Filuppladdning", "Filöverföringen misslyckades.");
 		parentMissionId = null;
 		metadata = null;
-		file = null;
 	}
 
-	public String getParentMissionName() {
+	public String getParentMissionId() {
 		return parentMissionId;
 	}
 
-	public void setParentMissionId(String parentMissionName) {
-		this.parentMissionId = parentMissionName;
+	public void setParentMissionId(String parentMissionId) {
+		this.parentMissionId = parentMissionId;
 	}
 
 	public void setViewRef(ViewSwitchController listener) {

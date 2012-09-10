@@ -3,6 +3,9 @@ package se.citerus.collabsearch.model;
 public class Zone {
 	private String id;
 	private String name;
+	
+	public Zone() {
+	}
 
 	public Zone(String id, String name) {
 		this.setId(id);

@@ -84,6 +84,6 @@ public class SearchMission {
 	
 	@Override
 	public String toString() {
-		return name + ", " + description + ", " + status;
+		return id + ", " + name + ", " + description + ", " + status;
 	}
 }

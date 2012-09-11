@@ -5,6 +5,7 @@ import java.util.Date;
 import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.SearchOperationIntro;
 import se.citerus.collabsearch.model.Status;
+import se.citerus.collabsearch.model.StringArrayWrapper;
 import se.citerus.collabsearch.publicwebsite.ControllerListener;
 
 public class Model {
@@ -17,13 +18,12 @@ public class Model {
 	}
 
 	public SearchOperation getSearchOpById(String searchOpId){
-		SearchOperation op = null;
 		try {
-			op = restClient.getSearchOperationById(searchOpId);
+			return restClient.getSearchOperationById(searchOpId);
 		} catch (Exception e) {
 			listener.showErrorMessage("Fel", "Fel vid hämtning av sökuppdraget");
 		}
-		return op;
+		return null;
 	}
 
 	public void submitSearchOpApplication(String selectedOp, String name,
@@ -39,26 +39,56 @@ public class Model {
 		try {
 			return restClient.getAllOps();
 		} catch (Exception e) {
-			listener.showErrorMessage("Fel", "Sökoperationerna kunde inte hämtas från servern");
+			listener.showErrorMessage("Fel", "Sökoperationerna kunde ej hämtas från servern");
 		}
 		return null;
 	}
 
 	public SearchOperationIntro[] getSearchOpsByName(String opName){
 		try {
-			return restClient.searchForOps(opName, null, null);
+			return restClient.searchForOps(opName, null, null, null);
 		} catch (Exception e) {
-			listener.showErrorMessage("Fel", "Fel uppstod vid kontakt med servern");
+			listener.showErrorMessage("Fel", "Sökoperationsdatat kunde ej hämtas från servern");
 		}
 		return null;
 	}
 
 	public SearchOperationIntro[] getSearchOpsByFilter(String opName,
-			String location, long date){
+			String location, long startDate, long endDate){
 		try {
-			return restClient.searchForOps(opName, location, "" + date);
+			return restClient.searchForOps(opName, location, "" + startDate, "" + endDate);
 		} catch (Exception e) {
-			listener.showErrorMessage("Fel", "Fel uppstod vid kontakt med servern");
+			listener.showErrorMessage("Fel", "Sökresultaten kunde ej hämtas från servern");
+		}
+		return null;
+	}
+
+	public String[] getAllSeachOpsTitles() {
+		try {
+			StringArrayWrapper[] allTitles = restClient.getAllTitles();
+			String[] array = new String[allTitles.length];
+			int i = 0;
+			for (StringArrayWrapper stringArrayWrapper : allTitles) {
+				array[i++] = stringArrayWrapper.getString();
+			}
+			return array;
+		} catch (Exception e) {
+			listener.showErrorMessage("Fel", "Sökoperationstitlarna kunde ej hämtas från servern");
+		}
+		return null;
+	}
+
+	public String[] getAllSeachOpsLocations() {
+		try {
+			StringArrayWrapper[] allTitles = restClient.getAllLocations();
+			String[] array = new String[allTitles.length];
+			int i = 0;
+			for (StringArrayWrapper stringArrayWrapper : allTitles) {
+				array[i++] = stringArrayWrapper.getString();
+			}
+			return array;
+		} catch (Exception e) {
+			listener.showErrorMessage("Fel", "Platsnamnen kunde ej hämtas från servern");
 		}
 		return null;
 	}

@@ -16,13 +16,18 @@ import com.vaadin.data.util.HierarchicalContainer;
 import com.vaadin.event.Action;
 import com.vaadin.event.ItemClickEvent;
 import com.vaadin.event.Action.Handler;
+import com.vaadin.terminal.ExternalResource;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
+import com.vaadin.ui.Link;
+import com.vaadin.ui.Table;
+import com.vaadin.ui.Table.ColumnGenerator;
 import com.vaadin.ui.TreeTable;
 import com.vaadin.ui.VerticalLayout;
 
@@ -257,10 +262,30 @@ public class SearchMissionListView extends CustomComponent {
 		treeTable.addContainerProperty("prio", Integer.class, "");
 		treeTable.addContainerProperty("status", String.class, "");
 		treeTable.addContainerProperty("type", NodeType.class, NodeType.UNDEFINED);
+		treeTable.addContainerProperty("link", Component.class, null);
 		treeTable.setVisibleColumns(new Object[]{"name", "descr", "prio", "status"});
 		treeTable.setColumnHeaders(new String[]{"Namn", "Beskrivning", "Prioritet", "Status"});
 		treeTable.setImmediate(true);
 		innerLayout.addComponent(treeTable);
+		
+		treeTable.addGeneratedColumn("link", new ColumnGenerator() {
+			@Override
+			public Object generateCell(Table table, Object itemId, Object columnId) {
+				Item item = table.getItem(itemId);
+				NodeType type = (NodeType) item.getItemProperty("type").getValue();
+				if (type == NodeType.FILE) {
+					String fileName = item.getItemProperty("name").getValue().toString();
+					//String id = getParentProperty(2, (Integer)itemId, "id");
+					String id = "test";
+					Link link = new Link(fileName, 
+							new ExternalResource("../uploads/" + fileName));
+					link.setTargetName("_blank");
+					return link;
+				} else {
+					return null;
+				}
+			}
+		});
 		
 //		populateTreeTable();
 		

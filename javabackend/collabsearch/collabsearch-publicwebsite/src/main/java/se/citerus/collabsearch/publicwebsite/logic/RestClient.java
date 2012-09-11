@@ -7,6 +7,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.SearchOperationIntro;
+import se.citerus.collabsearch.model.StringArrayWrapper;
 import se.citerus.collabsearch.model.interfaces.RestService;
 
 import com.sun.jersey.api.client.Client;
@@ -55,12 +56,15 @@ public class RestClient implements RestService {
 					.accept(MediaType.APPLICATION_JSON)
 					.get(SearchOperation.class);
 		} catch (UniformInterfaceException e) {
-			e.printStackTrace();
-			throw new Exception(e.getMessage());
+			if (e.getResponse().getStatus() != 404) {
+				e.printStackTrace();
+				throw new Exception(e.getMessage());
+			}
 		} catch (ClientHandlerException e) {
 			e.printStackTrace();
 			throw new Exception(e.getMessage());
 		}
+		return null;
 	}
 
 	public Response applyForSearchOp(String opName, String name, String email,
@@ -86,26 +90,81 @@ public class RestClient implements RestService {
 	}
 
 	public SearchOperationIntro[] searchForOps(String title, String location,
-			String date) throws Exception {
-		SearchOperationIntro[] array;
+			String startDate, String endDate) throws Exception {
+		SearchOperationIntro[] array = null;
 		MultivaluedMap<String, String> queryParams = new MultivaluedMapImpl();
-		queryParams.add("title", title);
-		queryParams.add("location", location);
-		queryParams.add("date", date);
+		if (title != null && !title.equals("")) {
+			queryParams.add("title", title);
+		}
+		if (location != null && !location.equals("")) {
+			queryParams.add("location", location);
+		}
+		if (startDate != null && !(startDate.equals("0") || startDate.equals(""))) {
+			queryParams.add("startdate", startDate);
+		}
+		if (endDate != null && !(endDate.equals("0") || endDate.equals(""))) {
+			queryParams.add("enddate", endDate);
+		}
 		try {
 			array = basicPath
 					.path("search")
 					.queryParams(queryParams)
 					.get(SearchOperationIntro[].class);
 		} catch (UniformInterfaceException e) {
-			e.printStackTrace();
-			throw new Exception(e.getMessage());
+			if (e.getResponse().getStatus() != 404) {
+				e.printStackTrace();
+				throw new Exception(e.getMessage());
+			}
 		} catch (ClientHandlerException e) {
 			e.printStackTrace();
 			throw new Exception(e.getMessage());
 		}
 		if (array == null) {
 			array = new SearchOperationIntro[0];
+		}
+		return array;
+	}
+
+	public StringArrayWrapper[] getAllLocations() throws Exception {
+		StringArrayWrapper[] array = null;
+		try {
+			array = basicPath
+					.path("getAllLocations")
+					.accept(MediaType.APPLICATION_JSON)
+					.get(StringArrayWrapper[].class);
+		} catch (UniformInterfaceException e) {
+			if (e.getResponse().getStatus() != 404) {
+				e.printStackTrace();
+				throw new Exception(e.getMessage());
+			}
+		} catch (ClientHandlerException e) {
+			e.printStackTrace();
+			throw new Exception(e.getMessage());
+		}
+		if (array == null) {
+			array = new StringArrayWrapper[0];
+		}
+		return array;
+	}
+
+	public StringArrayWrapper[] getAllTitles() throws Exception {
+		StringArrayWrapper[] array = null;
+		try {
+			array = basicPath
+					.path("getAllTitles")
+					.accept(MediaType.APPLICATION_JSON)
+					.get(StringArrayWrapper[].class);
+		} catch (UniformInterfaceException e) {
+			if (e.getResponse().getStatus() != 404) {
+				e.printStackTrace();
+				throw new Exception(e.getMessage());
+			}
+		} catch (ClientHandlerException e) {
+			e.printStackTrace();
+			throw new Exception(e.getMessage());
+		}
+		if (array == null) {
+			array = new StringArrayWrapper[0];
 		}
 		return array;
 	}

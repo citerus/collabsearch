@@ -20,6 +20,7 @@ import javax.ws.rs.core.Response;
 import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.SearchOperationIntro;
 import se.citerus.collabsearch.model.Status;
+import se.citerus.collabsearch.model.StringArrayWrapper;
 import se.citerus.collabsearch.model.interfaces.RestService;
 import se.citerus.collabsearch.store.facades.SearchOperationDAO;
 import se.citerus.collabsearch.store.mongodb.SearchOperationDAOMongoDB;
@@ -98,11 +99,11 @@ public class RestServer implements RestService {
 	public SearchOperationIntro[] searchForOps(
 			@DefaultValue("") @QueryParam("title") String title, 
 			@DefaultValue("") @QueryParam("location") String location, 
-			@DefaultValue("") @QueryParam("date") String date) {
-
+			@DefaultValue("") @QueryParam("startdate") String startDate,
+			@DefaultValue("") @QueryParam("enddate") String endDate) {
 		SearchOperationIntro[] array = null;
 		try {
-			array = dao.getSearchOpsByFilter(title, location, date);
+			array = dao.getSearchOpsByFilter(title, location, startDate, endDate);
 		} catch (IOException e) {
 			e.printStackTrace();
 			throw new WebApplicationException(500);
@@ -113,4 +114,41 @@ public class RestServer implements RestService {
  		return array;
 	}
 
+	@GET
+	@Path("/getAllLocations")
+	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+	public StringArrayWrapper[] getAllLocations() throws Exception {
+		StringArrayWrapper[] array = null;
+		try {
+			String[] opLocations = dao.getAllOpLocations();
+			array = new StringArrayWrapper[opLocations.length];
+			int i = 0;
+			for (String string : opLocations) {
+				array[i++] = new StringArrayWrapper(string);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new WebApplicationException(500);
+		}
+		return array;
+	}
+
+	@GET
+	@Path("/getAllTitles")
+	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+	public StringArrayWrapper[] getAllTitles() throws Exception {
+		StringArrayWrapper[] array = null;
+		try {
+			String[] opTitles = dao.getAllOpTitles();
+			array = new StringArrayWrapper[opTitles.length];
+			int i = 0;
+			for (String string : opTitles) {
+				array[i++] = new StringArrayWrapper(string);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new WebApplicationException(500);
+		}
+		return array;
+	}
 }

@@ -41,6 +41,10 @@ public interface SearchOperationDAO {
 	public void assignUserToSearchOp(String opName, String name, String email,
 			String tele) throws IOException;
 
-	public SearchOperationIntro[] getSearchOpsByFilter(String title, String location, String date) throws IOException;
+	public SearchOperationIntro[] getSearchOpsByFilter(String title, String location, String startDate, String endDate) throws IOException;
+	
+	public String[] getAllOpLocations();
+	
+	public String[] getAllOpTitles();
 	
 }

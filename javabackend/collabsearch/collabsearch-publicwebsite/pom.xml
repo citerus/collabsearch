@@ -116,15 +116,15 @@
 			<version>1.0.0.GA</version> <classifier>sources</classifier> <scope>provided</scope> 
 			</dependency> -->
 		<dependency>
-			<groupId>se.citerus</groupId>
-			<artifactId>collabsearch-model</artifactId>
-			<version>1.0</version>
-		</dependency>
-		<dependency>
 			<groupId>com.sun.jersey</groupId>
 			<artifactId>jersey-archive</artifactId>
 			<version>1.13</version>
 			<type>pom</type>
+		</dependency>
+		<dependency>
+			<groupId>se.citerus</groupId>
+			<artifactId>collabsearch-model</artifactId>
+			<version>1.0</version>
 		</dependency>
 	</dependencies>
 

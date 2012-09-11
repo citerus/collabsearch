@@ -10,12 +10,14 @@ import se.citerus.collabsearch.model.SearchOperationIntro;
 import se.citerus.collabsearch.model.validator.PhoneNumberValidator;
 import se.citerus.collabsearch.publicwebsite.ControllerListener;
 
+import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.data.validator.EmailValidator;
 import com.vaadin.data.validator.StringLengthValidator;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
+import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.DateField;
@@ -47,15 +49,21 @@ public class OperationsListView extends CustomComponent {
 	private Button searchButton;
 	private TextField searchField;
 	private Button advSearchPopupButton;
-	private TextField titleQueryField;
-	private TextField locationQueryField;
-	private DateField dateQueryField;
+	private ComboBox titleQueryField;
+	private ComboBox locationQueryField;
+	private DateField dateStartQueryField;
 	private Button advSearchCommitButton;
+	private DateField dateEndQueryField;
 
 	public OperationsListView(final ControllerListener listener) {
 		this.listener = listener;
-		buildMainLayout();
+		mainLayout = new VerticalLayout();
 		setCompositionRoot(mainLayout);
+		
+	}
+	
+	public void init() {
+		buildMainLayout();
 		
 		componentsList = new ArrayList<Component>();
 		expandedComponents = new ArrayList<Component>();
@@ -98,8 +106,6 @@ public class OperationsListView extends CustomComponent {
 				closeAdvSearchPopup();
 			}
 		});
-		
-		resetView(); //TODO debug only, remove later
 	}
 
 	public void resetView() {
@@ -115,7 +121,6 @@ public class OperationsListView extends CustomComponent {
 	}
 
 	private void buildMainLayout() {
-		mainLayout = new VerticalLayout();
 		mainLayout.setMargin(false, false, false, true);
 		
 		buildTopLayout();
@@ -227,24 +232,41 @@ public class OperationsListView extends CustomComponent {
 		layout.setMargin(true);
 		layout.setSpacing(true);
 		
-		titleQueryField = new TextField();
-		titleQueryField.setInputPrompt("Namn på uppdrag");
-		titleQueryField.setNullRepresentation("");
+		titleQueryField = new ComboBox("Sökoperationens titel");
+		titleQueryField.setInputPrompt("Namn på sökoperation");
+		BeanItemContainer<String> titleContainer = new BeanItemContainer<String>(String.class);
+		requeryComboBoxData(titleContainer, listener.getAllTitles());
+		titleQueryField.setContainerDataSource(titleContainer);
 		layout.addComponent(titleQueryField);
 		
-		locationQueryField = new TextField();
-		locationQueryField.setInputPrompt("Ort för uppdrag");
-		locationQueryField.setNullRepresentation("");
+		locationQueryField = new ComboBox("Sökoperationens ort");
+		locationQueryField.setInputPrompt("Ort för sökoperation");
+		BeanItemContainer<String> locationContainer = new BeanItemContainer<String>(String.class);
+		requeryComboBoxData(locationContainer, listener.getAllLocations());
+		locationQueryField.setContainerDataSource(locationContainer);
 		layout.addComponent(locationQueryField);
 		
-		dateQueryField = new DateField();
-		dateQueryField.setWidth("100%");
-		dateQueryField.setResolution(DateField.RESOLUTION_DAY);
-		layout.addComponent(dateQueryField);
+		dateStartQueryField = new DateField("Från och med");
+		dateStartQueryField.setWidth("100%");
+		dateStartQueryField.setResolution(DateField.RESOLUTION_DAY);
+		layout.addComponent(dateStartQueryField);
+		
+		dateEndQueryField = new DateField("Till och med");
+		dateEndQueryField.setWidth("100%");
+		dateEndQueryField.setResolution(DateField.RESOLUTION_DAY);
+		layout.addComponent(dateEndQueryField);
 		
 		advSearchCommitButton = new Button("Sök");
 		layout.addComponent(advSearchCommitButton);
 		layout.setComponentAlignment(advSearchCommitButton, Alignment.MIDDLE_CENTER);
+	}
+
+	private void requeryComboBoxData(BeanItemContainer<String> locationContainer, String[] array) {
+		if (array != null) {
+			for (String string : array) {
+				locationContainer.addBean(string);
+			}	
+		}
 	}
 
 	private Component buildContractedRowComponent(String id, String opTitle, String opDescr, 
@@ -445,7 +467,8 @@ public class OperationsListView extends CustomComponent {
 		
 		String name = null;
 		String location = null;
-		long date = 0;
+		long startDate = 0;
+		long endDate = 0;
 		try {
 			name = (String) titleQueryField.getValue();
 			if (name != null && name.equals("")) {
@@ -455,9 +478,13 @@ public class OperationsListView extends CustomComponent {
 			if (location != null && location.equals("")) {
 				location = null;
 			}
-			Date realDate = (Date) dateQueryField.getValue();
+			Date realDate = (Date) dateStartQueryField.getValue();
 			if (realDate != null) {
-				date = realDate.getTime();
+				startDate = realDate.getTime();
+			}
+			realDate = (Date) dateEndQueryField.getValue();
+			if (realDate != null) {
+				endDate = realDate.getTime();
 			}
 		} catch (Exception e) {
 			listener.showErrorMessage("Sökfel", "En eller flera av söktermerna är felaktiga");
@@ -466,8 +493,8 @@ public class OperationsListView extends CustomComponent {
 		}
 		SearchOperationIntro[] searchOpsArray = null;
 		
-		if (allSearchFieldsValid(name, location, date)) {
-			searchOpsArray = listener.getSearchOpsByFilter(name, location, date);
+		if (allSearchFieldsValid(name, location, startDate)) {
+			searchOpsArray = listener.getSearchOpsByFilter(name, location, startDate, endDate);
 		}
 		if (searchOpsArray != null) {
 			for (int i = 0; i < searchOpsArray.length; i++) {

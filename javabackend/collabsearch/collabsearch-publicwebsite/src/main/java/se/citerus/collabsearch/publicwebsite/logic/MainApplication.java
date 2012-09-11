@@ -38,6 +38,7 @@ public class MainApplication extends Application {
 		setMainWindow(mainWindow);
 		
 		Controller controller = new Controller(mainWindow);
+		controller.startup();
 	}
 	
 	public static MainApplication getInstance() {

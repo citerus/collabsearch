@@ -87,8 +87,19 @@ public class SearchOperationDAOInMemory implements SearchOperationDAO {
 	}
 
 	@Override
+	public String[] getAllOpLocations() {
+		return null;
+	}
+
+	@Override
+	public String[] getAllOpTitles() {
+		return null;
+	}
+
+	@Override
 	public SearchOperationIntro[] getSearchOpsByFilter(String title,
-			String location, String date) throws IOException {
+			String location, String startDate, String endDate)
+			throws IOException {
 		return null;
 	}
 	

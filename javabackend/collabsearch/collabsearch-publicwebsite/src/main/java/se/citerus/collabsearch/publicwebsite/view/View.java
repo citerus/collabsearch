@@ -6,19 +6,14 @@ import com.vaadin.ui.Window;
 import com.vaadin.ui.Window.Notification;
 
 public class View {
-
-	private OperationsListView opsListView;
 	private ControllerListener listener;
 	private final Window mainWindow;
+	
+	private OperationsListView opsListView;
 
 	public View(ControllerListener listener, Window mainWindow) {
 		this.listener = listener;
 		this.mainWindow = mainWindow;
-		
-		opsListView = new OperationsListView(listener);
-		
-		//set starting view
-		mainWindow.setContent(opsListView);
 	}
 	
 	public void showErrorMessage(String header, String message) {
@@ -27,6 +22,15 @@ public class View {
 
 	public void showTrayNotification(String caption, String message) {
 		mainWindow.showNotification(caption, message, Notification.TYPE_TRAY_NOTIFICATION);
+	}
+	
+	public void switchToOpsListView() {
+		if (opsListView == null) {
+			opsListView = new OperationsListView(listener);
+			opsListView.init();
+		}
+		opsListView.resetView();
+		mainWindow.setContent(opsListView);
 	}
 
 }

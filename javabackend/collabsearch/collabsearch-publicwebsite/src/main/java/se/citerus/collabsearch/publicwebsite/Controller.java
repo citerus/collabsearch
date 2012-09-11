@@ -39,12 +39,26 @@ public class Controller implements ControllerListener {
 	}
 
 	public SearchOperationIntro[] getSearchOpsByFilter(String name,
-			String location, long date) {
-		return model.getSearchOpsByFilter(name, location, date);
+			String location, long startDate, long endDate) {
+		return model.getSearchOpsByFilter(name, location, startDate, endDate);
 	}
 
 	public void showTrayNotification(String caption, String message) {
 		view.showTrayNotification(caption, message);
+	}
+
+	@Override
+	public String[] getAllTitles() {
+		return model.getAllSeachOpsTitles();
+	}
+
+	@Override
+	public String[] getAllLocations() {
+		return model.getAllSeachOpsLocations();
+	}
+
+	public void startup() {
+		view.switchToOpsListView();
 	}
 
 }

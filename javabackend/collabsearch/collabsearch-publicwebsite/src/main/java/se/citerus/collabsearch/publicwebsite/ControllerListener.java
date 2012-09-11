@@ -4,6 +4,10 @@ import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.SearchOperationIntro;
 
 public interface ControllerListener {
+	
+	void showErrorMessage(String errorHeader, String errorMessage);
+	
+	void showTrayNotification(String caption, String message);
 
 	SearchOperation fireReadMoreEvent(String header);
 
@@ -15,13 +19,13 @@ public interface ControllerListener {
 	 */
 	SearchOperationIntro[] getAllSearchOpsIntros();
 
-	void showErrorMessage(String errorHeader, String errorMessage);
-
 	SearchOperationIntro[] getSearchOpsByName(String searchString);
 
 	SearchOperationIntro[] getSearchOpsByFilter(String name, String location,
-			long date);
+			long date, long endDate);
 
-	void showTrayNotification(String caption, String message);
+	String[] getAllTitles();
+
+	String[] getAllLocations();
 
 }

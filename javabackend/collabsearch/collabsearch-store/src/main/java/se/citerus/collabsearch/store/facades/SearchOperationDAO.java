@@ -26,7 +26,7 @@ public interface SearchOperationDAO {
 
 	public void disconnect() throws IOException;
 
-	public String endOperation(String opName, String missionName);
+	public String endOperation(String opName);
 
 	public String getZoneIdByName(String zoneName, String opName);
 

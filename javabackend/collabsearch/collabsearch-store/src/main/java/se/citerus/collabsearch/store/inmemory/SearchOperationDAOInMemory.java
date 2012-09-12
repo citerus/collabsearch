@@ -44,7 +44,7 @@ public class SearchOperationDAOInMemory implements SearchOperationDAO {
 	}
 
 	@Override
-	public String endOperation(String opName, String missionName) {
+	public String endOperation(String opId) {
 		return "Sökning avslutad";
 	}
 

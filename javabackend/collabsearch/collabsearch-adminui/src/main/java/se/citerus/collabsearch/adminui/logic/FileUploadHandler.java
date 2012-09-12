@@ -19,7 +19,8 @@ import com.vaadin.ui.Upload.SucceededEvent;
 public class FileUploadHandler implements Upload.SucceededListener,
 		Upload.FailedListener, Upload.Receiver {
 
-	private static final String UPLOADDIR = "/tmp/uploads/"; //TODO change filepath to search mission specific path
+	//TODO upload filepath should be set in config file
+	private static final String UPLOADDIR = "/tmp/uploads/";
 	private String parentMissionId;
 	private FileMetadata metadata;
 	private ViewSwitchController listener;

@@ -51,8 +51,8 @@ public class SearchMissionService { //TODO refactor into spring service
 		return searchMissionDAL.findMission(missionId);
 	}
 
-	public SearchOperation getSearchOp(String opName, String missionId) throws Exception {
-		return searchMissionDAL.findOperation(opName, missionId);
+	public SearchOperation getSearchOp(String searchOpId) throws Exception {
+		return searchMissionDAL.findOperation(searchOpId);
 	}
 
 	public void addOrModifyMission(SearchMission mission, String missionId) throws Exception {
@@ -80,12 +80,21 @@ public class SearchMissionService { //TODO refactor into spring service
 		}
 	}
 
-	public void deleteSearchOperation(String searchOpName, String missionId) throws Exception {
-		searchMissionDAL.deleteSearchOperation(searchOpName, missionId);
+	/**
+	 * Deletes a search operation and all it's zones and groups.
+	 * @param searchOpId
+	 * @throws Exception
+	 */
+	public void deleteSearchOperation(String searchOpId) throws Exception {
+		searchMissionDAL.deleteSearchOperation(searchOpId);
 	}
 
-	public void editSearchOp(SearchOperation operation, String missionId) throws Exception {
-		searchMissionDAL.addOrModifySearchOperation(operation, missionId);
+	public void editSearchOp(SearchOperation operation, String opId, String missionId) throws Exception {
+		if (opId == null && missionId != null) {
+			searchMissionDAL.addSearchOperation(operation, missionId);
+		} else if (opId != null && missionId == null) {
+			searchMissionDAL.editSearchOperation(operation, opId);
+		}
 	}
 
 	public Status getStatusByName(String statusName) throws Exception {

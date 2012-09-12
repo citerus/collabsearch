@@ -140,7 +140,7 @@ public class GroupEditView extends CustomComponent {
 
 	}
 
-	public void resetView(String groupId, String opName, String missionName) {
+	public void resetView(String groupId, String opName) {
 		//get group data from db
 		
 		//convert to HierarchicContainer format

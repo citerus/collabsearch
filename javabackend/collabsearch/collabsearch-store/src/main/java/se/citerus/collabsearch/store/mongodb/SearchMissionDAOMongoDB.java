@@ -81,16 +81,7 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO {
 			throws IOException {
 	}
 
-	public SearchOperation findOperation(String name, String missionName)
-			throws IOException {
-		return null;
-	}
-
-	public void deleteSearchOperation(String searchOpName, String missionName)
-			throws IOException {
-	}
-
-	public void addOrModifySearchOperation(SearchOperation operation,
+	public void editSearchOperation(SearchOperation operation,
 			String missionName) throws IOException {
 	}
 
@@ -110,6 +101,19 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO {
 	@Override
 	public FileMetadata getFileMetadata(String filename, String missionId) {
 		return null;
+	}
+
+	@Override
+	public SearchOperation findOperation(String opId) throws IOException {
+		return null;
+	}
+
+	@Override
+	public void deleteSearchOperation(String searchOpId) throws IOException {
+	}
+
+	@Override
+	public void addSearchOperation(SearchOperation operation, String missionId) {
 	}
 
 }

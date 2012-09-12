@@ -194,52 +194,30 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 		return mission.getOpsList();
 	}
 
-	public SearchOperation findOperation(String opName, String missionId) {
+	public SearchOperation findOperation(String opId) {
 		for (SearchMission mission : missionsList) {
-			if (mission.getId().equals(missionId)) {
-				List<SearchOperation> opsList = mission.getOpsList();
-				for (SearchOperation operation : opsList) {
-					if (operation.getTitle().equals(opName)) {
-						return operation;
-					}
+			List<SearchOperation> opsList = mission.getOpsList();
+			for (SearchOperation operation : opsList) {
+				if (operation.getId().equals(opId)) {
+					return operation;
 				}
 			}
 		}
 		return null;
 	}
 
-	public void deleteSearchOperation(String searchOpName, String missionId) throws IOException {
-		SearchMission mission = findMission(missionId);
-		if (mission == null) {
-			throw new IOException("Sökuppdraget " + missionId + " ej funnet");
-		}
-		
-		List<SearchOperation> opsList = mission.getOpsList();
-		for (SearchOperation op : opsList) {
-			if (op.getTitle().equals(searchOpName)) {
-				opsList.remove(op);
-				break;
+	public void deleteSearchOperation(String opId) throws IOException {
+		for (SearchMission mission : missionsList) {
+			List<SearchOperation> opsList = mission.getOpsList();
+			for (SearchOperation op : opsList) {
+				if (op.getId().equals(opId)) {
+					opsList.remove(op);
+					return;
+				}
 			}
 		}
 	}
 
-	public void addOrModifySearchOperation(SearchOperation operation, String missionId) throws IOException {
-		SearchMission mission = findMission(missionId);
-		if (mission == null) {
-			throw new IOException("Sökuppdraget " + missionId + " ej funnet");
-		}
-		
-		List<SearchOperation> opsList = mission.getOpsList();
-		for (int i = 0; i < opsList.size(); i++) {
-			if (opsList.get(i).getTitle().equals(operation.getTitle())) {
-				opsList.set(i, operation);
-				return;
-			}
-		}
-		
-		opsList.add(operation);
-	}
-	
 	public void addFileMetadata(String missionId, FileMetadata fileMetaData) throws IOException {
 		SearchMission mission = findMission(missionId);
 		if (mission == null) {
@@ -275,5 +253,31 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 			}
 		}
 		return null;
+	}
+
+	public void editSearchOperation(SearchOperation operation, String opId) throws IOException {
+		for (SearchMission mission : missionsList) {
+			List<SearchOperation> opsList = mission.getOpsList();
+			for (SearchOperation op : opsList) {
+				if (op.getId().equals(opId)) {
+					op.setTitle(operation.getTitle());
+					op.setDescr(operation.getDescr());
+					op.setDate(operation.getDate());
+					op.setLocation(operation.getLocation());
+					op.setStatus(operation.getStatus());
+					return;
+				}
+			}
+		}
+	}
+	
+	@Override
+	public void addSearchOperation(SearchOperation operation, String missionId) {
+		operation.setId("" + new Random().nextLong());
+		for (SearchMission mission : missionsList) {
+			if (mission.getId().equals(missionId)) {
+				mission.getOpsList().add(operation);
+			}
+		}
 	}
 }

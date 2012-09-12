@@ -188,11 +188,6 @@ public class SearchOperationDAOMongoDB implements SearchOperationDAO {
 	}
 
 	@Override
-	public String endOperation(String opName, String missionName) {
-		return null;
-	}
-
-	@Override
 	public String getZoneIdByName(String zoneName, String opName) {
 		return null;
 	}
@@ -244,6 +239,11 @@ public class SearchOperationDAOMongoDB implements SearchOperationDAO {
 			return array;
 		}
 		return null;
+	}
+
+	@Override
+	public String endOperation(String opName) {
+		return "Avslutad";
 	}
 
 }

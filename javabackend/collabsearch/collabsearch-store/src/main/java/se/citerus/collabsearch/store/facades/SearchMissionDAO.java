@@ -33,14 +33,16 @@ public interface SearchMissionDAO {
 	/*
 	 * SearchOperation operations. Will be broken out into SearchOperationDAO.
 	 */
-	public SearchOperation findOperation(String opName, String missionId) throws IOException;
+	public SearchOperation findOperation(String opId) throws IOException;
 	
 	public List<SearchOperation> getAllSearchOpsForMission(String missionId) throws IOException;
 	
-	public void deleteSearchOperation(String searchOpName, String missionId) throws IOException;
+	public void deleteSearchOperation(String searchOpId) throws IOException;
 	
-	public void addOrModifySearchOperation(SearchOperation operation, String missionId) throws IOException;
+	public void editSearchOperation(SearchOperation operation, String missionId) throws IOException;
 
 	public FileMetadata getFileMetadata(String filename, String missionId);
+
+	public void addSearchOperation(SearchOperation operation, String missionId);
 	
 }

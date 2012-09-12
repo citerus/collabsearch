@@ -41,10 +41,7 @@ public class LookingForApp extends Application implements HttpServletRequestList
 	public void init() {
 		setInstance(this);
 		
-		WebApplicationContext context = (WebApplicationContext) getContext();
-		Locale locale = context.getBrowser().getLocale();
-		setLocale(locale);
-		System.out.println("Current locale: " + locale);
+		System.out.println("Client locale: " + getLocale());
 		
 		window = new MainWindow();
 		((MainWindow)window).initWindow();

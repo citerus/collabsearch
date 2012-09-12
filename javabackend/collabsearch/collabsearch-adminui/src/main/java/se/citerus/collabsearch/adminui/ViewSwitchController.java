@@ -51,18 +51,18 @@ public interface ViewSwitchController {
 	 */
 	public void switchToSearchMissionEditView(String missionId);
 
-	public void switchToSearchOperationEditView(String selectedSearchOperationName, String missionName);
+	public void switchToSearchOperationEditView(String opId, String missionId);
 	
 	/**
 	 * Switches to the file mgmt view, with a reference to the mission whose files will be managed.
 	 * @param missionName the name of the Search Mission whose files will be managed.
 	 * @param fileName 
 	 */
-	public void switchToFileManagementView(String missionName, String fileName);
+	public void switchToFileManagementView(String missionName);
 	
-	public void switchToZoneEditView(String zoneId, String opName);
+	public void switchToZoneEditView(String zoneId, String opId);
 	
-	public void switchToGroupEditView(String groupId, String opName, String missionName);
+	public void switchToGroupEditView(String groupId, String opId);
 		
 	public void refreshMissionTree();
 

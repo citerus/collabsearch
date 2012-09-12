@@ -2,9 +2,6 @@
 <body>
 <h2>Jersey REST-WS for CollabSearch</h2>
 <br>
-<a href="/collabsearch-api/rest/ws/hello">hello</a><br>
-<a href="/collabsearch-api/rest/ws/echo/world">echo/(input)</a><br>
-<a href="/collabsearch-api/rest/ws/getAllOps">list</a><br>
 <a href="/collabsearch-api/rest/ws/getSearchOp/test">getSeaOp/(name)</a><br>
 <a href="/collabsearch-api/rest/ws/getAllOps">getAllOps</a><br>
 <br>

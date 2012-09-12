@@ -1,5 +1,8 @@
 package se.citerus.collabsearch.adminui;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import se.citerus.collabsearch.adminui.logic.Authenticator;
 import se.citerus.collabsearch.adminui.view.login.LoginView;
 import se.citerus.collabsearch.adminui.view.login.WelcomeView;
@@ -12,6 +15,9 @@ import se.citerus.collabsearch.adminui.view.searchoperation.ZoneEditView;
 import se.citerus.collabsearch.adminui.view.usermgmt.UserEditView;
 import se.citerus.collabsearch.adminui.view.usermgmt.UserListView;
 
+import com.vaadin.terminal.ExternalResource;
+import com.vaadin.terminal.Resource;
+import com.vaadin.terminal.gwt.server.WebApplicationContext;
 import com.vaadin.ui.LoginForm.LoginEvent;
 import com.vaadin.ui.LoginForm.LoginListener;
 import com.vaadin.ui.Window;
@@ -136,27 +142,27 @@ public class MainWindow extends Window implements LoginListener, ViewSwitchContr
 	}
 
 	@Override
-	public void switchToSearchOperationEditView(String opName, String missionName) {
+	public void switchToSearchOperationEditView(String opId, String missionId) {
 		if (searchOperationEditView == null) {
 			searchOperationEditView = new SearchOperationEditView(this);
 			searchOperationEditView.init();
 		}
-		searchOperationEditView.resetView(opName, missionName);
+		searchOperationEditView.resetView(opId, missionId);
 		setContent(searchOperationEditView);
 	}
 
 	@Override
-	public void switchToGroupEditView(String groupId, String opName, String missionName) {
+	public void switchToGroupEditView(String groupId, String opId) {
 		if (groupEditView == null) {
 			groupEditView = new GroupEditView(this);
 			groupEditView.init();
 		}
-		groupEditView.resetView(groupId, opName, missionName);
+		groupEditView.resetView(groupId, opId);
 		setContent(groupEditView);
 	}
 
 	@Override
-	public void switchToFileManagementView(String missionId, String fileName) {
+	public void switchToFileManagementView(String missionId) {
 		if (fileMgmtView == null) {
 			fileMgmtView = new FileManagementView(this);
 			fileMgmtView.init();
@@ -179,5 +185,4 @@ public class MainWindow extends Window implements LoginListener, ViewSwitchContr
 		zoneEditView.resetView(zoneId, opName);
 		setContent(zoneEditView);
 	}
-
 }

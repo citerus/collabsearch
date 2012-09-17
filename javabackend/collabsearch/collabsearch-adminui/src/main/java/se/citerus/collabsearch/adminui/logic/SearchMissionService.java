@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.List;
 
 import se.citerus.collabsearch.model.FileMetadata;
+import se.citerus.collabsearch.model.SearchGroup;
 import se.citerus.collabsearch.model.SearchMission;
 import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.Status;
@@ -100,4 +101,16 @@ public class SearchMissionService { //TODO refactor into spring service
 	public Status getStatusByName(String statusName) throws Exception {
 		return searchMissionDAL.findStatus(statusName);
 	}
+
+	public SearchGroup getSearchGroup(String groupId) throws Exception {
+		if (groupId == null) {
+			throw new Exception("Inget gruppid specifierat");
+		}
+		SearchGroup group = searchMissionDAL.getGroupById(groupId);
+		if (group == null) {
+			throw new Exception("Ingen gruppdata funnen");
+		}
+		return group;
+	}
+
 }

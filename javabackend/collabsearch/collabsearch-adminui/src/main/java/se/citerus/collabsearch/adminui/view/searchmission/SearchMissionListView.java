@@ -10,7 +10,7 @@ import se.citerus.collabsearch.adminui.ViewSwitchController;
 import se.citerus.collabsearch.adminui.logic.SearchMissionService;
 import se.citerus.collabsearch.adminui.logic.SearchOperationService;
 import se.citerus.collabsearch.model.FileMetadata;
-import se.citerus.collabsearch.model.Group;
+import se.citerus.collabsearch.model.SearchGroup;
 import se.citerus.collabsearch.model.SearchMission;
 import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.Zone;
@@ -49,7 +49,6 @@ public class SearchMissionListView extends CustomComponent {
 	private Button editButton;
 	private Button addButton;
 	private TreeTable treeTable;
-	private HierarchicalContainer container;
 	
 	private Handler contextMenuHandler;
 	private static Action ACTION_ADDITEM;
@@ -63,7 +62,7 @@ public class SearchMissionListView extends CustomComponent {
 	private static Action[] addEditRemoveMenu;
 	private static Action[] addEditRemoveEndMenu;
 	
-	private enum NodeType {
+	private static enum NodeType {
 		UNDEFINED, 
 		MISSION, 
 		OPERATION, OPERATIONROOT, 
@@ -333,7 +332,6 @@ public class SearchMissionListView extends CustomComponent {
 		SearchMissionService service = null;
 		List<SearchMission> list = null;
 		try {
-//			container = new HierarchicalContainer();
 			service = new SearchMissionService();
 			list = service.getListOfSearchMissions();
 			if (list == null) {
@@ -392,7 +390,7 @@ public class SearchMissionListView extends CustomComponent {
 					setupItemProperties(groupParentId, "Grupper", NodeType.GROUPROOT, null);
 					treeTable.setParent(itemId, opItemId);
 					//add groups
-					for (Group group : op.getGroups()) {
+					for (SearchGroup group : op.getGroups()) {
 						itemId++;
 						setupItemProperties(itemId, group.getName(), NodeType.GROUP, group.getId());
 						treeTable.setParent(itemId, groupParentId);
@@ -415,8 +413,6 @@ public class SearchMissionListView extends CustomComponent {
 				
 				itemId++; //increment root id (for the next searchmission)
 			}
-			
-//			treeTable.setContainerDataSource(container);
 		} catch (Exception e) {
 			e.printStackTrace();
 			listener.displayError("Fel", 
@@ -432,7 +428,7 @@ public class SearchMissionListView extends CustomComponent {
 		Item item = treeTable.addItem(itemId);
 		item.getItemProperty("name").setValue(name);
 		item.getItemProperty("type").setValue(type);
-		item.getItemProperty("id").setValue(type);
+		item.getItemProperty("id").setValue(id);
 	}
 
 	public void resetView() {
@@ -440,51 +436,43 @@ public class SearchMissionListView extends CustomComponent {
 	}
 
 	private void handleAddActions(int itemId, NodeType type) {
+		String id;
 		switch (type) {
-			case MISSION: {
+			case MISSION: 
 				listener.switchToSearchMissionEditView(null);
 				break;
-			}
-			case OPERATIONROOT: {
-				String missionId = getParentProperty(1, itemId, "id");
-				listener.switchToSearchOperationEditView(null, missionId);
+			case OPERATIONROOT: 
+				id = getParentProperty(1, itemId, "id");
+				listener.switchToSearchOperationEditView(null, id);
 				break;
-			}
-			case OPERATION: {
-				String missionId = getParentProperty(2, itemId, "id");
-				listener.switchToSearchOperationEditView(null, missionId);
+			case OPERATION: 
+				id = getParentProperty(2, itemId, "id");
+				listener.switchToSearchOperationEditView(null, id);
 				break;
-			}
-			case FILEROOT: {
-				String missionId = getParentProperty(1, itemId, "id");
-				listener.switchToFileManagementView(missionId);
+			case FILEROOT: 
+				id = getParentProperty(1, itemId, "id");
+				listener.switchToFileUploadView(id);
 				break;
-			}
-			case FILE: {
-				String missionId = getParentProperty(2, itemId, "id");
-				listener.switchToFileManagementView(missionId);
+			case FILE: 
+				id = getParentProperty(2, itemId, "id");
+				listener.switchToFileUploadView(id);
 				break;
-			}
-			case ZONEROOT: {
-				String opId = getParentProperty(1, itemId, "id");
-				listener.switchToZoneEditView(null, opId);
+			case ZONEROOT: 
+				id = getParentProperty(1, itemId, "id");
+				listener.switchToZoneEditView(null, id);
 				break;
-			}
-			case ZONE: {
-				String opId = getParentProperty(2, itemId, "id");
-				listener.switchToZoneEditView(null, opId);
+			case ZONE: 
+				id = getParentProperty(2, itemId, "id");
+				listener.switchToZoneEditView(null, id);
 				break;
-			}
-			case GROUPROOT: {
-				String opId = getParentProperty(1, itemId, "id");
-				listener.switchToGroupEditView(null, opId);
+			case GROUPROOT: 
+				id = getParentProperty(1, itemId, "id");
+				listener.switchToGroupEditView(null, id);
 				break;
-			}
-			case GROUP: {
-				String opId = getParentProperty(2, itemId, "id");
-				listener.switchToGroupEditView(null, opId);
+			case GROUP: 
+				id = getParentProperty(2, itemId, "id");
+				listener.switchToGroupEditView(null, id);
 				break;
-			}
 			default: break;
 		}
 	}
@@ -498,10 +486,10 @@ public class SearchMissionListView extends CustomComponent {
 			listener.switchToSearchOperationEditView(id, missionId);
 		} else if (type == NodeType.ZONE) {
 			String opId = getParentProperty(2, itemId, "id");
-			listener.switchToZoneEditView(id , opId);
+			listener.switchToZoneEditView(id, opId);
 		} else if (type == NodeType.GROUP) {
 			String opId = getParentProperty(2, itemId, "id");
-			listener.switchToGroupEditView(id , opId);
+			listener.switchToGroupEditView(id, opId);
 		}
 	}
 	
@@ -608,6 +596,10 @@ public class SearchMissionListView extends CustomComponent {
 		}
 	}
 	
+	/**
+	 * Removes a node from the tree and recursively removes all it's children.
+	 * @param rootItemId the itemid of the outermost node to remove.
+	 */
 	private void removeItemsRecursively(Object rootItemId) {
 		ArrayList<Object> removeList = new ArrayList<Object>();
 		

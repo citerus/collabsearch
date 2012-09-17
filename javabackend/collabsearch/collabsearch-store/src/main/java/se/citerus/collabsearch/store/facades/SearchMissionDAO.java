@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import se.citerus.collabsearch.model.FileMetadata;
+import se.citerus.collabsearch.model.SearchGroup;
 import se.citerus.collabsearch.model.SearchMission;
 import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.Status;
@@ -44,5 +45,7 @@ public interface SearchMissionDAO {
 	public FileMetadata getFileMetadata(String filename, String missionId);
 
 	public void addSearchOperation(SearchOperation operation, String missionId);
+
+	public SearchGroup getGroupById(String groupId);
 	
 }

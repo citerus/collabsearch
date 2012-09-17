@@ -15,14 +15,14 @@ import com.vaadin.ui.Upload.Receiver;
 import com.vaadin.ui.VerticalLayout;
 
 @SuppressWarnings("serial")
-public class FileManagementView extends CustomComponent {
+public class FileUploadView extends CustomComponent {
 	private final ViewSwitchController listener;
 	private VerticalLayout mainLayout;
 	private Button uploadButton;
 	private Button cancelButton;
 	private FileUploadHandler fileUploadHandler;
 
-	public FileManagementView(final ViewSwitchController listener) {
+	public FileUploadView(final ViewSwitchController listener) {
 		this.listener = listener;
 		mainLayout = new VerticalLayout();
 		setCompositionRoot(mainLayout);

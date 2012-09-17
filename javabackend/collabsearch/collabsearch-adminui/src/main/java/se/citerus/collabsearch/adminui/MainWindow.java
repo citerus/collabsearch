@@ -6,7 +6,7 @@ import java.net.URL;
 import se.citerus.collabsearch.adminui.logic.Authenticator;
 import se.citerus.collabsearch.adminui.view.login.LoginView;
 import se.citerus.collabsearch.adminui.view.login.WelcomeView;
-import se.citerus.collabsearch.adminui.view.searchmission.FileManagementView;
+import se.citerus.collabsearch.adminui.view.searchmission.FileUploadView;
 import se.citerus.collabsearch.adminui.view.searchmission.SearchMissionEditView;
 import se.citerus.collabsearch.adminui.view.searchmission.SearchMissionListView;
 import se.citerus.collabsearch.adminui.view.searchoperation.GroupEditView;
@@ -15,6 +15,7 @@ import se.citerus.collabsearch.adminui.view.searchoperation.ZoneEditView;
 import se.citerus.collabsearch.adminui.view.usermgmt.UserEditView;
 import se.citerus.collabsearch.adminui.view.usermgmt.UserListView;
 
+import com.vaadin.service.ApplicationContext;
 import com.vaadin.terminal.ExternalResource;
 import com.vaadin.terminal.Resource;
 import com.vaadin.terminal.gwt.server.WebApplicationContext;
@@ -34,7 +35,7 @@ public class MainWindow extends Window implements LoginListener, ViewSwitchContr
 	private SearchMissionListView searchMissionListView;
 	private SearchMissionEditView searchMissionEditView;
 	private SearchOperationEditView searchOperationEditView;
-	private FileManagementView fileMgmtView;
+	private FileUploadView fileMgmtView;
 	private GroupEditView groupEditView;
 	private ZoneEditView zoneEditView;
 
@@ -64,6 +65,11 @@ public class MainWindow extends Window implements LoginListener, ViewSwitchContr
 		} catch (Exception e) {
 			displayError("Fel", e.getMessage());
 		}
+		
+		WebApplicationContext context = (WebApplicationContext) getApplication().getContext();
+		int h = context.getBrowser().getScreenHeight();
+		int w = context.getBrowser().getScreenWidth();
+		System.out.println("H: " + h + " W:" + w);
 	}
 
 	@Override
@@ -162,9 +168,9 @@ public class MainWindow extends Window implements LoginListener, ViewSwitchContr
 	}
 
 	@Override
-	public void switchToFileManagementView(String missionId) {
+	public void switchToFileUploadView(String missionId) {
 		if (fileMgmtView == null) {
-			fileMgmtView = new FileManagementView(this);
+			fileMgmtView = new FileUploadView(this);
 			fileMgmtView.init();
 		}
 		fileMgmtView.resetView(missionId);

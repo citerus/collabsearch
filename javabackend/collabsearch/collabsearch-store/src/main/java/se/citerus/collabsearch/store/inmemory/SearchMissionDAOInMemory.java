@@ -3,14 +3,16 @@ package se.citerus.collabsearch.store.inmemory;
 import java.io.IOException;
 import java.sql.Date;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
 import se.citerus.collabsearch.model.FileMetadata;
-import se.citerus.collabsearch.model.Group;
+import se.citerus.collabsearch.model.GroupNode;
+import se.citerus.collabsearch.model.Rank;
+import se.citerus.collabsearch.model.SearchGroup;
 import se.citerus.collabsearch.model.SearchMission;
 import se.citerus.collabsearch.model.SearchOperation;
+import se.citerus.collabsearch.model.SearcherInfo;
 import se.citerus.collabsearch.model.Status;
 import se.citerus.collabsearch.model.Zone;
 import se.citerus.collabsearch.store.facades.SearchMissionDAO;
@@ -19,13 +21,18 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 
 	private static List<SearchMission> missionsList;
 	private static List<Status> statusList;
+	private List<Rank> ranksList;
 
 	public SearchMissionDAOInMemory() {
 		if (missionsList == null) {
 			missionsList = new ArrayList<SearchMission>();
 			statusList = new ArrayList<Status>();
+			ranksList = new ArrayList<Rank>();
+			
+			Random r = new Random();
 			addMockStatuses();
-			addMockMissions();
+//			addMockRanks(r);
+			addMockMissions(r);
 		}
 	}
 
@@ -93,9 +100,7 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 		statusList.add(new Status(17, "Okänd status", "Okänd status/processfas"));
 	}
 
-	private void addMockMissions() {
-		Random r = new Random();
-		
+	private void addMockMissions(Random r) {
 		SearchMission sm1 = new SearchMission("" + r.nextLong(), "Sökuppdrag 1", "text...", 1, statusList.get(0));
 		sm1.setFileList(addMockFiles(r));
 		sm1.setOpsList(addMockOps(r));
@@ -121,10 +126,10 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 	private List<SearchOperation> addMockOps(Random r) {		
 		List<SearchOperation> opsList = new ArrayList<SearchOperation>();
 		
-		List<Group> groups = new ArrayList<Group>();
-		groups.add(new Group("" + r.nextLong(), "Grupp A"));
-		groups.add(new Group("" + r.nextLong(), "Grupp B"));
-		groups.add(new Group("" + r.nextLong(), "Grupp C"));
+		List<SearchGroup> groups = new ArrayList<SearchGroup>();
+		groups.add(new SearchGroup("" + r.nextLong(), "Grupp A", addMockGroupTree(r)));
+		groups.add(new SearchGroup("" + r.nextLong(), "Grupp B", addMockGroupTree(r)));
+		groups.add(new SearchGroup("" + r.nextLong(), "Grupp C", addMockGroupTree(r)));
 		
 		List<Zone> zones = new ArrayList<Zone>();
 		zones.add(new Zone("" + r.nextLong(), "Zon Alfa"));
@@ -156,6 +161,40 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 		opsList.add(searchOp);
 		
 		return opsList;
+	}
+	
+	private GroupNode addMockGroupTree(Random r) {
+		SearcherInfo searcher1 = new SearcherInfo("" + r.nextLong(), "Chefen", "chefen@mail.se", "12345");
+		GroupNode root = new GroupNode(searcher1, Rank.Title.OPERATIONAL_MANAGER, null);
+		
+		SearcherInfo searcher2 = new SearcherInfo("" + r.nextLong(), "Person A", "pa@mail.se", "23456");
+		root.addChild(new GroupNode(searcher2, Rank.Title.ADMIN_MANAGER, root));
+		SearcherInfo searcher3 = new SearcherInfo("" + r.nextLong(), "Person B", "pb@mail.se", "34567");
+		root.addChild(new GroupNode(searcher3, Rank.Title.GROUP_MANAGER, root));
+		
+		return root;
+	}
+	
+	private void addMockRanks(Random r) { //should be set in config file?
+		ranksList.add(new Rank(0, "Operativ chef", new int[]{1,2,3}, Rank.ALLOW_CHILDREN, Rank.NO_PARENT));
+		ranksList.add(new Rank(1, "Operativ chefsassistent", null, Rank.NO_CHILDREN, Rank.ALLOW_PARENT));
+		ranksList.add(new Rank(2, "Administrativ chef", new int[]{3}, Rank.ALLOW_CHILDREN, Rank.ALLOW_PARENT));
+		ranksList.add(new Rank(3, "Administrativ chefsassistent", null, Rank.NO_CHILDREN, Rank.ALLOW_PARENT));
+		ranksList.add(new Rank(4, "Gruppchef", new int[]{5,6}, Rank.ALLOW_CHILDREN, Rank.ALLOW_PARENT));
+		ranksList.add(new Rank(5, "Gruppchefsassistent", null, Rank.NO_CHILDREN, Rank.ALLOW_PARENT));
+		ranksList.add(new Rank(6, "Gruppledare", new int[]{7}, Rank.ALLOW_CHILDREN, Rank.ALLOW_PARENT));
+		ranksList.add(new Rank(7, "Patrulledare", new int[]{8}, Rank.ALLOW_CHILDREN, Rank.ALLOW_PARENT));
+		ranksList.add(new Rank(8, "Patrulledarassistent", new int[]{9}, Rank.ALLOW_CHILDREN, Rank.ALLOW_PARENT));
+		ranksList.add(new Rank(9, "Sökare", null, Rank.NO_CHILDREN, Rank.ALLOW_PARENT));
+	}
+	
+	public Rank findRank(int rankValue) {
+		for (Rank rank : ranksList) {
+			if (rank.getRankId() == rankValue) {
+				return rank;
+			}
+		}
+		return null;
 	}
 	
 	public Status findStatus(String statusName) throws IOException {
@@ -279,5 +318,19 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 				mission.getOpsList().add(operation);
 			}
 		}
+	}
+
+	@Override
+	public SearchGroup getGroupById(String groupId) {
+		for (SearchMission mission : missionsList) {
+			for (SearchOperation op : mission.getOpsList()) {
+				for (SearchGroup group : op.getGroups()) {
+					if (group.getId().equals(groupId)) {
+						return group;
+					}
+				}
+			}
+		}
+		return null;
 	}
 }

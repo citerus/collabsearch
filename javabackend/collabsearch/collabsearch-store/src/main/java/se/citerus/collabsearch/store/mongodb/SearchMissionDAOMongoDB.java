@@ -14,6 +14,7 @@ import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 
 import se.citerus.collabsearch.model.FileMetadata;
+import se.citerus.collabsearch.model.SearchGroup;
 import se.citerus.collabsearch.model.SearchMission;
 import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.Status;
@@ -114,6 +115,11 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO {
 
 	@Override
 	public void addSearchOperation(SearchOperation operation, String missionId) {
+	}
+
+	@Override
+	public SearchGroup getGroupById(String groupId) {
+		return null;
 	}
 
 }

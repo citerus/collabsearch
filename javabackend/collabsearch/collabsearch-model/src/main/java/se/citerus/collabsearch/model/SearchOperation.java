@@ -16,7 +16,7 @@ public class SearchOperation {
 	private Status status;
 	
 	private List<Zone> zones;
-	private List<Group> groups;
+	private List<SearchGroup> groups;
 	
 	/**
 	 * Serialization ctor.
@@ -35,7 +35,7 @@ public class SearchOperation {
 		this.status = status;
 		
 		zones = new ArrayList<Zone>();
-		groups = new ArrayList<Group>();
+		groups = new ArrayList<SearchGroup>();
 	}
 
 	public String getId() {
@@ -94,11 +94,11 @@ public class SearchOperation {
 		this.zones = zones;
 	}
 
-	public List<Group> getGroups() {
+	public List<SearchGroup> getGroups() {
 		return groups;
 	}
 
-	public void setGroups(List<Group> groups) {
+	public void setGroups(List<SearchGroup> groups) {
 		this.groups = groups;
 	}
 

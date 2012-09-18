@@ -44,7 +44,7 @@ public class SearchOperationDAOMongoDB implements SearchOperationDAO {
 		"title" : "Sökop 1"
 	}
 	*/
-	
+
 	private DBCollection operationsColl;
 	private Mongo mongo;
 

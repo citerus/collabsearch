@@ -15,6 +15,8 @@ public class SearchOperation {
 	private String location;
 	private Status status;
 	
+	private List<SearcherInfo> searchers;
+	
 	private List<Zone> zones;
 	private List<SearchGroup> groups;
 	
@@ -36,6 +38,7 @@ public class SearchOperation {
 		
 		zones = new ArrayList<Zone>();
 		groups = new ArrayList<SearchGroup>();
+		searchers = new ArrayList<SearcherInfo>();
 	}
 
 	public String getId() {
@@ -100,6 +103,14 @@ public class SearchOperation {
 
 	public void setGroups(List<SearchGroup> groups) {
 		this.groups = groups;
+	}
+
+	public List<SearcherInfo> getSearchers() {
+		return searchers;
+	}
+
+	public void setSearchers(List<SearcherInfo> searchers) {
+		this.searchers = searchers;
 	}
 
 	@Override

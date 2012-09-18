@@ -7,6 +7,7 @@ import se.citerus.collabsearch.model.FileMetadata;
 import se.citerus.collabsearch.model.SearchGroup;
 import se.citerus.collabsearch.model.SearchMission;
 import se.citerus.collabsearch.model.SearchOperation;
+import se.citerus.collabsearch.model.SearcherInfo;
 import se.citerus.collabsearch.model.Status;
 
 public interface SearchMissionDAO {
@@ -44,8 +45,10 @@ public interface SearchMissionDAO {
 
 	public FileMetadata getFileMetadata(String filename, String missionId);
 
-	public void addSearchOperation(SearchOperation operation, String missionId);
+	public void addSearchOperation(SearchOperation operation, String missionId) throws IOException;
 
-	public SearchGroup getGroupById(String groupId);
+	public SearchGroup getGroupById(String groupId) throws IOException;
+
+	public List<SearcherInfo> getUsersForSearchOp(String opId) throws IOException;
 	
 }

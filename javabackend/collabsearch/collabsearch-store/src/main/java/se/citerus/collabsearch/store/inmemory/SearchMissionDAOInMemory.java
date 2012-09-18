@@ -3,6 +3,7 @@ package se.citerus.collabsearch.store.inmemory;
 import java.io.IOException;
 import java.sql.Date;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -126,10 +127,15 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 	private List<SearchOperation> addMockOps(Random r) {		
 		List<SearchOperation> opsList = new ArrayList<SearchOperation>();
 		
+		List<SearcherInfo> searchers = new ArrayList<SearcherInfo>();
+		searchers.add(new SearcherInfo("" + r.nextLong(), "Person A", "pa@mail.se", "12345"));
+		searchers.add(new SearcherInfo("" + r.nextLong(), "Person B", "pb@mail.se", "23456"));
+		searchers.add(new SearcherInfo("" + r.nextLong(), "Person C", "pc@mail.se", "34567"));
+		
 		List<SearchGroup> groups = new ArrayList<SearchGroup>();
-		groups.add(new SearchGroup("" + r.nextLong(), "Grupp A", addMockGroupTree(r)));
-		groups.add(new SearchGroup("" + r.nextLong(), "Grupp B", addMockGroupTree(r)));
-		groups.add(new SearchGroup("" + r.nextLong(), "Grupp C", addMockGroupTree(r)));
+		groups.add(new SearchGroup("" + r.nextLong(), "Grupp A", addMockGroupTree(searchers)));
+		groups.add(new SearchGroup("" + r.nextLong(), "Grupp B", addMockGroupTree(searchers)));
+		groups.add(new SearchGroup("" + r.nextLong(), "Grupp C", addMockGroupTree(searchers)));
 		
 		List<Zone> zones = new ArrayList<Zone>();
 		zones.add(new Zone("" + r.nextLong(), "Zon Alfa"));
@@ -140,6 +146,7 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 				"" + r.nextLong() ,"Operation 1", "beskrivn...", 
 				new Date(System.currentTimeMillis()), "Plats X", 
 				new Status(0, "status 1", "beskrivn..."));
+		searchOp.setSearchers(searchers);
 		searchOp.setGroups(groups);
 		searchOp.setZones(zones);
 		opsList.add(searchOp);
@@ -148,6 +155,7 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 				"" + r.nextLong(), "Operation 2", "beskrivn...", 
 				new Date(System.currentTimeMillis()+86400000L), "Plats Y", 
 				new Status(1, "status 2", "beskrivn..."));
+		searchOp.setSearchers(searchers);
 		searchOp.setGroups(groups);
 		searchOp.setZones(zones);
 		opsList.add(searchOp);
@@ -156,6 +164,7 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 				"" + r.nextLong(), "Operation 3", "beskrivn...", 
 				new Date(System.currentTimeMillis()+(2*86400000L)), "Plats Z", 
 				new Status(2, "status 3", "beskrivn..."));
+		searchOp.setSearchers(searchers);
 		searchOp.setGroups(groups);
 		searchOp.setZones(zones);
 		opsList.add(searchOp);
@@ -163,14 +172,10 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 		return opsList;
 	}
 	
-	private GroupNode addMockGroupTree(Random r) {
-		SearcherInfo searcher1 = new SearcherInfo("" + r.nextLong(), "Chefen", "chefen@mail.se", "12345");
-		GroupNode root = new GroupNode(searcher1, Rank.Title.OPERATIONAL_MANAGER, null);
-		
-		SearcherInfo searcher2 = new SearcherInfo("" + r.nextLong(), "Person A", "pa@mail.se", "23456");
-		root.addChild(new GroupNode(searcher2, Rank.Title.ADMIN_MANAGER, root));
-		SearcherInfo searcher3 = new SearcherInfo("" + r.nextLong(), "Person B", "pb@mail.se", "34567");
-		root.addChild(new GroupNode(searcher3, Rank.Title.GROUP_MANAGER, root));
+	private GroupNode addMockGroupTree(List<SearcherInfo> list) {
+		GroupNode root = new GroupNode(list.get(0), Rank.Title.OPERATIONAL_MANAGER, null);
+		root.addChild(new GroupNode(list.get(1), Rank.Title.ADMIN_MANAGER, root));
+		root.addChild(new GroupNode(list.get(2), Rank.Title.GROUP_MANAGER, root));
 		
 		return root;
 	}
@@ -311,7 +316,7 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 	}
 	
 	@Override
-	public void addSearchOperation(SearchOperation operation, String missionId) {
+	public void addSearchOperation(SearchOperation operation, String missionId) throws IOException {
 		operation.setId("" + new Random().nextLong());
 		for (SearchMission mission : missionsList) {
 			if (mission.getId().equals(missionId)) {
@@ -321,7 +326,7 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 	}
 
 	@Override
-	public SearchGroup getGroupById(String groupId) {
+	public SearchGroup getGroupById(String groupId) throws IOException {
 		for (SearchMission mission : missionsList) {
 			for (SearchOperation op : mission.getOpsList()) {
 				for (SearchGroup group : op.getGroups()) {
@@ -332,5 +337,17 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 			}
 		}
 		return null;
+	}
+
+	@Override
+	public List<SearcherInfo> getUsersForSearchOp(String opId) throws IOException {
+		for (SearchMission mission : missionsList) {
+			for (SearchOperation op : mission.getOpsList()) {
+				if (op.getId().equals(opId)) {
+					return op.getSearchers();
+				}
+			}
+		}
+		return Collections.emptyList();
 	}
 }

@@ -9,6 +9,7 @@ import se.citerus.collabsearch.model.FileMetadata;
 import se.citerus.collabsearch.model.SearchGroup;
 import se.citerus.collabsearch.model.SearchMission;
 import se.citerus.collabsearch.model.SearchOperation;
+import se.citerus.collabsearch.model.SearcherInfo;
 import se.citerus.collabsearch.model.Status;
 import se.citerus.collabsearch.store.facades.SearchMissionDAO;
 import se.citerus.collabsearch.store.inmemory.SearchMissionDAOInMemory;
@@ -111,6 +112,14 @@ public class SearchMissionService { //TODO refactor into spring service
 			throw new Exception("Ingen gruppdata funnen");
 		}
 		return group;
+	}
+
+	public List<SearcherInfo> getListOfSearchers(String opId) throws Exception {
+		if (opId == null) {
+			throw new Exception("Inget sökoperationsid specifierat");
+		}
+		List<SearcherInfo> list = searchMissionDAL.getUsersForSearchOp(opId); 
+		return list;
 	}
 
 }

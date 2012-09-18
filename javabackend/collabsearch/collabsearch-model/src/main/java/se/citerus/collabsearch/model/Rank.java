@@ -73,6 +73,11 @@ public class Rank {
 		this.allowsParent = allowsParent;
 	}
 	
+	/**
+	 * Returns the localized rank name for the given rank.
+	 * @param rankTitle The internal enum representation of the rank.
+	 * @return A string containing the localized rank name.
+	 */
 	public static String getRankName(Title rankTitle) { //TODO replace with i18n
 		if (rankTitle == Title.OPERATIONAL_MANAGER) {	
 			return "Operativ chef";

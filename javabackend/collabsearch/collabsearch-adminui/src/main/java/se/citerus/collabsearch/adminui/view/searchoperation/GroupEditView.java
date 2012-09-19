@@ -7,6 +7,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+import javax.swing.table.TableStringConverter;
+
 import se.citerus.collabsearch.adminui.ViewSwitchController;
 import se.citerus.collabsearch.adminui.logic.SearchMissionService;
 import se.citerus.collabsearch.model.GroupNode;
@@ -17,6 +19,7 @@ import se.citerus.collabsearch.model.SearcherInfo;
 
 import com.vaadin.data.Container;
 import com.vaadin.data.Item;
+import com.vaadin.data.Property;
 import com.vaadin.data.util.BeanContainer;
 import com.vaadin.data.util.HierarchicalContainer;
 import com.vaadin.data.util.IndexedContainer;
@@ -25,11 +28,13 @@ import com.vaadin.event.DataBoundTransferable;
 import com.vaadin.event.Transferable;
 import com.vaadin.event.dd.DragAndDropEvent;
 import com.vaadin.event.dd.DropHandler;
+import com.vaadin.event.dd.TargetDetails;
 import com.vaadin.event.dd.acceptcriteria.AcceptAll;
 import com.vaadin.event.dd.acceptcriteria.AcceptCriterion;
 import com.vaadin.terminal.gwt.client.ui.dd.VerticalDropLocation;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
+import com.vaadin.ui.AbstractSelect.AbstractSelectTargetDetails;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.ComboBox;
@@ -38,6 +43,8 @@ import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Panel;
+import com.vaadin.ui.Table;
+import com.vaadin.ui.Table.TableDropCriterion;
 import com.vaadin.ui.Tree;
 import com.vaadin.ui.Window;
 import com.vaadin.ui.Tree.TreeDragMode;
@@ -56,6 +63,7 @@ public class GroupEditView extends CustomComponent {
 
 	private String groupId;
 	private String opId;
+	private Table searcherTable;
 
 	public GroupEditView(ViewSwitchController listener) {
 		mainLayout = new VerticalLayout();
@@ -70,6 +78,7 @@ public class GroupEditView extends CustomComponent {
 	private void buildMainLayout() {
 		mainLayout.setWidth("50%");
 		mainLayout.setMargin(false, false, false, true);
+		mainLayout.setSpacing(true);
 		
 		HorizontalLayout topLayout = new HorizontalLayout();
 		topLayout.setSpacing(true);
@@ -91,7 +100,14 @@ public class GroupEditView extends CustomComponent {
 		
 		Panel treePanel = new Panel();
 		
+		searcherTable = new Table();
+		searcherTable.setWidth("100%");
+		searcherTable.setSelectable(true);
+		searcherTable.setDragMode(Table.TableDragMode.ROW);
+		searcherTable.setDropHandler(new TableDragNDropHandler(groupTree, searcherTable));
+		
 		groupTree = new Tree();
+		groupTree.setWidth("100%");
 		groupTree.setSelectable(true);
 		groupTree.setMultiSelect(false);
 		
@@ -109,27 +125,26 @@ public class GroupEditView extends CustomComponent {
 			groupTree.expandItemsRecursively(it.next());
 		}
 		groupTree.setDragMode(TreeDragMode.NODE);
-		groupTree.setDropHandler(new TreeDragNDropHandler(groupTree, new HierarchicalContainer()));
+		groupTree.setDropHandler(new TreeDragNDropHandler(groupTree, searcherTable));
 				
 		treePanel.addComponent(groupTree);
 		mainLayout.addComponent(treePanel);
 		
-		//debug button, remove later
-		Button newSearcherButton = new Button("(debug) Ny sökare");
-		newSearcherButton.addListener(new ClickListener() {
+		mainLayout.addComponent(searcherTable);
+		
+		HorizontalLayout buttonLayout = new HorizontalLayout();
+		buttonLayout.setSpacing(true);
+		mainLayout.addComponent(buttonLayout);
+		mainLayout.setComponentAlignment(buttonLayout, Alignment.BOTTOM_RIGHT);
+		
+		Button cancelButton = new Button("Avbryta");
+		cancelButton.addListener(new ClickListener() {
 			@Override
 			public void buttonClick(ClickEvent event) {
-				Container container = groupTree.getContainerDataSource();
-				Item item = container.getItem(container.addItem());
-				Random r = new Random();
-				SearcherInfo searcher = new SearcherInfo(
-						"" + r.nextLong(), "Person " + r.nextInt(), "wad@dwa.awd", "123213");
-				GroupNode node = new GroupNode(searcher, Rank.Title.SEARCHER, null);
-				setupItemProperties(node, item);
+				listener.switchToSearchMissionListView();
 			}
 		});
-		mainLayout.addComponent(newSearcherButton);
-		//end of debug button
+		buttonLayout.addComponent(cancelButton);
 		
 		Button confirmButton = new Button("Spara");
 		confirmButton.addListener(new ClickListener() {
@@ -138,7 +153,24 @@ public class GroupEditView extends CustomComponent {
 				//TODO implement service/DAO methods
 			}
 		});
-		mainLayout.addComponent(confirmButton);
+		buttonLayout.addComponent(confirmButton);
+		
+		//debug button, remove later
+		Button newSearcherButton = new Button("(debug) Ny sökare");
+		newSearcherButton.addListener(new ClickListener() {
+			@Override
+			public void buttonClick(ClickEvent event) {
+				Container container = searcherTable.getContainerDataSource();
+				Item item = container.getItem(container.addItem());
+				Random r = new Random();
+				SearcherInfo searcher = new SearcherInfo(
+						"" + r.nextLong(), "Person " + r.nextInt(), "wad@dwa.awd", "123213");
+				GroupNode node = new GroupNode(searcher, null, null);
+				setupItemProperties(node, item);
+			}
+		});
+		mainLayout.addComponent(newSearcherButton);
+		//end of debug button
 		
 		setupContextMenu();
 		setupPopupWindows();
@@ -249,28 +281,62 @@ public class GroupEditView extends CustomComponent {
 
 	private class TreeDragNDropHandler implements DropHandler {
 		private final Tree tree;
+		private final Table table;
 
-		public TreeDragNDropHandler(Tree tree, HierarchicalContainer container) {
+		public TreeDragNDropHandler(Tree tree, Table table) {
 			this.tree = tree;
+			this.table = table;
 		}
 
 		public void drop(DragAndDropEvent dropEvent) {
             Transferable t = dropEvent.getTransferable();
 
-            if (t.getSourceComponent() != tree
+            Component sourceComponent = t.getSourceComponent();
+			if ((sourceComponent != tree && sourceComponent != table)
                     || !(t instanceof DataBoundTransferable)) {
                 return;
             }
+			
+			if (sourceComponent == tree) { //drop from tree to tree
+	            TargetDetails targetDetails = dropEvent.getTargetDetails();
+	            //check target type (tree or table)
+				TreeTargetDetails dropData = ((TreeTargetDetails) targetDetails);
+	            
+	            Object sourceItemId = ((DataBoundTransferable) t).getItemId();
+	            Object targetItemId = dropData.getItemIdOver();
+	            
+	            VerticalDropLocation location = dropData.getDropLocation();
+	            
+	            moveNode(sourceItemId, targetItemId, location);
+			} else if (sourceComponent == table) { //drop from table to tree
+				DataBoundTransferable t2 = (DataBoundTransferable) dropEvent
+                        .getTransferable();
+                Container sourceContainer = t2.getSourceContainer();
+                Object sourceItemId = t2.getItemId();
+                Item sourceItem = sourceContainer.getItem(sourceItemId);
+                String name = sourceItem.getItemProperty("name").toString();
+                String id = sourceItem.getItemProperty("id").getValue().toString();
 
-            TreeTargetDetails dropData = ((TreeTargetDetails) dropEvent
-                    .getTargetDetails());
+                AbstractSelectTargetDetails dropData = ((AbstractSelectTargetDetails) dropEvent
+                        .getTargetDetails());
+                Object targetItemId = dropData.getItemIdOver();
 
-            Object sourceItemId = ((DataBoundTransferable) t).getItemId();
-            Object targetItemId = dropData.getItemIdOver();
+                if (targetItemId != null && name != null && id != null) {
+                	Object newItemId = tree.addItem();
+                    Item item = tree.getItem(newItemId);
+                    item.getItemProperty("id").setValue(id);
+					item.getItemProperty("realname").setValue(name);
+					item.getItemProperty("name").setValue(name + 
+							" (" + Rank.getRankName(Rank.Title.SEARCHER) + ")");
+					item.getItemProperty("rank").setValue(Rank.Title.SEARCHER);
+                    tree.setParent(newItemId, targetItemId);
+                    tree.setChildrenAllowed(newItemId, true);
+                    
+                    tree.expandItem(targetItemId);
 
-            VerticalDropLocation location = dropData.getDropLocation();
-
-            moveNode(sourceItemId, targetItemId, location);
+                    sourceContainer.removeItem(sourceItemId);
+                }
+			}
 		}
 
 		private void moveNode(Object sourceItemId, Object targetItemId,
@@ -303,12 +369,33 @@ public class GroupEditView extends CustomComponent {
 			return AcceptAll.get();
 		}
 	}
+	
+	private class TableDragNDropHandler implements DropHandler {
+		private final Tree tree;
+		private final Table table;
+
+		public TableDragNDropHandler(Tree tree, Table table) {
+			this.tree = tree;
+			this.table = table;
+		}
+
+		@Override
+		public void drop(DragAndDropEvent event) {
+		}
+
+		@Override
+		public AcceptCriterion getAcceptCriterion() {
+			return AcceptAll.get();
+		}
+		
+	}
 
 	public void resetView(String groupId, String opId) {
 		this.groupId = groupId;
 		this.opId = opId;
 		
 		SearchGroup group = null;
+		List<SearcherInfo> searcherList = null;
 		
 		if (groupId == null) {
 			headerLabel.setValue("<h1><b>" + "Ny grupp" + "</b></h1>");
@@ -319,6 +406,7 @@ public class GroupEditView extends CustomComponent {
 			try {
 				service = new SearchMissionService();
 				group = service.getSearchGroup(groupId);
+				searcherList = service.getListOfSearchers(opId);
 			} catch (Exception e) {
 				e.printStackTrace();
 				listener.displayError("Fel", "Gruppens data kunde ej hämtas från servern");
@@ -352,14 +440,42 @@ public class GroupEditView extends CustomComponent {
 		//refresh tree data source
 		groupTree.setContainerDataSource(container);
 		groupTree.setItemCaptionPropertyId("name");
+		
+		IndexedContainer container2 = new IndexedContainer();
+		container2.addContainerProperty("id", String.class, "");
+		container2.addContainerProperty("name", String.class, "");
+		
+		for (SearcherInfo searcherInfo : searcherList) {
+			Item item = container2.getItem(container2.addItem());
+			item.getItemProperty("name").setValue(searcherInfo.getName());
+			item.getItemProperty("id").setValue(searcherInfo.getId());
+		}
+		
+		searcherTable.setContainerDataSource(container2);
+		searcherTable.setVisibleColumns(new Object[]{"name"});
+		searcherTable.setColumnHeaders(new String[]{"Namn"});
 	}
 
 	private void setupItemProperties(GroupNode node, Item item) {
 		SearcherInfo searcher = node.getSearcher();
-		item.getItemProperty("name").setValue(searcher.getName() + " (" + Rank.getRankName(node.getRank()) + ")");
-		item.getItemProperty("rank").setValue(node.getRank());
-		item.getItemProperty("id").setValue(searcher.getId());
-		item.getItemProperty("realname").setValue(searcher.getName());
+		Collection<?> itemPropertyIds = item.getItemPropertyIds();
+		for (Object itemPropId : itemPropertyIds) {
+			Property property = item.getItemProperty(itemPropId);
+			String idString = (String) itemPropId;
+			if ("name".equals(idString)) {
+				String rankString = "";
+				if (node.getRank() != null) {
+					rankString = " (" + Rank.getRankName(node.getRank()) + ")";
+				}
+				item.getItemProperty("name").setValue(searcher.getName() + rankString);
+			} else if ("rank".equals(idString)) {
+				item.getItemProperty("rank").setValue(node.getRank());
+			} else if ("id".equals(idString)) {
+				item.getItemProperty("id").setValue(searcher.getId());
+			} else if ("realname".equals(idString)) {
+				item.getItemProperty("realname").setValue(searcher.getName());
+			}
+		}
 	}
 
 	private int addChildrenToTree(int itemId, List<GroupNode> children, HierarchicalContainer container) {
@@ -384,7 +500,7 @@ public class GroupEditView extends CustomComponent {
 		}
 
 		protected void init(Component component, ClickListener listener) {
-			setWidth("100px");
+			setWidth("250px");
 			setHeight("100px");
 			setModal(true);
 			center();

@@ -15,6 +15,7 @@ import se.citerus.collabsearch.model.Rank.Title;
 import se.citerus.collabsearch.model.SearchGroup;
 import se.citerus.collabsearch.model.SearcherInfo;
 
+import com.vaadin.data.Container;
 import com.vaadin.data.Item;
 import com.vaadin.data.util.BeanContainer;
 import com.vaadin.data.util.HierarchicalContainer;
@@ -51,7 +52,6 @@ public class GroupEditView extends CustomComponent {
 	private final ViewSwitchController listener;
 	private Label headerLabel;
 	private Tree groupTree;
-	private PopupWindow chooseNewSearcherPopupWindow;
 	private PopupWindow rankChangePopupWindow;
 
 	private String groupId;
@@ -114,13 +114,13 @@ public class GroupEditView extends CustomComponent {
 		treePanel.addComponent(groupTree);
 		mainLayout.addComponent(treePanel);
 		
-		//XXX debug button, remove later
+		//debug button, remove later
 		Button newSearcherButton = new Button("(debug) Ny sökare");
 		newSearcherButton.addListener(new ClickListener() {
 			@Override
 			public void buttonClick(ClickEvent event) {
-				Object itemId = groupTree.addItem();
-				Item item = groupTree.getItem(itemId);
+				Container container = groupTree.getContainerDataSource();
+				Item item = container.getItem(container.addItem());
 				Random r = new Random();
 				SearcherInfo searcher = new SearcherInfo(
 						"" + r.nextLong(), "Person " + r.nextInt(), "wad@dwa.awd", "123213");
@@ -145,29 +145,61 @@ public class GroupEditView extends CustomComponent {
 	}
 
 	private void setupPopupWindows() {
+		//setup first window
 		rankChangePopupWindow = new PopupWindow("Välj ny rang");
-		rankChangePopupWindow.init(null, null);
 		
-		chooseNewSearcherPopupWindow = new PopupWindow("Lägg till ny sökare");
-		chooseNewSearcherPopupWindow.init(null, null);
-//		chooseNewSearcherPopupWindow.setLayoutContents();
-//		chooseNewSearcherPopupWindow.setConfirmButtonBehaviour();
+		final IndexedContainer container = new IndexedContainer();
+        container.addContainerProperty("name", String.class, "");
+        container.addContainerProperty("rank", Rank.Title.class, Rank.Title.SEARCHER);
+        Title[] values = Rank.Title.values();
+        for (Title title : values) {
+			Item item = container.getItem(container.addItem());
+			if (item != null) {
+				item.getItemProperty("name").setValue(Rank.getRankName(title));
+				item.getItemProperty("rank").setValue(title);
+			} else {
+				System.err.println("Error: item is null");
+			}
+		}
+        final ComboBox rankBox = new ComboBox(null, container);
+        rankBox.setItemCaptionPropertyId("name");
+        rankBox.setTextInputAllowed(false);
+        rankBox.setNullSelectionAllowed(false);
+        
+        ClickListener clickListener = new ClickListener() {
+        	@Override
+        	public void buttonClick(ClickEvent event) {
+        		Object rankItemId = rankBox.getValue();
+        		Object treeItemId = rankChangePopupWindow.getData();
+				Item treeItem = groupTree.getItem(treeItemId);
+				Item rankBoxItem = container.getItem(rankItemId);
+				if (treeItem != null && rankBoxItem != null) {
+					Rank.Title rankValue = (Title) rankBoxItem.getItemProperty("rank").getValue();
+					treeItem.getItemProperty("rank").setValue(rankValue);
+					String newName = treeItem.getItemProperty("realname").getValue().toString();
+					newName = newName + " (" + Rank.getRankName(rankValue) + ")";
+					treeItem.getItemProperty("name").setValue(newName);
+				} else {
+					System.err.println("Error: " + (treeItem == null ? "treeItem is null" : "") + 
+							" " + (rankBoxItem == null ? "rankBoxItem is null" : ""));
+				}
+        		GroupEditView.this.getWindow().removeWindow(rankChangePopupWindow);
+        	}
+        };
+        
+		rankChangePopupWindow.init(rankBox, clickListener);
 	}
 
 	private void setupContextMenu() {
-		final Action ADD_SEARCHER = new Action("Lägg till sökare");
 		final Action REMOVE_SEARCHER = new Action("Ta bort sökare");
 		final Action SET_RANK = new Action("Ändra rang på sökare");
 		
-		final Action[] itemMenu = new Action[]{ADD_SEARCHER, REMOVE_SEARCHER, SET_RANK}; 
-		final Action[] tableMenu = new Action[]{ADD_SEARCHER};
+		final Action[] itemMenu = new Action[]{SET_RANK, REMOVE_SEARCHER};
 		
 		groupTree.addActionHandler(new Action.Handler() {
 			@Override
 			public void handleAction(Action action, Object sender, Object target) {
-				if (action == ADD_SEARCHER) {
-					addSearcherToTable(target);
-				} else if (action == REMOVE_SEARCHER) {
+				if (action == REMOVE_SEARCHER) {
 					removeSearcherFromTable(target);
 				} else if (action == SET_RANK) {
 					changeSearcherRank(target);
@@ -179,15 +211,13 @@ public class GroupEditView extends CustomComponent {
 				if (groupTree.getItem(target) != null) {
 					return itemMenu;
 				}
-				return tableMenu;
+				return null;
 			}
 		});
 	}
 
 	private void changeSearcherRank(Object itemId) {
-		//TODO show popup window with ranks, return user choice
 		if (itemId != null) {
-//			rankChangePopupWindow.setItemId(itemId);
 			rankChangePopupWindow.setData(itemId);
 			getWindow().addWindow(rankChangePopupWindow);
 		}
@@ -195,15 +225,15 @@ public class GroupEditView extends CustomComponent {
 
 	private void removeSearcherFromTable(Object itemId) {
 		//TODO what should be done with child nodes? Let them be moved to root level (default) or remove from tree?
-		groupTree.removeItem(itemId);
+		groupTree.getContainerDataSource().removeItem(itemId);
 	}
 
 	private void addSearcherToTable(Object itemId) {
 		SearchMissionService service = null;
 		List<SearcherInfo> list = null;
 		try {
-			service = new SearchMissionService();
-			list = service.getListOfSearchers(opId);
+//			service = new SearchMissionService();
+//			list = service.getListOfSearchers(opId);
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -213,8 +243,8 @@ public class GroupEditView extends CustomComponent {
 		}
 		
 		//TODO choose one of the searchers to add to the table
-		chooseNewSearcherPopupWindow.setData(list);
-		getWindow().addWindow(chooseNewSearcherPopupWindow);
+//		chooseNewSearcherPopupWindow.setData(list);
+//		getWindow().addWindow(chooseNewSearcherPopupWindow);
 	}
 
 	private class TreeDragNDropHandler implements DropHandler {
@@ -252,6 +282,7 @@ public class GroupEditView extends CustomComponent {
                 if (container.setParent(sourceItemId, targetItemId)
                         && container.hasChildren(targetItemId)) {
                     container.moveAfterSibling(sourceItemId, null);
+                    tree.expandItem(targetItemId);
                 }
             } else if (location == VerticalDropLocation.TOP) {
                 Object parentId = container.getParent(targetItemId);
@@ -263,6 +294,7 @@ public class GroupEditView extends CustomComponent {
                 Object parentId = container.getParent(targetItemId);
                 if (container.setParent(sourceItemId, parentId)) {
                     container.moveAfterSibling(sourceItemId, targetItemId);
+                    tree.expandItem(parentId);
                 }
             }
 		}
@@ -304,6 +336,7 @@ public class GroupEditView extends CustomComponent {
 		container.addContainerProperty("name", String.class, "");
 		container.addContainerProperty("id", String.class, "");
 		container.addContainerProperty("rank", Rank.Title.class, Rank.Title.SEARCHER);
+		container.addContainerProperty("realname", String.class, "");
 		
 		if (group != null) {
 			int itemId = 0;
@@ -326,6 +359,7 @@ public class GroupEditView extends CustomComponent {
 		item.getItemProperty("name").setValue(searcher.getName() + " (" + Rank.getRankName(node.getRank()) + ")");
 		item.getItemProperty("rank").setValue(node.getRank());
 		item.getItemProperty("id").setValue(searcher.getId());
+		item.getItemProperty("realname").setValue(searcher.getName());
 	}
 
 	private int addChildrenToTree(int itemId, List<GroupNode> children, HierarchicalContainer container) {
@@ -343,21 +377,21 @@ public class GroupEditView extends CustomComponent {
 		return itemId;
 	}
 
-	private class PopupWindow extends Window {		
+	private class PopupWindow extends Window {	
+		
 		protected PopupWindow(String caption) {
 			this.setCaption(caption);
 		}
 
-		protected void init(IndexedContainer container2, ClickListener listener) {
-			this.setModal(true);
-			this.center();
+		protected void init(Component component, ClickListener listener) {
+			setWidth("100px");
+			setHeight("100px");
+			setModal(true);
+			center();
 			
 			VerticalLayout layout = (VerticalLayout) this.getContent();
 	        layout.setMargin(true);
 	        layout.setSpacing(true);
-	        
-	        Label popupMessage = new Label("...");
-	        layout.addComponent(popupMessage);
 	        
 	        HorizontalLayout buttonLayout = new HorizontalLayout();
 	        Button closePopupButton = new Button("Avbryt");
@@ -369,73 +403,23 @@ public class GroupEditView extends CustomComponent {
 	        buttonLayout.addComponent(okButton);
 	        buttonLayout.setComponentAlignment(okButton, Alignment.BOTTOM_RIGHT);
 	        
-	        //specific part #1 (edit rank)
-	        IndexedContainer container = new IndexedContainer();
-	        container.addContainerProperty("name", String.class, "");
-	        container.addContainerProperty("rank", Rank.Title.class, Rank.Title.SEARCHER);
-	        Title[] values = Rank.Title.values();
-	        for (Title title : values) {
-				Item item = container.getItem(container.addItem());
-				item.getItemProperty("name").setValue(Rank.getRankName(title));
-				item.getItemProperty("rank").setValue(title);
-			}
-	        final ComboBox rankBox = new ComboBox(null, container);
-	        rankBox.setItemCaptionPropertyId("name");
-	        rankBox.setTextInputAllowed(false);
-	        layout.addComponent(rankBox);
+	        layout.addComponent(component);
 	        
-	        okButton.addListener(new ClickListener() {
-	        	@Override
-	        	public void buttonClick(ClickEvent event) {
-	        		//specific listener
-	        		String chosenRank = rankBox.getValue().toString();
-	        		Object itemId2 = PopupWindow.this.getData();
-					Item item = groupTree.getItem(itemId2);
-	        		item.getItemProperty("rank").setValue(Rank.Title.valueOf(chosenRank));
-	        		(getParent()).removeWindow(PopupWindow.this);
-	        	}
-	        });
-	        //end of specific part
-	        
-	        //specific part #2 (add new searcher)
-	        IndexedContainer container3 = new IndexedContainer();
-	        container3.addContainerProperty("id", String.class, "");
-	        container3.addContainerProperty("name", String.class, "");
-	        List<SearcherInfo> list = (List<SearcherInfo>) PopupWindow.this.getData();
-	        for (SearcherInfo searcherInfo : list) {
-	        	Item item = container3.getItem(container3.addItem());
-	        	item.getItemProperty("id").setValue(searcherInfo.getId());
-	        	item.getItemProperty("name").setValue(searcherInfo.getName());
-			}
-	        final ComboBox userBox = new ComboBox(null, container3);
-	        userBox.setItemCaptionPropertyId("name");
-	        userBox.setTextInputAllowed(false);
-	        layout.addComponent(userBox);
-	        
-	        okButton.addListener(new ClickListener() {
-				@Override
-				public void buttonClick(ClickEvent event) {
-					Object itemId = userBox.getValue();
-					Item item = groupTree.getItem(groupTree.addItem());
-					item.getItemProperty("id").setValue("");
-					item.getItemProperty("name").setValue("");
-				}
-			});
-	        //end of specific part #2
+	        okButton.addListener(listener);
 	        
 	        closePopupButton.addListener(new Button.ClickListener() {
 				public void buttonClick(ClickEvent event) {
-					(getParent()).removeWindow(PopupWindow.this);
+					GroupEditView.this.getWindow().removeWindow(PopupWindow.this);
 				}
 			});
 	        
-			this.addListener(new Window.CloseListener() {
+			addListener(new Window.CloseListener() {
 	            public void windowClose(CloseEvent e) {
-	            	(getParent()).removeWindow(PopupWindow.this);
+	            	GroupEditView.this.getWindow().removeWindow(PopupWindow.this);
 	            }
 	        });
 	        
-	        this.addComponent(buttonLayout);
+			layout.addComponent(buttonLayout);
 		}
 	}
 	

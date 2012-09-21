@@ -1,13 +1,9 @@
 package se.citerus.collabsearch.adminui.view.searchoperation;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
-
-import javax.swing.table.TableStringConverter;
 
 import se.citerus.collabsearch.adminui.ViewSwitchController;
 import se.citerus.collabsearch.adminui.logic.SearchMissionService;
@@ -20,7 +16,6 @@ import se.citerus.collabsearch.model.SearcherInfo;
 import com.vaadin.data.Container;
 import com.vaadin.data.Item;
 import com.vaadin.data.Property;
-import com.vaadin.data.util.BeanContainer;
 import com.vaadin.data.util.HierarchicalContainer;
 import com.vaadin.data.util.IndexedContainer;
 import com.vaadin.event.Action;
@@ -28,13 +23,14 @@ import com.vaadin.event.DataBoundTransferable;
 import com.vaadin.event.Transferable;
 import com.vaadin.event.dd.DragAndDropEvent;
 import com.vaadin.event.dd.DropHandler;
+import com.vaadin.event.dd.DropTarget;
 import com.vaadin.event.dd.TargetDetails;
 import com.vaadin.event.dd.acceptcriteria.AcceptAll;
 import com.vaadin.event.dd.acceptcriteria.AcceptCriterion;
 import com.vaadin.terminal.gwt.client.ui.dd.VerticalDropLocation;
+import com.vaadin.ui.AbstractSelect.AbstractSelectTargetDetails;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
-import com.vaadin.ui.AbstractSelect.AbstractSelectTargetDetails;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.ComboBox;
@@ -44,17 +40,20 @@ import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.Table;
-import com.vaadin.ui.Table.TableDropCriterion;
 import com.vaadin.ui.Tree;
-import com.vaadin.ui.Window;
 import com.vaadin.ui.Tree.TreeDragMode;
 import com.vaadin.ui.Tree.TreeTargetDetails;
-import com.vaadin.ui.Window.CloseEvent;
 import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.Window;
 
 @SuppressWarnings("serial")
 public class GroupEditView extends CustomComponent {
 
+	private static final String REALNAME_PROPERTY_ID = "realname";
+	private static final String SID_PROPERTY_ID = "id";
+	private static final String NAME_PROPERTY_ID = "name";
+	private static final String RANK_PROPERTY_ID = "rank";
+	
 	private VerticalLayout mainLayout;
 	private final ViewSwitchController listener;
 	private Label headerLabel;
@@ -111,9 +110,9 @@ public class GroupEditView extends CustomComponent {
 		groupTree.setSelectable(true);
 		groupTree.setMultiSelect(false);
 		
-		groupTree.addContainerProperty("name", String.class, "");
-		groupTree.addContainerProperty("id", String.class, "");
-		groupTree.addContainerProperty("rank", Rank.Title.class, Rank.Title.SEARCHER);
+		groupTree.addContainerProperty(NAME_PROPERTY_ID, String.class, "");
+		groupTree.addContainerProperty(SID_PROPERTY_ID, String.class, "");
+		groupTree.addContainerProperty(RANK_PROPERTY_ID, Rank.Title.class, Rank.Title.SEARCHER);
 		
 		// Allow all nodes to have child nodes
 		for (Object itemId : groupTree.getItemIds()) {
@@ -181,20 +180,20 @@ public class GroupEditView extends CustomComponent {
 		rankChangePopupWindow = new PopupWindow("Välj ny rang");
 		
 		final IndexedContainer container = new IndexedContainer();
-        container.addContainerProperty("name", String.class, "");
-        container.addContainerProperty("rank", Rank.Title.class, Rank.Title.SEARCHER);
+        container.addContainerProperty(NAME_PROPERTY_ID, String.class, "");
+        container.addContainerProperty(RANK_PROPERTY_ID, Rank.Title.class, Rank.Title.SEARCHER);
         Title[] values = Rank.Title.values();
         for (Title title : values) {
 			Item item = container.getItem(container.addItem());
 			if (item != null) {
-				item.getItemProperty("name").setValue(Rank.getRankName(title));
-				item.getItemProperty("rank").setValue(title);
+				item.getItemProperty(NAME_PROPERTY_ID).setValue(Rank.getRankName(title));
+				item.getItemProperty(RANK_PROPERTY_ID).setValue(title);
 			} else {
 				System.err.println("Error: item is null");
 			}
 		}
         final ComboBox rankBox = new ComboBox(null, container);
-        rankBox.setItemCaptionPropertyId("name");
+        rankBox.setItemCaptionPropertyId(NAME_PROPERTY_ID);
         rankBox.setTextInputAllowed(false);
         rankBox.setNullSelectionAllowed(false);
         
@@ -206,11 +205,11 @@ public class GroupEditView extends CustomComponent {
 				Item treeItem = groupTree.getItem(treeItemId);
 				Item rankBoxItem = container.getItem(rankItemId);
 				if (treeItem != null && rankBoxItem != null) {
-					Rank.Title rankValue = (Title) rankBoxItem.getItemProperty("rank").getValue();
-					treeItem.getItemProperty("rank").setValue(rankValue);
-					String newName = treeItem.getItemProperty("realname").getValue().toString();
+					Rank.Title rankValue = (Title) rankBoxItem.getItemProperty(RANK_PROPERTY_ID).getValue();
+					treeItem.getItemProperty(RANK_PROPERTY_ID).setValue(rankValue);
+					String newName = treeItem.getItemProperty(REALNAME_PROPERTY_ID).getValue().toString();
 					newName = newName + " (" + Rank.getRankName(rankValue) + ")";
-					treeItem.getItemProperty("name").setValue(newName);
+					treeItem.getItemProperty(NAME_PROPERTY_ID).setValue(newName);
 				} else {
 					System.err.println("Error: " + (treeItem == null ? "treeItem is null" : "") + 
 							" " + (rankBoxItem == null ? "rankBoxItem is null" : ""));
@@ -257,26 +256,11 @@ public class GroupEditView extends CustomComponent {
 
 	private void removeSearcherFromTable(Object itemId) {
 		//TODO what should be done with child nodes? Let them be moved to root level (default) or remove from tree?
+		Item item = groupTree.getItem(itemId);
+		Item newItem = searcherTable.getItem(searcherTable.addItem());
+		newItem.getItemProperty(NAME_PROPERTY_ID).setValue(item.getItemProperty(REALNAME_PROPERTY_ID));
+		newItem.getItemProperty(SID_PROPERTY_ID).setValue(item.getItemProperty(SID_PROPERTY_ID));
 		groupTree.getContainerDataSource().removeItem(itemId);
-	}
-
-	private void addSearcherToTable(Object itemId) {
-		SearchMissionService service = null;
-		List<SearcherInfo> list = null;
-		try {
-//			service = new SearchMissionService();
-//			list = service.getListOfSearchers(opId);
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			if (service != null) {
-				service.cleanUp();
-			}
-		}
-		
-		//TODO choose one of the searchers to add to the table
-//		chooseNewSearcherPopupWindow.setData(list);
-//		getWindow().addWindow(chooseNewSearcherPopupWindow);
 	}
 
 	private class TreeDragNDropHandler implements DropHandler {
@@ -290,7 +274,7 @@ public class GroupEditView extends CustomComponent {
 
 		public void drop(DragAndDropEvent dropEvent) {
             Transferable t = dropEvent.getTransferable();
-
+            
             Component sourceComponent = t.getSourceComponent();
 			if ((sourceComponent != tree && sourceComponent != table)
                     || !(t instanceof DataBoundTransferable)) {
@@ -299,7 +283,6 @@ public class GroupEditView extends CustomComponent {
 			
 			if (sourceComponent == tree) { //drop from tree to tree
 	            TargetDetails targetDetails = dropEvent.getTargetDetails();
-	            //check target type (tree or table)
 				TreeTargetDetails dropData = ((TreeTargetDetails) targetDetails);
 	            
 	            Object sourceItemId = ((DataBoundTransferable) t).getItemId();
@@ -314,28 +297,36 @@ public class GroupEditView extends CustomComponent {
                 Container sourceContainer = t2.getSourceContainer();
                 Object sourceItemId = t2.getItemId();
                 Item sourceItem = sourceContainer.getItem(sourceItemId);
-                String name = sourceItem.getItemProperty("name").toString();
-                String id = sourceItem.getItemProperty("id").getValue().toString();
-
+                String name = sourceItem.getItemProperty(NAME_PROPERTY_ID).toString();
+                String id = sourceItem.getItemProperty(SID_PROPERTY_ID).getValue().toString();
+                
                 AbstractSelectTargetDetails dropData = ((AbstractSelectTargetDetails) dropEvent
                         .getTargetDetails());
+                VerticalDropLocation location = dropData.getDropLocation();
                 Object targetItemId = dropData.getItemIdOver();
-
-                if (targetItemId != null && name != null && id != null) {
-                	Object newItemId = tree.addItem();
-                    Item item = tree.getItem(newItemId);
-                    item.getItemProperty("id").setValue(id);
-					item.getItemProperty("realname").setValue(name);
-					item.getItemProperty("name").setValue(name + 
-							" (" + Rank.getRankName(Rank.Title.SEARCHER) + ")");
-					item.getItemProperty("rank").setValue(Rank.Title.SEARCHER);
-                    tree.setParent(newItemId, targetItemId);
-                    tree.setChildrenAllowed(newItemId, true);
-                    
-                    tree.expandItem(targetItemId);
-
-                    sourceContainer.removeItem(sourceItemId);
+                
+                //add item to tree, get itemid
+                Object newItemId = tree.addItem();
+                Item item = tree.getItem(newItemId);
+                if (item != null) {
+	                item.getItemProperty(SID_PROPERTY_ID).setValue(id);
+	                item.getItemProperty(REALNAME_PROPERTY_ID).setValue(name);
+	                item.getItemProperty(NAME_PROPERTY_ID).setValue(name + 
+	                		" (" + Rank.getRankName(Rank.Title.SEARCHER) + ")");
+	                item.getItemProperty(RANK_PROPERTY_ID).setValue(Rank.Title.SEARCHER);
+                } else {
+                	listener.displayError("Fel", "Sökaren kunde ej läggas till i gruppen");
+                	return;
                 }
+                
+                //add item to tree, get dropLocation and targetItemId, contact moveNode 
+                if (name != null && id != null) {
+                	moveNode(newItemId, targetItemId, location);
+                }
+                
+                tree.setChildrenAllowed(newItemId, true);
+                tree.expandItem(targetItemId);
+                sourceContainer.removeItem(sourceItemId);
 			}
 		}
 
@@ -362,6 +353,8 @@ public class GroupEditView extends CustomComponent {
                     container.moveAfterSibling(sourceItemId, targetItemId);
                     tree.expandItem(parentId);
                 }
+            } else if (location == null) {
+            	container.setParent(sourceItemId, null);
             }
 		}
 
@@ -380,14 +373,37 @@ public class GroupEditView extends CustomComponent {
 		}
 
 		@Override
-		public void drop(DragAndDropEvent event) {
+		public void drop(DragAndDropEvent dropEvent) {
+			Transferable t = dropEvent.getTransferable();
+
+            Component sourceComponent = t.getSourceComponent();
+			if ((sourceComponent != tree && sourceComponent != table)
+                    || !(t instanceof DataBoundTransferable)) {
+                return;
+            }
+			
+			if (sourceComponent == tree) {
+				AbstractSelectTargetDetails dropData = ((AbstractSelectTargetDetails) dropEvent
+                        .getTargetDetails());
+				Object sourceItemId = ((DataBoundTransferable) t).getItemId();
+				
+				Item oldItem = tree.getItem(sourceItemId);
+				
+				Object targetItemId = table.addItem();
+				Item item = table.getItem(targetItemId);
+				item.getItemProperty(NAME_PROPERTY_ID).setValue(
+						oldItem.getItemProperty(REALNAME_PROPERTY_ID).getValue());
+				item.getItemProperty(SID_PROPERTY_ID).setValue(
+						oldItem.getItemProperty(SID_PROPERTY_ID).getValue());
+				
+				tree.removeItem(sourceItemId);
+			}
 		}
 
 		@Override
 		public AcceptCriterion getAcceptCriterion() {
 			return AcceptAll.get();
 		}
-		
 	}
 
 	public void resetView(String groupId, String opId) {
@@ -421,38 +437,39 @@ public class GroupEditView extends CustomComponent {
 		//convert to HierarchicContainer format
 		HierarchicalContainer container = new HierarchicalContainer();
 		
-		container.addContainerProperty("name", String.class, "");
-		container.addContainerProperty("id", String.class, "");
-		container.addContainerProperty("rank", Rank.Title.class, Rank.Title.SEARCHER);
-		container.addContainerProperty("realname", String.class, "");
+		container.addContainerProperty(NAME_PROPERTY_ID, String.class, "");
+		container.addContainerProperty(SID_PROPERTY_ID, String.class, "");
+		container.addContainerProperty(RANK_PROPERTY_ID, Rank.Title.class, Rank.Title.SEARCHER);
+		container.addContainerProperty(REALNAME_PROPERTY_ID, String.class, "");
 		
-		if (group != null) {
-			int itemId = 0;
-			Item rootItem = container.addItem(itemId);
-			GroupNode rootNode = (GroupNode) group.getTreeRoot();
-			setupItemProperties(rootNode, rootItem);
-			
-			if (!rootNode.isLeaf()) {
-				itemId = addChildrenToTree(itemId, rootNode.getChildren(), container);
-			}
-		}
+		//XXX debug, kommentera in koden efter experimenten!
+//		if (group != null) {
+//			int itemId = 0;
+//			Item rootItem = container.addItem(itemId);
+//			GroupNode rootNode = (GroupNode) group.getTreeRoot();
+//			setupItemProperties(rootNode, rootItem);
+//			
+//			if (!rootNode.isLeaf()) {
+//				itemId = addChildrenToTree(itemId, rootNode.getChildren(), container);
+//			}
+//		}
 		
 		//refresh tree data source
 		groupTree.setContainerDataSource(container);
-		groupTree.setItemCaptionPropertyId("name");
+		groupTree.setItemCaptionPropertyId(NAME_PROPERTY_ID);
 		
 		IndexedContainer container2 = new IndexedContainer();
-		container2.addContainerProperty("id", String.class, "");
-		container2.addContainerProperty("name", String.class, "");
+		container2.addContainerProperty(SID_PROPERTY_ID, String.class, "");
+		container2.addContainerProperty(NAME_PROPERTY_ID, String.class, "");
 		
 		for (SearcherInfo searcherInfo : searcherList) {
 			Item item = container2.getItem(container2.addItem());
-			item.getItemProperty("name").setValue(searcherInfo.getName());
-			item.getItemProperty("id").setValue(searcherInfo.getId());
+			item.getItemProperty(NAME_PROPERTY_ID).setValue(searcherInfo.getName());
+			item.getItemProperty(SID_PROPERTY_ID).setValue(searcherInfo.getId());
 		}
 		
 		searcherTable.setContainerDataSource(container2);
-		searcherTable.setVisibleColumns(new Object[]{"name"});
+		searcherTable.setVisibleColumns(new Object[]{NAME_PROPERTY_ID});
 		searcherTable.setColumnHeaders(new String[]{"Namn"});
 	}
 
@@ -460,20 +477,20 @@ public class GroupEditView extends CustomComponent {
 		SearcherInfo searcher = node.getSearcher();
 		Collection<?> itemPropertyIds = item.getItemPropertyIds();
 		for (Object itemPropId : itemPropertyIds) {
-			Property property = item.getItemProperty(itemPropId);
+			//Property property = item.getItemProperty(itemPropId);
 			String idString = (String) itemPropId;
-			if ("name".equals(idString)) {
+			if (NAME_PROPERTY_ID.equals(idString)) {
 				String rankString = "";
 				if (node.getRank() != null) {
 					rankString = " (" + Rank.getRankName(node.getRank()) + ")";
 				}
-				item.getItemProperty("name").setValue(searcher.getName() + rankString);
-			} else if ("rank".equals(idString)) {
-				item.getItemProperty("rank").setValue(node.getRank());
-			} else if ("id".equals(idString)) {
-				item.getItemProperty("id").setValue(searcher.getId());
-			} else if ("realname".equals(idString)) {
-				item.getItemProperty("realname").setValue(searcher.getName());
+				item.getItemProperty(NAME_PROPERTY_ID).setValue(searcher.getName() + rankString);
+			} else if (RANK_PROPERTY_ID.equals(idString)) {
+				item.getItemProperty(RANK_PROPERTY_ID).setValue(node.getRank());
+			} else if (SID_PROPERTY_ID.equals(idString)) {
+				item.getItemProperty(SID_PROPERTY_ID).setValue(searcher.getId());
+			} else if (REALNAME_PROPERTY_ID.equals(idString)) {
+				item.getItemProperty(REALNAME_PROPERTY_ID).setValue(searcher.getName());
 			}
 		}
 	}

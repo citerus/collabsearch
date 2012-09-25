@@ -7,7 +7,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import se.citerus.collabsearch.model.SearchOperation;
-import se.citerus.collabsearch.model.SearchOperationIntro;
+import se.citerus.collabsearch.model.SearchOperationWrapper;
 import se.citerus.collabsearch.publicwebsite.logic.Model;
 
 import com.vaadin.ui.Window;
@@ -30,11 +30,11 @@ public class OpsListViewTest {
 
 	@Test
 	public void testGetAllOps() {
-		SearchOperationIntro[] ops = model.getAllSearchOps();
+		SearchOperationWrapper[] ops = model.getAllSearchOps();
 		assertNotNull(ops);
 		assertFalse(ops.length == 0);
 		
-		for (SearchOperationIntro intro : ops) {
+		for (SearchOperationWrapper intro : ops) {
 			assertNotNull(intro);
 			assertNotNull(intro.getId());
 			assertNotNull(intro.getTitle());

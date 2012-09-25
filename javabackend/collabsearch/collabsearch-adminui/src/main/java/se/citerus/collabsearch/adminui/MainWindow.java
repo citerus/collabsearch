@@ -21,6 +21,7 @@ import com.vaadin.terminal.Resource;
 import com.vaadin.terminal.gwt.server.WebApplicationContext;
 import com.vaadin.ui.LoginForm.LoginEvent;
 import com.vaadin.ui.LoginForm.LoginListener;
+import com.vaadin.ui.Window.ResizeEvent;
 import com.vaadin.ui.Window;
 
 @SuppressWarnings("serial")
@@ -41,6 +42,14 @@ public class MainWindow extends Window implements LoginListener, ViewSwitchContr
 
 	public MainWindow() {
 		setCaption("Collaborative Search - Inloggning");
+		
+		addListener(new ResizeListener() {
+			@Override
+			public void windowResized(ResizeEvent e) {
+				System.out.println("New height: " + e.getWindow().getBrowserWindowHeight() 
+						+ " New width: " + e.getWindow().getBrowserWindowWidth());
+			}
+		});
 	}
 	
 	public void initWindow() {

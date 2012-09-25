@@ -18,7 +18,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import se.citerus.collabsearch.model.SearchOperation;
-import se.citerus.collabsearch.model.SearchOperationIntro;
+import se.citerus.collabsearch.model.SearchOperationWrapper;
 import se.citerus.collabsearch.model.Status;
 import se.citerus.collabsearch.model.StringArrayWrapper;
 import se.citerus.collabsearch.model.interfaces.RestService;
@@ -40,8 +40,8 @@ public class RestServer implements RestService {
 	@GET
 	@Path("/getAllOps")
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-	public SearchOperationIntro[] getAllOps() {
-		SearchOperationIntro[] array = null;
+	public SearchOperationWrapper[] getAllOps() {
+		SearchOperationWrapper[] array = null;
 		try {
 			array = dao.getAllSearchOps();
 		} catch (IOException e) {
@@ -96,12 +96,12 @@ public class RestServer implements RestService {
 	@GET
 	@Path("/search")
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-	public SearchOperationIntro[] searchForOps(
+	public SearchOperationWrapper[] searchForOps(
 			@DefaultValue("") @QueryParam("title") String title, 
 			@DefaultValue("") @QueryParam("location") String location, 
 			@DefaultValue("") @QueryParam("startdate") String startDate,
 			@DefaultValue("") @QueryParam("enddate") String endDate) {
-		SearchOperationIntro[] array = null;
+		SearchOperationWrapper[] array = null;
 		try {
 			array = dao.getSearchOpsByFilter(title, location, startDate, endDate);
 		} catch (IOException e) {

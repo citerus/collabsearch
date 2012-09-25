@@ -1,7 +1,7 @@
 package se.citerus.collabsearch.publicwebsite;
 
 import se.citerus.collabsearch.model.SearchOperation;
-import se.citerus.collabsearch.model.SearchOperationIntro;
+import se.citerus.collabsearch.model.SearchOperationWrapper;
 
 public interface ControllerListener {
 	
@@ -17,11 +17,11 @@ public interface ControllerListener {
 	 * Queries for a list of short introductions to all available Search Operations.
 	 * @return introductory texts for all currently stored search operations.
 	 */
-	SearchOperationIntro[] getAllSearchOpsIntros();
+	SearchOperationWrapper[] getAllSearchOpsIntros();
 
-	SearchOperationIntro[] getSearchOpsByName(String searchString);
+	SearchOperationWrapper[] getSearchOpsByName(String searchString);
 
-	SearchOperationIntro[] getSearchOpsByFilter(String name, String location,
+	SearchOperationWrapper[] getSearchOpsByFilter(String name, String location,
 			long date, long endDate);
 
 	String[] getAllTitles();

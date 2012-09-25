@@ -9,7 +9,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author Ola Rende
  */
 @XmlRootElement
-public class SearchOperationIntro {
+public class SearchOperationWrapper {
 	private String id;
 	private String title;
 	private String descr;
@@ -17,11 +17,11 @@ public class SearchOperationIntro {
 	/**
 	 * Serialization ctor.
 	 */
-	public SearchOperationIntro() {
+	public SearchOperationWrapper() {
 		//intentionally left empty
 	}
 	
-	public SearchOperationIntro(String id, String title, String descr) {
+	public SearchOperationWrapper(String id, String title, String descr) {
 		this.id = id;
 		this.title = title;
 		this.descr = descr;

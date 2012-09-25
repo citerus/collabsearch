@@ -1,7 +1,7 @@
 package se.citerus.collabsearch.publicwebsite;
 
 import se.citerus.collabsearch.model.SearchOperation;
-import se.citerus.collabsearch.model.SearchOperationIntro;
+import se.citerus.collabsearch.model.SearchOperationWrapper;
 
 public class MockupController implements ControllerListener {
 		
@@ -26,17 +26,17 @@ public class MockupController implements ControllerListener {
 		}
 		
 		@Override
-		public SearchOperationIntro[] getAllSearchOpsIntros() {
+		public SearchOperationWrapper[] getAllSearchOpsIntros() {
 			return null;
 		}
 		
 		@Override
-		public SearchOperationIntro[] getSearchOpsByName(String searchString) {
+		public SearchOperationWrapper[] getSearchOpsByName(String searchString) {
 			return null;
 		}
 		
 		@Override
-		public SearchOperationIntro[] getSearchOpsByFilter(String name,
+		public SearchOperationWrapper[] getSearchOpsByFilter(String name,
 				String location, long date, long endDate) {
 			return null;
 		}

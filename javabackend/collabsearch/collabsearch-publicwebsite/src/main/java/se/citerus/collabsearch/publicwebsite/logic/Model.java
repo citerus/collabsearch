@@ -3,7 +3,7 @@ package se.citerus.collabsearch.publicwebsite.logic;
 import java.util.Date;
 
 import se.citerus.collabsearch.model.SearchOperation;
-import se.citerus.collabsearch.model.SearchOperationIntro;
+import se.citerus.collabsearch.model.SearchOperationWrapper;
 import se.citerus.collabsearch.model.Status;
 import se.citerus.collabsearch.model.StringArrayWrapper;
 import se.citerus.collabsearch.publicwebsite.ControllerListener;
@@ -35,7 +35,7 @@ public class Model {
 		}
 	}
 
-	public SearchOperationIntro[] getAllSearchOps(){
+	public SearchOperationWrapper[] getAllSearchOps(){
 		try {
 			return restClient.getAllOps();
 		} catch (Exception e) {
@@ -44,7 +44,7 @@ public class Model {
 		return null;
 	}
 
-	public SearchOperationIntro[] getSearchOpsByName(String opName){
+	public SearchOperationWrapper[] getSearchOpsByName(String opName){
 		try {
 			return restClient.searchForOps(opName, null, null, null);
 		} catch (Exception e) {
@@ -53,7 +53,7 @@ public class Model {
 		return null;
 	}
 
-	public SearchOperationIntro[] getSearchOpsByFilter(String opName,
+	public SearchOperationWrapper[] getSearchOpsByFilter(String opName,
 			String location, long startDate, long endDate){
 		try {
 			return restClient.searchForOps(opName, location, "" + startDate, "" + endDate);

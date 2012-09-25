@@ -1,7 +1,7 @@
 package se.citerus.collabsearch.publicwebsite;
 
 import se.citerus.collabsearch.model.SearchOperation;
-import se.citerus.collabsearch.model.SearchOperationIntro;
+import se.citerus.collabsearch.model.SearchOperationWrapper;
 import se.citerus.collabsearch.publicwebsite.logic.Model;
 import se.citerus.collabsearch.publicwebsite.view.View;
 
@@ -26,7 +26,7 @@ public class Controller implements ControllerListener {
 		model.submitSearchOpApplication(selectedOp, name, tele, email);
 	}
 
-	public SearchOperationIntro[] getAllSearchOpsIntros() {
+	public SearchOperationWrapper[] getAllSearchOpsIntros() {
 		return model.getAllSearchOps();
 	}
 
@@ -34,11 +34,11 @@ public class Controller implements ControllerListener {
 		view.showErrorMessage(errorHeader, errorMessage);
 	}
 
-	public SearchOperationIntro[] getSearchOpsByName(String searchString) {
+	public SearchOperationWrapper[] getSearchOpsByName(String searchString) {
 		return model.getSearchOpsByName(searchString);
 	}
 
-	public SearchOperationIntro[] getSearchOpsByFilter(String name,
+	public SearchOperationWrapper[] getSearchOpsByFilter(String name,
 			String location, long startDate, long endDate) {
 		return model.getSearchOpsByFilter(name, location, startDate, endDate);
 	}

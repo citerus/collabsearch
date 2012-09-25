@@ -6,7 +6,7 @@ import java.util.Date;
 import java.util.List;
 
 import se.citerus.collabsearch.model.SearchOperation;
-import se.citerus.collabsearch.model.SearchOperationIntro;
+import se.citerus.collabsearch.model.SearchOperationWrapper;
 import se.citerus.collabsearch.model.validator.PhoneNumberValidator;
 import se.citerus.collabsearch.publicwebsite.ControllerListener;
 
@@ -113,9 +113,9 @@ public class OperationsListView extends CustomComponent {
 		clearRowComponents();
 		
 		//requery db for searchops list
-		SearchOperationIntro[] opsArray = listener.getAllSearchOpsIntros();
+		SearchOperationWrapper[] opsArray = listener.getAllSearchOpsIntros();
 		for (int i = 0; i < opsArray.length; i++) {
-			SearchOperationIntro dto = opsArray[i];
+			SearchOperationWrapper dto = opsArray[i];
 			addRowComponent(dto.getId(), dto.getTitle(), dto.getDescr(), "Läs mer");
 		}
 	}
@@ -440,7 +440,7 @@ public class OperationsListView extends CustomComponent {
 		clearRowComponents();
 		
 		String searchString = (String) searchField.getValue();
-		SearchOperationIntro[] searchOpsArray = null;
+		SearchOperationWrapper[] searchOpsArray = null;
 		boolean searchStringOk = false;
 		if (searchString != null) {
 			if (!searchString.equals("")) {
@@ -454,7 +454,7 @@ public class OperationsListView extends CustomComponent {
 		}
 		if (searchOpsArray != null) {
 			for (int i = 0; i < searchOpsArray.length; i++) {
-				SearchOperationIntro opIntro = searchOpsArray[i];
+				SearchOperationWrapper opIntro = searchOpsArray[i];
 				addRowComponent(opIntro.getId(), opIntro.getTitle(), opIntro.getDescr(), "Läs mer");
 			}
 		} else {
@@ -491,14 +491,14 @@ public class OperationsListView extends CustomComponent {
 			closeAdvSearchPopup();
 			return;
 		}
-		SearchOperationIntro[] searchOpsArray = null;
+		SearchOperationWrapper[] searchOpsArray = null;
 		
 		if (allSearchFieldsValid(name, location, startDate)) {
 			searchOpsArray = listener.getSearchOpsByFilter(name, location, startDate, endDate);
 		}
 		if (searchOpsArray != null) {
 			for (int i = 0; i < searchOpsArray.length; i++) {
-				SearchOperationIntro opIntro = searchOpsArray[i];
+				SearchOperationWrapper opIntro = searchOpsArray[i];
 				addRowComponent(opIntro.getId(), opIntro.getTitle(), opIntro.getDescr(), "Läs mer");
 			}
 		} else {

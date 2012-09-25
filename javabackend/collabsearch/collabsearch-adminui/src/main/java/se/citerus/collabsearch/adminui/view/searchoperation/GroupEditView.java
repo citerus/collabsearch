@@ -1,7 +1,6 @@
 package se.citerus.collabsearch.adminui.view.searchoperation;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -12,6 +11,7 @@ import se.citerus.collabsearch.model.Rank;
 import se.citerus.collabsearch.model.Rank.Title;
 import se.citerus.collabsearch.model.SearchGroup;
 import se.citerus.collabsearch.model.SearcherInfo;
+import se.citerus.collabsearch.model.SearcherInfoWrapper;
 
 import com.vaadin.data.Container;
 import com.vaadin.data.Item;
@@ -52,7 +52,7 @@ public class GroupEditView extends CustomComponent {
 	private static final String SID_PROPERTY_ID = "id";
 	private static final String NAME_PROPERTY_ID = "name";
 	private static final String RANK_PROPERTY_ID = "rank";
-	
+
 	private VerticalLayout mainLayout;
 	private final ViewSwitchController listener;
 	private Label headerLabel;
@@ -75,7 +75,7 @@ public class GroupEditView extends CustomComponent {
 
 	private void buildMainLayout() {
 		mainLayout.setWidth("50%");
-		mainLayout.setHeight("100%");
+		mainLayout.setHeight("");
 		mainLayout.setMargin(false, false, false, true);
 		mainLayout.setSpacing(true);
 		
@@ -97,43 +97,39 @@ public class GroupEditView extends CustomComponent {
 		
 		mainLayout.addComponent(topLayout);
 		
-		final Panel treePanel = new Panel();
-		treePanel.setHeight("220px");
-		
 		searcherTable = new Table();
 		searcherTable.setWidth("100%");
 		searcherTable.setHeight("200px");
 		searcherTable.setSelectable(true);
 		searcherTable.setDragMode(Table.TableDragMode.ROW);
 		
-		groupTree = new Tree(); //TODO bug, grouptree has no vert scrollbar
-		groupTree.setWidth("100%");
-		groupTree.setHeight("170px");
-//		groupTree.setHeight("100%");
-//		groupTree.setSizeFull();
+		groupTree = new Tree("Sökgrupp");
+		groupTree.setSizeUndefined();
 		groupTree.setSelectable(true);
-		groupTree.setMultiSelect(false);
 		
 		groupTree.addContainerProperty(NAME_PROPERTY_ID, String.class, "");
 		groupTree.addContainerProperty(SID_PROPERTY_ID, String.class, "");
 		groupTree.addContainerProperty(RANK_PROPERTY_ID, Rank.Title.class, Rank.Title.SEARCHER);
 		
-		// Allow all nodes to have child nodes
-		for (Object itemId : groupTree.getItemIds()) {
-			groupTree.setChildrenAllowed(itemId, true);
-		}
-		
-		// Expand all nodes
-		for (Iterator<?> it = groupTree.rootItemIds().iterator(); it.hasNext();) {
-			groupTree.expandItemsRecursively(it.next());
-		}
 		groupTree.setDragMode(TreeDragMode.NODE);
 		
 		groupTree.setDropHandler(new TreeDragNDropHandler(groupTree, searcherTable));
 		searcherTable.setDropHandler(new TableDragNDropHandler(groupTree, searcherTable));
 		
-		treePanel.addComponent(groupTree);
-		mainLayout.addComponent(treePanel);
+		final VerticalLayout treePanelLayout = new VerticalLayout();
+		treePanelLayout.addComponent(groupTree);
+		final Panel treePanel = new Panel();
+		treePanel.setScrollable(true);
+		treePanel.setHeight("100%");
+		treePanel.setContent(treePanelLayout);
+		
+		HorizontalLayout testLayout = new HorizontalLayout();
+		testLayout.setWidth("100%");
+		testLayout.setHeight("200px");
+		testLayout.addComponent(treePanel);
+		
+		mainLayout.addComponent(testLayout);
+//		mainLayout.addComponent(treePanel);
 //		mainLayout.addComponent(groupTree);
 		
 		mainLayout.addComponent(searcherTable);
@@ -141,7 +137,8 @@ public class GroupEditView extends CustomComponent {
 		groupTree.addListener(new Tree.ExpandListener() {
 			@Override
 			public void nodeExpand(ExpandEvent event) {
-				treePanel.requestRepaintAll();
+				treePanelLayout.requestRepaint();
+				treePanel.requestRepaint();
 			}
 		});
 		
@@ -163,7 +160,23 @@ public class GroupEditView extends CustomComponent {
 		confirmButton.addListener(new ClickListener() {
 			@Override
 			public void buttonClick(ClickEvent event) {
-				//TODO implement service/DAO methods
+				if (validateGroup()) {
+					SearchMissionService service = null;
+					try {
+						service = new SearchMissionService();
+						SearchGroup group = null;
+						group = convertTreeToGroup();
+						service.addGroupToOperation(group);
+					} catch (Exception e) {
+						listener.displayError("Fel vid sparning", 
+							"Ett fel uppstod vid kommunikation med servern.");
+						e.printStackTrace();
+					} finally {
+						if (service != null) {
+							service.cleanUp();
+						}
+					}
+				}
 			}
 		});
 		buttonLayout.addComponent(confirmButton);
@@ -187,6 +200,71 @@ public class GroupEditView extends CustomComponent {
 		
 		setupContextMenu();
 		setupPopupWindows();
+	}
+
+	private boolean validateGroup() {
+		Collection<?> itemIds = groupTree.getItemIds();
+		if (itemIds.isEmpty()) {
+			//XXX are empty groups valid?
+			return true;
+		}
+		
+		boolean rootFound = false;
+		for (Object itemId : itemIds) {
+			Item item = groupTree.getItem(itemId);
+			Object parent = groupTree.getParent(itemId);
+			if (parent == null) {
+				if (rootFound == true) {
+					listener.displayError("Fel vid sparning", 
+						"Gruppen får endast ha ett högsta befäl.");
+					return false;
+				}
+				rootFound = true;
+			}
+			
+			Rank.Title rank = (Title) item.getItemProperty("rank").getValue();
+			if (rank == Title.SEARCHER) {
+				if (groupTree.hasChildren(itemId)) {
+					listener.displayError("Fel vid sparning", 
+						"Sökare får ej ha underordnade.");
+					return false;
+				}
+			} else if (rank == Title.ASSISTANT_PATROL_LEADER) {
+				if (groupTree.hasChildren(itemId)) {
+					Collection<?> children = groupTree.getChildren(itemId);
+					if (children.size() > 4) {
+						listener.displayError("Fel vid sparning", 
+							"En eller flera patrulledarassistener har " +
+							"5 eller fler sökare, max är 4.");
+						return false;
+					}
+				}
+			}
+		}
+		
+		//if the group structure is valid, accept the commit
+		return true;
+	}
+	
+	private SearchGroup convertTreeToGroup() {
+		//TODO finish method
+		SearchGroup group = null;
+		if (groupId == null) {
+			String name = nameField.getValue().toString();
+			group = new SearchGroup(null, name, null);
+		}
+		
+		GroupNode groupNode = null, parent = null;
+		String searcherId = null;
+		Collection<?> itemIds = groupTree.getItemIds();
+		for (Object itemId : itemIds) {
+			Item item = groupTree.getItem(itemId);
+			//parent = groupTree.getParent(itemId);
+			Title rank = (Title) item.getItemProperty("rank").getValue();
+			groupNode = new GroupNode(searcherId, rank, parent);
+			groupTree.getChildren(itemId);
+		}
+		return null;
 	}
 
 	private void setupPopupWindows() {
@@ -239,14 +317,15 @@ public class GroupEditView extends CustomComponent {
 		final Action REMOVE_SEARCHER = new Action("Ta bort sökare");
 		final Action SET_RANK = new Action("Ändra rang på sökare");
 		
-		final Action[] itemMenu = new Action[]{SET_RANK /*, REMOVE_SEARCHER*/}; //TODO remove remove button?
+		final Action[] itemMenu = new Action[]{SET_RANK};
 		
 		groupTree.addActionHandler(new Action.Handler() {
 			@Override
 			public void handleAction(Action action, Object sender, Object target) {
-				if (action == REMOVE_SEARCHER) {
-					removeSearcherFromTable(target);
-				} else if (action == SET_RANK) {
+//				if (action == REMOVE_SEARCHER) {
+//					removeSearcherFromTable(target);
+//				} else 
+				if (action == SET_RANK) {
 					changeSearcherRank(target);
 				}
 			}
@@ -469,17 +548,17 @@ public class GroupEditView extends CustomComponent {
 		container.addContainerProperty(RANK_PROPERTY_ID, Rank.Title.class, Rank.Title.SEARCHER);
 		container.addContainerProperty(REALNAME_PROPERTY_ID, String.class, "");
 		
-		//XXX debug, toggle comments after experimentation.
-//		if (group != null) {
-//			int itemId = 0;
-//			Item rootItem = container.addItem(itemId);
-//			GroupNode rootNode = (GroupNode) group.getTreeRoot();
-//			setupItemProperties(rootNode, rootItem);
-//			
-//			if (!rootNode.isLeaf()) {
-//				itemId = addChildrenToTree(itemId, rootNode.getChildren(), container);
-//			}
-//		}
+		//TODO replace test data with dedicated placeholder node
+		if (group != null) {
+			int itemId = 0;
+			Item rootItem = container.addItem(itemId);
+			GroupNode rootNode = (GroupNode) group.getTreeRoot();
+			setupItemProperties(rootNode, rootItem);
+			
+			if (!rootNode.isLeaf()) {
+				itemId = addChildrenToTree(itemId, rootNode.getChildren(), container);
+			}
+		}
 		
 		//refresh tree data source
 		groupTree.setContainerDataSource(container);
@@ -499,20 +578,21 @@ public class GroupEditView extends CustomComponent {
 		searcherTable.setVisibleColumns(new Object[]{NAME_PROPERTY_ID});
 		searcherTable.setColumnHeaders(new String[]{"Lediga sökare"});
 		
+		
+		
 		//XXX debug, remove later
 		Random r = new Random();
 		Container dataSource = searcherTable.getContainerDataSource();
 		for (int i = 0; i < 20; i++) {
 			Item item = dataSource.getItem(dataSource.addItem());
-			SearcherInfo searcher = new SearcherInfo(
-					"" + r.nextLong(), "Person " + r.nextInt(), "wad@dwa.awd", "123213");
-			GroupNode node = new GroupNode(searcher, null, null);
+			String searcherId = "" + r.nextLong();
+			GroupNode node = new GroupNode(searcherId, null, null);
 			setupItemProperties(node, item);
 		}
 	}
 
 	private void setupItemProperties(GroupNode node, Item item) {
-		SearcherInfo searcher = node.getSearcher();
+		String searcherId = node.getSearcherId();
 		Collection<?> itemPropertyIds = item.getItemPropertyIds();
 		for (Object itemPropId : itemPropertyIds) {
 			String idString = (String) itemPropId;
@@ -525,7 +605,7 @@ public class GroupEditView extends CustomComponent {
 			} else if (RANK_PROPERTY_ID.equals(idString)) {
 				item.getItemProperty(RANK_PROPERTY_ID).setValue(node.getRank());
 			} else if (SID_PROPERTY_ID.equals(idString)) {
-				item.getItemProperty(SID_PROPERTY_ID).setValue(searcher.getId());
+				item.getItemProperty(SID_PROPERTY_ID).setValue(searcherId);
 			} else if (REALNAME_PROPERTY_ID.equals(idString)) {
 				item.getItemProperty(REALNAME_PROPERTY_ID).setValue(searcher.getName());
 			}

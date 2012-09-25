@@ -16,7 +16,7 @@ import com.mongodb.Mongo;
 import com.mongodb.WriteResult;
 
 import se.citerus.collabsearch.model.SearchOperation;
-import se.citerus.collabsearch.model.SearchOperationIntro;
+import se.citerus.collabsearch.model.SearchOperationWrapper;
 import se.citerus.collabsearch.model.Status;
 import se.citerus.collabsearch.store.facades.SearchOperationDAO;
 
@@ -55,8 +55,8 @@ public class SearchOperationDAOMongoDB implements SearchOperationDAO {
 	}
 
 	@Override
-	public SearchOperationIntro[] getAllSearchOps() throws IOException {
-		SearchOperationIntro[] array = null;
+	public SearchOperationWrapper[] getAllSearchOps() throws IOException {
+		SearchOperationWrapper[] array = null;
 		try {
 			DBObject query = new BasicDBObject(); //query for all
 			DBObject limit = new BasicDBObject("_id", 1)
@@ -72,20 +72,20 @@ public class SearchOperationDAOMongoDB implements SearchOperationDAO {
 		return array;
 	}
 
-	private SearchOperationIntro[] makeOpsIntroArrayFromCursor(DBCursor cursor) {
-		SearchOperationIntro[] array;
+	private SearchOperationWrapper[] makeOpsIntroArrayFromCursor(DBCursor cursor) {
+		SearchOperationWrapper[] array;
 		int count = cursor.count();
 		if (count == 0) {
-			array = new SearchOperationIntro[0];
+			array = new SearchOperationWrapper[0];
 		} else {
-			array = new SearchOperationIntro[count];
+			array = new SearchOperationWrapper[count];
 			int i = 0;
 			while (cursor.hasNext()) {
 				BasicDBObject dbo = (BasicDBObject) cursor.next();
 				String id = dbo.getString("_id");
 				String title = dbo.getString("title");
 				String descr = dbo.getString("descr");
-				array[i] = new SearchOperationIntro(id, title, descr);
+				array[i] = new SearchOperationWrapper(id, title, descr);
 				i++;
 			}
 		}
@@ -137,9 +137,9 @@ public class SearchOperationDAOMongoDB implements SearchOperationDAO {
 	}
 
 	@Override
-	public SearchOperationIntro[] getSearchOpsByFilter(String title, String location, 
+	public SearchOperationWrapper[] getSearchOpsByFilter(String title, String location, 
 			String startDate, String endDate) throws IOException {
-		SearchOperationIntro[] array = null;
+		SearchOperationWrapper[] array = null;
 		if (title == null && location == null && startDate == null && endDate == null) {
 			throw new IOException("Inga söktermer angivna");
 		}

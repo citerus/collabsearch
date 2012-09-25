@@ -6,7 +6,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
 import se.citerus.collabsearch.model.SearchOperation;
-import se.citerus.collabsearch.model.SearchOperationIntro;
+import se.citerus.collabsearch.model.SearchOperationWrapper;
 import se.citerus.collabsearch.model.StringArrayWrapper;
 import se.citerus.collabsearch.model.interfaces.RestService;
 
@@ -31,10 +31,10 @@ public class RestClient implements RestService {
 		basicPath = service.path("rest").path("ws");
 	}
 
-	public SearchOperationIntro[] getAllOps() throws Exception {
-		SearchOperationIntro[] array;
+	public SearchOperationWrapper[] getAllOps() throws Exception {
+		SearchOperationWrapper[] array;
 		try {
-			array = basicPath.path("getAllOps").accept(MediaType.APPLICATION_JSON).get(SearchOperationIntro[].class);
+			array = basicPath.path("getAllOps").accept(MediaType.APPLICATION_JSON).get(SearchOperationWrapper[].class);
 		} catch (UniformInterfaceException e) {
 			e.printStackTrace();
 			throw new Exception(e.getMessage());
@@ -43,7 +43,7 @@ public class RestClient implements RestService {
 			throw new Exception(e.getMessage());
 		}
 		if (array == null) {
-			array = new SearchOperationIntro[0];
+			array = new SearchOperationWrapper[0];
 		}
 		return array;
 	}
@@ -89,9 +89,9 @@ public class RestClient implements RestService {
 		return null;
 	}
 
-	public SearchOperationIntro[] searchForOps(String title, String location,
+	public SearchOperationWrapper[] searchForOps(String title, String location,
 			String startDate, String endDate) throws Exception {
-		SearchOperationIntro[] array = null;
+		SearchOperationWrapper[] array = null;
 		MultivaluedMap<String, String> queryParams = new MultivaluedMapImpl();
 		if (title != null && !title.equals("")) {
 			queryParams.add("title", title);
@@ -109,7 +109,7 @@ public class RestClient implements RestService {
 			array = basicPath
 					.path("search")
 					.queryParams(queryParams)
-					.get(SearchOperationIntro[].class);
+					.get(SearchOperationWrapper[].class);
 		} catch (UniformInterfaceException e) {
 			if (e.getResponse().getStatus() != 404) {
 				e.printStackTrace();
@@ -120,7 +120,7 @@ public class RestClient implements RestService {
 			throw new Exception(e.getMessage());
 		}
 		if (array == null) {
-			array = new SearchOperationIntro[0];
+			array = new SearchOperationWrapper[0];
 		}
 		return array;
 	}

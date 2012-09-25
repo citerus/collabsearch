@@ -173,9 +173,9 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 	}
 	
 	private GroupNode addMockGroupTree(List<SearcherInfo> list) {
-		GroupNode root = new GroupNode(list.get(0), Rank.Title.OPERATIONAL_MANAGER, null);
-		root.addChild(new GroupNode(list.get(1), Rank.Title.ADMIN_MANAGER, root));
-		root.addChild(new GroupNode(list.get(2), Rank.Title.GROUP_MANAGER, root));
+		GroupNode root = new GroupNode(list.get(0).getId(), Rank.Title.OPERATIONAL_MANAGER, null);
+		root.addChild(new GroupNode(list.get(1).getId(), Rank.Title.ADMIN_MANAGER, root));
+		root.addChild(new GroupNode(list.get(2).getId(), Rank.Title.GROUP_MANAGER, root));
 		
 		return root;
 	}

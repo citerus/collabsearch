@@ -13,13 +13,12 @@ import javax.swing.tree.TreeNode;
 public class GroupNode implements TreeNode {
 	private int itemId; //mutable tree id
 	private Rank.Title rank;
-	
 	private GroupNode parent;
 	private ArrayList<GroupNode> children;
-	private final SearcherInfo searcher;
+	private final String searcherId;
 
-	public GroupNode(SearcherInfo searcher, Rank.Title rank, GroupNode parent) {
-		this.searcher = searcher;
+	public GroupNode(String searcherId, Rank.Title rank, GroupNode parent) {
+		this.searcherId = searcherId;
 		this.rank = rank;
 		
 //		if (rank.isAllowsParent()) {
@@ -94,8 +93,8 @@ public class GroupNode implements TreeNode {
 		this.rank = rank;
 	}
 	
-	public SearcherInfo getSearcher() {
-		return searcher;
+	public String getSearcherId() {
+		return searcherId;
 	}
 
 	private class ChildNodeEnum implements Enumeration<GroupNode> {

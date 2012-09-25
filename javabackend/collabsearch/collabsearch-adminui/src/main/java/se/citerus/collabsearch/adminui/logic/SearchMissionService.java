@@ -114,12 +114,21 @@ public class SearchMissionService { //TODO refactor into spring service
 		return group;
 	}
 
+	/**
+	 * Get a list of Searchers who have volunteered for the specified SearchOperation.
+	 * @param opId the id of the SearchOperation.
+	 * @return a list of SearcherInfo objects representing the searchers applied to the operation.
+	 * @throws Exception
+	 */
 	public List<SearcherInfo> getListOfSearchers(String opId) throws Exception {
 		if (opId == null) {
 			throw new Exception("Inget sökoperationsid specifierat");
 		}
 		List<SearcherInfo> list = searchMissionDAL.getUsersForSearchOp(opId); 
 		return list;
+	}
+
+	public void addGroupToOperation(SearchGroup group) {
 	}
 
 }

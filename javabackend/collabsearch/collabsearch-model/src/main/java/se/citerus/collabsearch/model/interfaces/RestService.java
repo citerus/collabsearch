@@ -3,7 +3,7 @@ package se.citerus.collabsearch.model.interfaces;
 import javax.ws.rs.core.Response;
 
 import se.citerus.collabsearch.model.SearchOperation;
-import se.citerus.collabsearch.model.SearchOperationIntro;
+import se.citerus.collabsearch.model.SearchOperationWrapper;
 import se.citerus.collabsearch.model.StringArrayWrapper;
 
 /**
@@ -12,13 +12,13 @@ import se.citerus.collabsearch.model.StringArrayWrapper;
  */
 public interface RestService {
 
-	public SearchOperationIntro[] getAllOps() throws Exception;
+	public SearchOperationWrapper[] getAllOps() throws Exception;
 
 	public SearchOperation getSearchOperationById(String name) throws Exception;
 
 	public Response applyForSearchOp(String opName, String name, String email, String tele) throws Exception;
 
-	public SearchOperationIntro[] searchForOps(String title, String location, String startDate, String endDate) throws Exception;
+	public SearchOperationWrapper[] searchForOps(String title, String location, String startDate, String endDate) throws Exception;
 	
 	public StringArrayWrapper[] getAllLocations() throws Exception;
 	

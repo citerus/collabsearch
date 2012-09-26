@@ -2,6 +2,7 @@ package se.citerus.collabsearch.store.facades;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import se.citerus.collabsearch.model.FileMetadata;
 import se.citerus.collabsearch.model.SearchGroup;
@@ -47,8 +48,12 @@ public interface SearchMissionDAO {
 
 	public void addSearchOperation(SearchOperation operation, String missionId) throws IOException;
 
-	public SearchGroup getGroupById(String groupId) throws IOException;
+	public SearchGroup getSearchGroup(String groupId) throws IOException;
 
-	public List<SearcherInfo> getUsersForSearchOp(String opId) throws IOException;
+	public Map<String, String> getUsersForSearchOp(String opId) throws IOException;
+
+	public void addSearchGroup(SearchGroup group, String opId) throws IOException;
+
+	public void editSearchGroup(SearchGroup group, String opId) throws IOException;
 	
 }

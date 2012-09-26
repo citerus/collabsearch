@@ -10,7 +10,6 @@ public class SearchGroup {
 	}
 
 	public SearchGroup(String id, String name, GroupNode treeRoot) {
-
 		this.id = id;
 		this.name = name;
 		this.treeRoot = treeRoot;

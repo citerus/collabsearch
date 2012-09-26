@@ -1,9 +1,16 @@
 package se.citerus.collabsearch.store.mongodb;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
+import se.citerus.collabsearch.model.FileMetadata;
+import se.citerus.collabsearch.model.SearchGroup;
+import se.citerus.collabsearch.model.SearchMission;
+import se.citerus.collabsearch.model.SearchOperation;
+import se.citerus.collabsearch.model.Status;
+import se.citerus.collabsearch.store.facades.SearchMissionDAO;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
@@ -11,15 +18,6 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.Mongo;
-import com.mongodb.MongoException;
-
-import se.citerus.collabsearch.model.FileMetadata;
-import se.citerus.collabsearch.model.SearchGroup;
-import se.citerus.collabsearch.model.SearchMission;
-import se.citerus.collabsearch.model.SearchOperation;
-import se.citerus.collabsearch.model.SearcherInfo;
-import se.citerus.collabsearch.model.Status;
-import se.citerus.collabsearch.store.facades.SearchMissionDAO;
 
 public class SearchMissionDAOMongoDB implements SearchMissionDAO {
 
@@ -119,13 +117,21 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO {
 	}
 
 	@Override
-	public SearchGroup getGroupById(String groupId) throws IOException {
+	public SearchGroup getSearchGroup(String groupId) throws IOException {
 		return null;
 	}
 
 	@Override
-	public List<SearcherInfo> getUsersForSearchOp(String opId) throws IOException {
+	public Map<String, String> getUsersForSearchOp(String opId) throws IOException {
 		return null;
+	}
+
+	@Override
+	public void addSearchGroup(SearchGroup group, String opId) {
+	}
+
+	@Override
+	public void editSearchGroup(SearchGroup group, String opId) {
 	}
 
 }

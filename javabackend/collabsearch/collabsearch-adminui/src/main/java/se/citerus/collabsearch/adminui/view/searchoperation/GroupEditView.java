@@ -1,8 +1,18 @@
 package se.citerus.collabsearch.adminui.view.searchoperation;
 
+import static org.apache.commons.collections15.CollectionUtils.collect;
+import static org.apache.commons.collections15.CollectionUtils.select;
+
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
+
+import org.apache.commons.collections15.CollectionUtils;
+import org.apache.commons.collections15.Predicate;
+import org.apache.commons.collections15.Transformer;
 
 import se.citerus.collabsearch.adminui.ViewSwitchController;
 import se.citerus.collabsearch.adminui.logic.SearchMissionService;
@@ -10,13 +20,12 @@ import se.citerus.collabsearch.model.GroupNode;
 import se.citerus.collabsearch.model.Rank;
 import se.citerus.collabsearch.model.Rank.Title;
 import se.citerus.collabsearch.model.SearchGroup;
-import se.citerus.collabsearch.model.SearcherInfo;
-import se.citerus.collabsearch.model.SearcherInfoWrapper;
 
 import com.vaadin.data.Container;
 import com.vaadin.data.Item;
 import com.vaadin.data.util.HierarchicalContainer;
 import com.vaadin.data.util.IndexedContainer;
+import com.vaadin.data.validator.StringLengthValidator;
 import com.vaadin.event.Action;
 import com.vaadin.event.DataBoundTransferable;
 import com.vaadin.event.Transferable;
@@ -38,6 +47,7 @@ import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.Table;
+import com.vaadin.ui.TextField;
 import com.vaadin.ui.Tree;
 import com.vaadin.ui.Tree.ExpandEvent;
 import com.vaadin.ui.Tree.TreeDragMode;
@@ -48,9 +58,13 @@ import com.vaadin.ui.Window;
 @SuppressWarnings("serial")
 public class GroupEditView extends CustomComponent {
 
+	/** The real name of the searcher, in the form {firstname} {lastname}. This is used in the table. */
 	private static final String REALNAME_PROPERTY_ID = "realname";
+	/** The storage id of the searcher. The same id is used in the tree and table. */
 	private static final String SID_PROPERTY_ID = "id";
+	/** The displayed name of the searcher. This is used in the tree. */
 	private static final String NAME_PROPERTY_ID = "name";
+	/** The rank of the searcher within this group. This is used in the tree. */
 	private static final String RANK_PROPERTY_ID = "rank";
 
 	private VerticalLayout mainLayout;
@@ -62,6 +76,7 @@ public class GroupEditView extends CustomComponent {
 	private String groupId;
 	private String opId;
 	private Table searcherTable;
+	private TextField nameField;
 
 	public GroupEditView(ViewSwitchController listener) {
 		mainLayout = new VerticalLayout();
@@ -97,6 +112,21 @@ public class GroupEditView extends CustomComponent {
 		
 		mainLayout.addComponent(topLayout);
 		
+		HorizontalLayout nameLayout = new HorizontalLayout();
+		nameLayout.setWidth("100%");
+		
+		Label nameLabel = new Label("Sökgruppsnamn");
+		nameLayout.addComponent(nameLabel);
+		
+		nameField = new TextField();
+		nameField.setWidth("50%");
+		nameField.addValidator(new StringLengthValidator(
+				"Namnet måste vara mellan 3-99 tecken", 3, 99, false));
+		nameField.setValidationVisible(true);
+		nameLayout.addComponent(nameField);
+		
+		mainLayout.addComponent(nameLayout);
+		
 		searcherTable = new Table();
 		searcherTable.setWidth("100%");
 		searcherTable.setHeight("200px");
@@ -110,6 +140,7 @@ public class GroupEditView extends CustomComponent {
 		groupTree.addContainerProperty(NAME_PROPERTY_ID, String.class, "");
 		groupTree.addContainerProperty(SID_PROPERTY_ID, String.class, "");
 		groupTree.addContainerProperty(RANK_PROPERTY_ID, Rank.Title.class, Rank.Title.SEARCHER);
+		groupTree.addContainerProperty(REALNAME_PROPERTY_ID, String.class, "");
 		
 		groupTree.setDragMode(TreeDragMode.NODE);
 		
@@ -123,14 +154,12 @@ public class GroupEditView extends CustomComponent {
 		treePanel.setHeight("100%");
 		treePanel.setContent(treePanelLayout);
 		
-		HorizontalLayout testLayout = new HorizontalLayout();
-		testLayout.setWidth("100%");
-		testLayout.setHeight("200px");
-		testLayout.addComponent(treePanel);
+		HorizontalLayout outerTreeLayout = new HorizontalLayout();
+		outerTreeLayout.setWidth("100%");
+		outerTreeLayout.setHeight("200px");
+		outerTreeLayout.addComponent(treePanel);
 		
-		mainLayout.addComponent(testLayout);
-//		mainLayout.addComponent(treePanel);
-//		mainLayout.addComponent(groupTree);
+		mainLayout.addComponent(outerTreeLayout);
 		
 		mainLayout.addComponent(searcherTable);
 		
@@ -160,23 +189,7 @@ public class GroupEditView extends CustomComponent {
 		confirmButton.addListener(new ClickListener() {
 			@Override
 			public void buttonClick(ClickEvent event) {
-				if (validateGroup()) {
-					SearchMissionService service = null;
-					try {
-						service = new SearchMissionService();
-						SearchGroup group = null;
-						group = convertTreeToGroup();
-						service.addGroupToOperation(group);
-					} catch (Exception e) {
-						listener.displayError("Fel vid sparning", 
-							"Ett fel uppstod vid kommunikation med servern.");
-						e.printStackTrace();
-					} finally {
-						if (service != null) {
-							service.cleanUp();
-						}
-					}
-				}
+				saveGroup();
 			}
 		});
 		buttonLayout.addComponent(confirmButton);
@@ -200,71 +213,6 @@ public class GroupEditView extends CustomComponent {
 		
 		setupContextMenu();
 		setupPopupWindows();
-	}
-
-	private boolean validateGroup() {
-		Collection<?> itemIds = groupTree.getItemIds();
-		if (itemIds.isEmpty()) {
-			//XXX are empty groups valid?
-			return true;
-		}
-		
-		boolean rootFound = false;
-		for (Object itemId : itemIds) {
-			Item item = groupTree.getItem(itemId);
-			Object parent = groupTree.getParent(itemId);
-			if (parent == null) {
-				if (rootFound == true) {
-					listener.displayError("Fel vid sparning", 
-						"Gruppen får endast ha ett högsta befäl.");
-					return false;
-				}
-				rootFound = true;
-			}
-			
-			Rank.Title rank = (Title) item.getItemProperty("rank").getValue();
-			if (rank == Title.SEARCHER) {
-				if (groupTree.hasChildren(itemId)) {
-					listener.displayError("Fel vid sparning", 
-						"Sökare får ej ha underordnade.");
-					return false;
-				}
-			} else if (rank == Title.ASSISTANT_PATROL_LEADER) {
-				if (groupTree.hasChildren(itemId)) {
-					Collection<?> children = groupTree.getChildren(itemId);
-					if (children.size() > 4) {
-						listener.displayError("Fel vid sparning", 
-							"En eller flera patrulledarassistener har " +
-							"5 eller fler sökare, max är 4.");
-						return false;
-					}
-				}
-			}
-		}
-		
-		//if the group structure is valid, accept the commit
-		return true;
-	}
-	
-	private SearchGroup convertTreeToGroup() {
-		//TODO finish method
-		SearchGroup group = null;
-		if (groupId == null) {
-			String name = nameField.getValue().toString();
-			group = new SearchGroup(null, name, null);
-		}
-		
-		GroupNode groupNode = null, parent = null;
-		String searcherId = null;
-		Collection<?> itemIds = groupTree.getItemIds();
-		for (Object itemId : itemIds) {
-			Item item = groupTree.getItem(itemId);
-			//parent = groupTree.getParent(itemId);
-			Title rank = (Title) item.getItemProperty("rank").getValue();
-			groupNode = new GroupNode(searcherId, rank, parent);
-			groupTree.getChildren(itemId);
-		}
-		return null;
 	}
 
 	private void setupPopupWindows() {
@@ -314,7 +262,6 @@ public class GroupEditView extends CustomComponent {
 	}
 
 	private void setupContextMenu() {
-		final Action REMOVE_SEARCHER = new Action("Ta bort sökare");
 		final Action SET_RANK = new Action("Ändra rang på sökare");
 		
 		final Action[] itemMenu = new Action[]{SET_RANK};
@@ -322,9 +269,6 @@ public class GroupEditView extends CustomComponent {
 		groupTree.addActionHandler(new Action.Handler() {
 			@Override
 			public void handleAction(Action action, Object sender, Object target) {
-//				if (action == REMOVE_SEARCHER) {
-//					removeSearcherFromTable(target);
-//				} else 
 				if (action == SET_RANK) {
 					changeSearcherRank(target);
 				}
@@ -345,15 +289,6 @@ public class GroupEditView extends CustomComponent {
 			rankChangePopupWindow.setData(itemId);
 			getWindow().addWindow(rankChangePopupWindow);
 		}
-	}
-
-	private void removeSearcherFromTable(Object itemId) {
-		//TODO what should be done with child nodes? Let them be moved to root level (default) or remove from tree?
-		Item item = groupTree.getItem(itemId);
-		Item newItem = searcherTable.getItem(searcherTable.addItem());
-		newItem.getItemProperty(NAME_PROPERTY_ID).setValue(item.getItemProperty(REALNAME_PROPERTY_ID));
-		newItem.getItemProperty(SID_PROPERTY_ID).setValue(item.getItemProperty(SID_PROPERTY_ID));
-		groupTree.getContainerDataSource().removeItem(itemId);
 	}
 
 	private class TreeDragNDropHandler implements DropHandler {
@@ -511,27 +446,162 @@ public class GroupEditView extends CustomComponent {
 			return AcceptAll.get();
 		}
 	}
+	
+	private void saveGroup() {
+		if (nameField.isValid() && validateGroupHierarchy()) {
+			SearchMissionService service = null;
+			try {
+				service = new SearchMissionService();
+				SearchGroup group = null;
+				group = convertTreeToGroup();
+				group.setName(nameField.getValue().toString());
+				group.setId(groupId);
+				service.addorModifySearchGroup(group, groupId, opId);
+			} catch (Exception e) {
+				listener.displayError("Fel vid sparning", 
+					"Ett fel uppstod vid kommunikation med servern.");
+				e.printStackTrace();
+			} finally {
+				if (service != null) {
+					service.cleanUp();
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Validates the structure of the group's hierarchy based on a set of rules.
+	 * @return true if the hierarchy is valid, else false.
+	 */
+	private boolean validateGroupHierarchy() {
+		Collection<?> itemIds = groupTree.getItemIds();
+		if (itemIds.isEmpty()) {
+			//TODO are empty groups valid?
+			return true;
+		}
+		
+		//do these rules need to be configurable?
+		boolean rootFound = false;
+		for (Object itemId : itemIds) {
+			Item item = groupTree.getItem(itemId);
+			Object parent = groupTree.getParent(itemId);
+			if (parent == null) {
+				if (rootFound == true) {
+					listener.displayError("Fel vid sparning", 
+						"Gruppen får endast ha ett högsta befäl.");
+					return false;
+				}
+				rootFound = true;
+			}
+			
+			Rank.Title rank = (Title) item.getItemProperty("rank").getValue();
+			if (rank == Title.SEARCHER) {
+				if (groupTree.hasChildren(itemId)) {
+					listener.displayError("Fel vid sparning", 
+						"Sökare får ej ha underordnade.");
+					return false;
+				}
+			} else if (rank == Title.ASSISTANT_PATROL_LEADER) {
+				if (groupTree.hasChildren(itemId)) {
+					Collection<?> children = groupTree.getChildren(itemId);
+					if (children.size() > 4) {
+						listener.displayError("Fel vid sparning", 
+							"En eller flera patrulledarassistener har " +
+							"5 eller fler sökare, max är 4.");
+						return false;
+					}
+				}
+			}
+		}
+		
+		//if the group structure is valid, accept the commit
+		return true;
+	}
+
+	private SearchGroup convertTreeToGroup() { //TODO finish method
+		//initialize group
+		String name = nameField.getValue().toString();
+		SearchGroup group = new SearchGroup(null, name, null);
+		Map<String, String> searchers = null;
+		SearchMissionService service = null;
+		try {
+			service = new SearchMissionService();
+			searchers = service.getSearchersByOp(opId);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (service != null) {
+				service.cleanUp();
+			}
+		}
+		
+		Collection<?> itemIds = groupTree.getItemIds();
+		Object rootItemId = CollectionUtils.find(itemIds, new Predicate<Object>() {
+			@Override
+			public boolean evaluate(Object itemId) {
+				if (groupTree.getParent(itemId) == null) {
+					return true;
+				}
+				return false;
+			}
+		});
+		
+		Item rootItem = groupTree.getItem(rootItemId);
+		GroupNode rootNode = new GroupNode(
+				rootItem.getItemProperty(SID_PROPERTY_ID).getValue().toString(), 
+				(Title) rootItem.getItemProperty(RANK_PROPERTY_ID).getValue(), 
+				null);
+		group.setTreeRoot(rootNode);
+		if (groupTree.hasChildren(rootItemId)) {
+			addNodeToGroup(groupTree.getChildren(rootItemId), rootNode);
+		}
+		
+		return group;
+	}
+
+	/**
+	 * Recursive method to iterate through the searcher tree in the 
+	 * UI and convert it to GroupNode's for storing in the database.
+	 * @param itemId 
+	 * @param childIds 
+	 * @param parentNode 
+	 */
+	private void addNodeToGroup(Collection<?> childIds, GroupNode parentNode) {
+		for (Object childItemId : childIds) {
+			Item item = groupTree.getItem(childItemId);
+			String id = (String) item.getItemProperty(SID_PROPERTY_ID).getValue();
+			Rank.Title rank = (Title) item.getItemProperty(RANK_PROPERTY_ID).getValue();
+			GroupNode newNode = new GroupNode(id, rank, parentNode);
+			parentNode.addChild(newNode);
+			if (groupTree.hasChildren(childItemId)) {
+				addNodeToGroup(groupTree.getChildren(childItemId), newNode);
+			}
+		}
+	}
 
 	public void resetView(String groupId, String opId) {
 		this.groupId = groupId;
 		this.opId = opId;
 		
 		SearchGroup group = null;
-		List<SearcherInfo> searcherList = null;
+		Map<String, String> searcherMap = null;
 		
 		if (groupId == null) {
 			headerLabel.setValue("<h1><b>" + "Ny grupp" + "</b></h1>");
 		} else {
 			headerLabel.setValue("<h1><b>" + "Redigera grupp" + "</b></h1>");
+			
 			//get group data from db
 			SearchMissionService service = null;
 			try {
 				service = new SearchMissionService();
 				group = service.getSearchGroup(groupId);
-				searcherList = service.getListOfSearchers(opId);
+				searcherMap = service.getSearchersByOp(opId);
+				
+				nameField.setValue(group.getName());
 			} catch (Exception e) {
 				e.printStackTrace();
-				listener.displayError("Fel", "Gruppens data kunde ej hämtas från servern");
+				listener.displayError("Fel", "Gruppdatat kunde ej hämtas från servern");
 				return;
 			} finally {
 				if (service != null) {
@@ -548,15 +618,24 @@ public class GroupEditView extends CustomComponent {
 		container.addContainerProperty(RANK_PROPERTY_ID, Rank.Title.class, Rank.Title.SEARCHER);
 		container.addContainerProperty(REALNAME_PROPERTY_ID, String.class, "");
 		
-		//TODO replace test data with dedicated placeholder node
+		//TODO replace test data with a single dedicated placeholder node. 
+		//This is a workaround to enlarge the dynamically sized tree component in an empty tree.
 		if (group != null) {
 			int itemId = 0;
 			Item rootItem = container.addItem(itemId);
 			GroupNode rootNode = (GroupNode) group.getTreeRoot();
-			setupItemProperties(rootNode, rootItem);
-			
-			if (!rootNode.isLeaf()) {
-				itemId = addChildrenToTree(itemId, rootNode.getChildren(), container);
+
+			if (rootNode != null) {
+				setupItemProperties(rootNode, rootItem, searcherMap);
+				
+				if (!rootNode.isLeaf()) {
+					itemId = addChildrenToTree(itemId, rootNode.getChildren(), 
+							container, searcherMap);
+				}
+			} else { //group is empty, add placeholder
+				searcherMap.put("PLACEHOLDER", "Lägg till sökare här");
+				rootNode = new GroupNode("PLACEHOLDER", Rank.Title.SEARCHER, null);
+				setupItemProperties(rootNode, rootItem, searcherMap);
 			}
 		}
 		
@@ -568,31 +647,67 @@ public class GroupEditView extends CustomComponent {
 		container2.addContainerProperty(SID_PROPERTY_ID, String.class, "");
 		container2.addContainerProperty(NAME_PROPERTY_ID, String.class, "");
 		
-		for (SearcherInfo searcherInfo : searcherList) {
-			Item item = container2.getItem(container2.addItem());
-			item.getItemProperty(NAME_PROPERTY_ID).setValue(searcherInfo.getName());
-			item.getItemProperty(SID_PROPERTY_ID).setValue(searcherInfo.getId());
+		for (Entry<String,String> entry : select(searcherMap.entrySet(), 
+				notIncluded(collect(groupTree.getItemIds(), asUserIds())))){
+			try {
+				Item item = container2.getItem(container2.addItem());
+				item.getItemProperty(SID_PROPERTY_ID).setValue(entry.getKey());
+				item.getItemProperty(NAME_PROPERTY_ID).setValue(entry.getValue());
+			} catch (Exception e) {
+				listener.displayError("Fel", 
+						"Ett fel uppstod vid skapandet av sökartabellen");
+				return;
+			}
 		}
 		
 		searcherTable.setContainerDataSource(container2);
 		searcherTable.setVisibleColumns(new Object[]{NAME_PROPERTY_ID});
 		searcherTable.setColumnHeaders(new String[]{"Lediga sökare"});
 		
-		
-		
-		//XXX debug, remove later
+		//XXX insert dummy data into searcherTable for debug purposes
 		Random r = new Random();
 		Container dataSource = searcherTable.getContainerDataSource();
 		for (int i = 0; i < 20; i++) {
 			Item item = dataSource.getItem(dataSource.addItem());
 			String searcherId = "" + r.nextLong();
+			searcherMap.put(searcherId, "Sökare " + r.nextInt());
 			GroupNode node = new GroupNode(searcherId, null, null);
-			setupItemProperties(node, item);
+			setupItemProperties(node, item, searcherMap);
 		}
 	}
 
-	private void setupItemProperties(GroupNode node, Item item) {
+	/**
+	 * Creates a list of itemIds from the table that 
+	 * does not include the itemIds found in the tree.
+	 * @param ids the list to look for the entry in.
+	 * @return true if the entry was not found in the list of ids.
+	 */
+	private Predicate<Entry<String, String>> notIncluded(
+			final Collection<String> ids) {
+		return new Predicate<Entry<String,String>>() {
+			@Override
+			public boolean evaluate(Entry<String,String> entry) {
+				return !ids.contains(entry.getKey());
+			}
+		};
+	}
+
+	/**
+	 * Transforms the tree's Searcher IDs from Objects to Strings.
+	 */
+	private Transformer<Object, String> asUserIds() {
+		return new Transformer<Object, String>(){
+			@Override
+			public String transform(Object o) {
+				return (String) groupTree.getItem(o).getItemProperty(SID_PROPERTY_ID).getValue();
+			}
+		};
+	}
+
+	private void setupItemProperties(GroupNode node, Item item, 
+			Map<String, String> searcherMap) {
 		String searcherId = node.getSearcherId();
+		String searcherName = searcherMap.get(searcherId);
 		Collection<?> itemPropertyIds = item.getItemPropertyIds();
 		for (Object itemPropId : itemPropertyIds) {
 			String idString = (String) itemPropId;
@@ -601,34 +716,38 @@ public class GroupEditView extends CustomComponent {
 				if (node.getRank() != null) {
 					rankString = " (" + Rank.getRankName(node.getRank()) + ")";
 				}
-				item.getItemProperty(NAME_PROPERTY_ID).setValue(searcher.getName() + rankString);
+				item.getItemProperty(NAME_PROPERTY_ID).setValue(searcherName + rankString);
 			} else if (RANK_PROPERTY_ID.equals(idString)) {
 				item.getItemProperty(RANK_PROPERTY_ID).setValue(node.getRank());
 			} else if (SID_PROPERTY_ID.equals(idString)) {
 				item.getItemProperty(SID_PROPERTY_ID).setValue(searcherId);
 			} else if (REALNAME_PROPERTY_ID.equals(idString)) {
-				item.getItemProperty(REALNAME_PROPERTY_ID).setValue(searcher.getName());
+				item.getItemProperty(REALNAME_PROPERTY_ID).setValue(searcherName);
 			}
 		}
 	}
 
 	/**
-	 * Traverses the GroupNode and it's children (depth first) in order to add them to the tree. The itemId of the first node is returned.
+	 * Traverses the GroupNode and it's children (depth first) in order 
+	 * to add them to the tree. The itemId of the first node is returned.
 	 * @param itemId the item id of the current node's parent.
 	 * @param children the children of the current node, if applicable.
 	 * @param container the container the node will be added to.
+	 * @param searcherMap the map containing key/value pairs of searchers' ids and names.
 	 * @return the item id of the added node.
 	 */
-	private int addChildrenToTree(int itemId, List<GroupNode> children, HierarchicalContainer container) {
+	private int addChildrenToTree(int itemId, List<GroupNode> children, 
+			HierarchicalContainer container, Map<String, String> searcherMap) {
 		int rootItemId = itemId;
 		for (int i = 0; i < children.size(); i++) {
 			itemId++;
 			GroupNode node = children.get(i);
 			if (!node.isLeaf()) {
-				itemId = addChildrenToTree(itemId, node.getChildren(), container);
+				itemId = addChildrenToTree(itemId, node.getChildren(), 
+						container, searcherMap);
 			}
 			Item item = container.addItem(itemId);
-			setupItemProperties(node, item);
+			setupItemProperties(node, item, searcherMap);
 			container.setParent(itemId, rootItemId);
 		}
 		return itemId;

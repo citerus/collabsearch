@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import se.citerus.collabsearch.model.FileMetadata;
@@ -19,7 +21,7 @@ import se.citerus.collabsearch.model.Zone;
 import se.citerus.collabsearch.store.facades.SearchMissionDAO;
 
 public class SearchMissionDAOInMemory implements SearchMissionDAO {
-
+	//TODO replace loops with Commons Collections methods
 	private static List<SearchMission> missionsList;
 	private static List<Status> statusList;
 	private List<Rank> ranksList;
@@ -326,7 +328,7 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 	}
 
 	@Override
-	public SearchGroup getGroupById(String groupId) throws IOException {
+	public SearchGroup getSearchGroup(String groupId) throws IOException {
 		for (SearchMission mission : missionsList) {
 			for (SearchOperation op : mission.getOpsList()) {
 				for (SearchGroup group : op.getGroups()) {
@@ -340,14 +342,48 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 	}
 
 	@Override
-	public List<SearcherInfo> getUsersForSearchOp(String opId) throws IOException {
+	public Map<String, String> getUsersForSearchOp(String opId) throws IOException {
 		for (SearchMission mission : missionsList) {
 			for (SearchOperation op : mission.getOpsList()) {
 				if (op.getId().equals(opId)) {
-					return op.getSearchers();
+					List<SearcherInfo> list = op.getSearchers();
+					Map<String, String> searcherMap = new HashMap<String, String>();
+					for (SearcherInfo searcher : list) {
+						searcherMap.put(searcher.getId(), searcher.getName());
+					}
+					return searcherMap;
 				}
 			}
 		}
-		return Collections.emptyList();
+		return Collections.emptyMap();
+	}
+
+	@Override
+	public void addSearchGroup(SearchGroup group, String opId) {
+		for (SearchMission mission : missionsList) {
+			for (SearchOperation op : mission.getOpsList()) {
+				if (op.getId().equals(opId)) {
+					op.getGroups().add(group);
+					return;
+				}
+			}
+		}
+	}
+
+	@Override
+	public void editSearchGroup(SearchGroup editedGroup, String opId) {
+		for (SearchMission mission : missionsList) {
+			for (SearchOperation op : mission.getOpsList()) {
+				if (op.getId().equals(opId)) {
+					List<SearchGroup> groups = op.getGroups();
+					for (int i = 0; i < groups.size(); i++) {
+						SearchGroup oldGroup = groups.get(i);
+						if (oldGroup.getId().equals(editedGroup.getId())) {
+							groups.set(i, editedGroup);
+						}
+					}
+				}
+			}
+		}
 	}
 }

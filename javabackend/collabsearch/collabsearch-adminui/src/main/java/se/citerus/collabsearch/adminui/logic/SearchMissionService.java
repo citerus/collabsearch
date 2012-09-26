@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import se.citerus.collabsearch.model.FileMetadata;
 import se.citerus.collabsearch.model.SearchGroup;
@@ -107,7 +108,7 @@ public class SearchMissionService { //TODO refactor into spring service
 		if (groupId == null) {
 			throw new Exception("Inget gruppid specifierat");
 		}
-		SearchGroup group = searchMissionDAL.getGroupById(groupId);
+		SearchGroup group = searchMissionDAL.getSearchGroup(groupId);
 		if (group == null) {
 			throw new Exception("Ingen gruppdata funnen");
 		}
@@ -120,15 +121,25 @@ public class SearchMissionService { //TODO refactor into spring service
 	 * @return a list of SearcherInfo objects representing the searchers applied to the operation.
 	 * @throws Exception
 	 */
-	public List<SearcherInfo> getListOfSearchers(String opId) throws Exception {
+	public Map<String, String> getSearchersByOp(String opId) throws Exception {
 		if (opId == null) {
 			throw new Exception("Inget sökoperationsid specifierat");
 		}
-		List<SearcherInfo> list = searchMissionDAL.getUsersForSearchOp(opId); 
-		return list;
+		Map<String, String> map = searchMissionDAL.getUsersForSearchOp(opId); 
+		return map;
 	}
 
-	public void addGroupToOperation(SearchGroup group) {
+	public void addorModifySearchGroup(SearchGroup group, String groupId, String opId) throws Exception {
+		if (opId == null || group == null) {
+			throw new Exception("Ingen sökgrupp eller sökoperationsid specifierat");
+		} else if (group.getId() == null || group.getName() == null) {
+			throw new Exception("Gruppen har ett ogiltigt namn eller id");
+		}
+		if (groupId == null) {
+			searchMissionDAL.addSearchGroup(group, opId);
+		} else {
+			searchMissionDAL.editSearchGroup(group, opId);
+		}
 	}
 
 }

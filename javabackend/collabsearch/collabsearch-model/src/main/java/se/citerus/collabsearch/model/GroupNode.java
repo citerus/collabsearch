@@ -16,6 +16,10 @@ public class GroupNode implements TreeNode {
 	private GroupNode parent;
 	private ArrayList<GroupNode> children;
 	private final String searcherId;
+	
+	public GroupNode() {
+		searcherId = null;
+	}
 
 	public GroupNode(String searcherId, Rank.Title rank, GroupNode parent) {
 		this.searcherId = searcherId;

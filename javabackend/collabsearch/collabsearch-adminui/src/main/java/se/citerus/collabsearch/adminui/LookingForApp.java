@@ -35,6 +35,8 @@ import com.vaadin.ui.Window;
  */
 @SuppressWarnings("serial")
 public class LookingForApp extends Application implements HttpServletRequestListener {
+	public static final boolean debugMode = true;
+	
 	private Window window;
 
 	private static ThreadLocal<LookingForApp> threadLocal = new ThreadLocal<LookingForApp>();

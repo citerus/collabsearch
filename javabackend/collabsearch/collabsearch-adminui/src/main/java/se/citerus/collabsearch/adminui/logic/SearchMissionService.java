@@ -30,7 +30,11 @@ public class SearchMissionService { //TODO refactor into spring service
 	}
 
 	public void cleanUp() {
-		searchMissionDAL.disconnect();
+		try {
+			searchMissionDAL.disconnect();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	public String endMission(String missionId) throws Exception {

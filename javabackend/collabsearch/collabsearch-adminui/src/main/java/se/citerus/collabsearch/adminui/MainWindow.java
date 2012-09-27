@@ -1,8 +1,5 @@
 package se.citerus.collabsearch.adminui;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-
 import se.citerus.collabsearch.adminui.logic.Authenticator;
 import se.citerus.collabsearch.adminui.view.login.LoginView;
 import se.citerus.collabsearch.adminui.view.login.WelcomeView;
@@ -15,13 +12,9 @@ import se.citerus.collabsearch.adminui.view.searchoperation.ZoneEditView;
 import se.citerus.collabsearch.adminui.view.usermgmt.UserEditView;
 import se.citerus.collabsearch.adminui.view.usermgmt.UserListView;
 
-import com.vaadin.service.ApplicationContext;
-import com.vaadin.terminal.ExternalResource;
-import com.vaadin.terminal.Resource;
 import com.vaadin.terminal.gwt.server.WebApplicationContext;
 import com.vaadin.ui.LoginForm.LoginEvent;
 import com.vaadin.ui.LoginForm.LoginListener;
-import com.vaadin.ui.Window.ResizeEvent;
 import com.vaadin.ui.Window;
 
 @SuppressWarnings("serial")
@@ -78,7 +71,7 @@ public class MainWindow extends Window implements LoginListener, ViewSwitchContr
 		WebApplicationContext context = (WebApplicationContext) getApplication().getContext();
 		int h = context.getBrowser().getScreenHeight();
 		int w = context.getBrowser().getScreenWidth();
-		System.out.println("H: " + h + " W:" + w);
+		System.out.println("Height:" + h + " Width:" + w);
 	}
 
 	@Override
@@ -200,4 +193,5 @@ public class MainWindow extends Window implements LoginListener, ViewSwitchContr
 		zoneEditView.resetView(zoneId, opName);
 		setContent(zoneEditView);
 	}
+
 }

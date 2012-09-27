@@ -103,7 +103,7 @@ public class UserDAOMongoDB implements UserDAO {
 			if (result != null) {
 				return result.getLong("salt");
 			} else {
-				throw new Exception("User not found");
+				throw new Exception("Användare ej funnen");
 			}
 		} catch (MongoException e) {
 			throw new IOException("Kontakt med databasen kunde ej upprättas", e);

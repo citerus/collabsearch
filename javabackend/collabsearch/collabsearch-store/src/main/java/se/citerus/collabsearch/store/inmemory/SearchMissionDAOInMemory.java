@@ -18,6 +18,7 @@ import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.SearcherInfo;
 import se.citerus.collabsearch.model.Status;
 import se.citerus.collabsearch.model.Zone;
+import se.citerus.collabsearch.model.exceptions.NotImplementedException;
 import se.citerus.collabsearch.store.facades.SearchMissionDAO;
 
 public class SearchMissionDAOInMemory implements SearchMissionDAO {
@@ -43,8 +44,8 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 		return missionsList;
 	}
 
-	public void disconnect() {
-		//nop
+	public void disconnect() throws Exception {
+		//need not be implemented for in-memory storage
 	}
 
 	public String endMission(String missionId) throws IOException {

@@ -15,7 +15,7 @@ public interface SearchMissionDAO {
 
 	public List<SearchMission> getAllSearchMissions() throws IOException;
 	
-	public void disconnect();
+	public void disconnect() throws Exception;
 
 	public String endMission(String missionId) throws IOException;
 	

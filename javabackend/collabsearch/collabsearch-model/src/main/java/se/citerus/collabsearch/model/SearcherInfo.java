@@ -6,6 +6,9 @@ public class SearcherInfo {
 	private String email;
 	private String tele;
 	
+	public SearcherInfo() {
+	}
+	
 	public SearcherInfo(String id, String name, String email, String tele) {
 		this.id = id;
 		this.name = name;

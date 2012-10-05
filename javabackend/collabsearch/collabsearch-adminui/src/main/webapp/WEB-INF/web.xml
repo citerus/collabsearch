@@ -14,6 +14,12 @@
             <param-name>application</param-name>
             <param-value>se.citerus.collabsearch.adminui.LookingForApp</param-value>
         </init-param>
+        <init-param>
+        	<description>
+        	Application widgetset</description>
+        	<param-name>widgetset</param-name>
+        	<param-value>se.citerus.collabsearch.adminui.widgetset.Collabsearch_adminuiWidgetset</param-value>
+        </init-param>
     </servlet>
     <servlet-mapping>
         <servlet-name>Vaadin Application Servlet</servlet-name>

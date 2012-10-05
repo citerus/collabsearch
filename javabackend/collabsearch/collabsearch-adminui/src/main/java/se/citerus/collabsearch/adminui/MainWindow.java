@@ -190,8 +190,8 @@ public class MainWindow extends Window implements LoginListener, ViewSwitchContr
 			zoneEditView = new ZoneEditView(this);
 			zoneEditView.init();
 		}
-		zoneEditView.resetView(zoneId, opName);
-		setContent(zoneEditView);
+		setContent(zoneEditView); //view must be attached to window before google maps init
+		zoneEditView.resetView(zoneId, opName); //google maps initialized here
 	}
 
 }

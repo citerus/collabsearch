@@ -7,8 +7,9 @@ import se.citerus.collabsearch.adminui.view.searchmission.FileUploadView;
 import se.citerus.collabsearch.adminui.view.searchmission.SearchMissionEditView;
 import se.citerus.collabsearch.adminui.view.searchmission.SearchMissionListView;
 import se.citerus.collabsearch.adminui.view.searchoperation.GroupEditView;
+import se.citerus.collabsearch.adminui.view.searchoperation.NewZoneView;
 import se.citerus.collabsearch.adminui.view.searchoperation.SearchOperationEditView;
-import se.citerus.collabsearch.adminui.view.searchoperation.ZoneEditView;
+import se.citerus.collabsearch.adminui.view.searchoperation.EditZoneView;
 import se.citerus.collabsearch.adminui.view.usermgmt.UserEditView;
 import se.citerus.collabsearch.adminui.view.usermgmt.UserListView;
 
@@ -31,7 +32,9 @@ public class MainWindow extends Window implements LoginListener, ViewSwitchContr
 	private SearchOperationEditView searchOperationEditView;
 	private FileUploadView fileMgmtView;
 	private GroupEditView groupEditView;
-	private ZoneEditView zoneEditView;
+	private EditZoneView editZoneView;
+	private NewZoneView newZoneView;
+
 
 	public MainWindow() {
 		setCaption("Collaborative Search - Inloggning");
@@ -185,13 +188,23 @@ public class MainWindow extends Window implements LoginListener, ViewSwitchContr
 	}
 
 	@Override
-	public void switchToZoneEditView(String zoneId, String opName) {
-		if (zoneEditView == null) {
-			zoneEditView = new ZoneEditView(this);
-			zoneEditView.init();
+	public void switchToEditZoneView(String zoneId, String opId) {
+		if (editZoneView == null) {
+			editZoneView = new EditZoneView(this);
+			editZoneView.init();
 		}
-		setContent(zoneEditView); //view must be attached to window before google maps init
-		zoneEditView.resetView(zoneId, opName); //google maps initialized here
+		setContent(editZoneView); //view must be attached to window before google maps init
+		editZoneView.resetView(zoneId, opId); //google maps initialized here
+	}
+
+	@Override
+	public void switchToNewZoneView(String opId) {
+		if (newZoneView == null) {
+			newZoneView = new NewZoneView(this);
+			newZoneView.init();
+		}
+		setContent(newZoneView);
+		newZoneView.resetView(opId);
 	}
 
 }

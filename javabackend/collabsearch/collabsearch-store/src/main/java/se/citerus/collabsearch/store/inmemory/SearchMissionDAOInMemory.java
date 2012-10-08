@@ -15,17 +15,21 @@ import se.citerus.collabsearch.model.Rank;
 import se.citerus.collabsearch.model.SearchGroup;
 import se.citerus.collabsearch.model.SearchMission;
 import se.citerus.collabsearch.model.SearchOperation;
+import se.citerus.collabsearch.model.SearchOperationWrapper;
+import se.citerus.collabsearch.model.SearchZone;
 import se.citerus.collabsearch.model.SearcherInfo;
 import se.citerus.collabsearch.model.Status;
 import se.citerus.collabsearch.model.Zone;
 import se.citerus.collabsearch.model.exceptions.NotImplementedException;
 import se.citerus.collabsearch.store.facades.SearchMissionDAO;
+import se.citerus.collabsearch.store.facades.SearchOperationDAO;
 
-public class SearchMissionDAOInMemory implements SearchMissionDAO {
+public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperationDAO {
 	//TODO replace loops with Commons Collections methods
 	private static List<SearchMission> missionsList;
 	private static List<Status> statusList;
 	private List<Rank> ranksList;
+	private List<Status> opStatusList;
 
 	public SearchMissionDAOInMemory() {
 		if (missionsList == null) {
@@ -37,6 +41,13 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 			addMockStatuses();
 //			addMockRanks(r);
 			addMockMissions(r);
+		}
+		
+		if (opStatusList == null) {
+			opStatusList = new ArrayList<Status>();
+			opStatusList.add(new Status(0, "Ej påbörjad", "beskrivning här"));
+			opStatusList.add(new Status(1, "Sökning inledd", "beskrivning här"));
+			opStatusList.add(new Status(2, "Sökning avslutad", "beskrivning här"));
 		}
 	}
 
@@ -302,6 +313,7 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 		return null;
 	}
 
+	@Override
 	public void editSearchOperation(SearchOperation operation, String opId) throws IOException {
 		for (SearchMission mission : missionsList) {
 			List<SearchOperation> opsList = mission.getOpsList();
@@ -386,5 +398,78 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO {
 				}
 			}
 		}
+	}
+	
+	@Override
+	public List<Status> getAllSearchOpStatuses() throws IOException {
+		if (opStatusList == null) {
+			throw new IOException("No statuses found");
+		}
+		return opStatusList;
+	}
+
+	@Override
+	public Status getSearchOpStatusByName(String opName) throws IOException {
+		for (Status status : opStatusList) {
+			if (status.getName().equals(opName)) {
+				return status;
+			}
+		}
+		throw new IOException("Status " + opName + " not found");
+	}
+
+	@Override
+	public String endOperation(String opId) {
+		return "Sökning avslutad";
+	}
+
+	@Override
+	public void deleteZone(String zoneId) {
+	}
+
+	@Override
+	public void deleteGroup(String groupId) {
+	}
+
+	@Override
+	public SearchOperationWrapper[] getAllSearchOps() throws IOException {
+		Random r = new Random();
+		SearchOperationWrapper[] array = new SearchOperationWrapper[3];
+		array[0] = new SearchOperationWrapper("" + r.nextLong(), "Sökoperation 1", "text...");
+		array[1] = new SearchOperationWrapper("" + r.nextLong(), "Sökoperation 2", "text...");
+		array[2] = new SearchOperationWrapper("" + r.nextLong(), "Sökoperation 3", "text...");
+		return array;
+	}
+
+	@Override
+	public SearchOperation getSearchOpById(String name) throws IOException {
+		return null;
+	}
+
+	@Override
+	public void assignUserToSearchOp(String opName, String name, String email,
+			String tele) throws IOException {
+	}
+
+	@Override
+	public String[] getAllOpLocations() {
+		return null;
+	}
+
+	@Override
+	public String[] getAllOpTitles() {
+		return null;
+	}
+
+	@Override
+	public SearchOperationWrapper[] getSearchOpsByFilter(String title,
+			String location, String startDate, String endDate)
+			throws IOException {
+		return null;
+	}
+
+	@Override
+	public SearchZone getZoneById(String zoneId) {
+		return null;
 	}
 }

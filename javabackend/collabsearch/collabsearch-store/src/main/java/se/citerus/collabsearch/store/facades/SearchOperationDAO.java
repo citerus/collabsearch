@@ -5,6 +5,7 @@ import java.util.List;
 
 import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.SearchOperationWrapper;
+import se.citerus.collabsearch.model.SearchZone;
 import se.citerus.collabsearch.model.Status;
 
 public interface SearchOperationDAO {
@@ -24,15 +25,9 @@ public interface SearchOperationDAO {
 
 	public Status getSearchOpStatusByName(String statusName) throws IOException;
 
-	public void disconnect() throws IOException;
-
 	public String endOperation(String opName);
 
-	public String getZoneIdByName(String zoneName, String opName);
-
 	public void deleteZone(String zoneId);
-
-	public String getGroupIdByName(String groupName, String opName);
 
 	public void deleteGroup(String groupId);
 
@@ -46,5 +41,7 @@ public interface SearchOperationDAO {
 	public String[] getAllOpLocations();
 	
 	public String[] getAllOpTitles();
+
+	public SearchZone getZoneById(String zoneId);
 	
 }

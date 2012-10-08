@@ -2,7 +2,6 @@ package se.citerus.collabsearch.api;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.Random;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -19,11 +18,10 @@ import javax.ws.rs.core.Response;
 
 import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.SearchOperationWrapper;
-import se.citerus.collabsearch.model.Status;
 import se.citerus.collabsearch.model.StringArrayWrapper;
 import se.citerus.collabsearch.model.interfaces.RestService;
 import se.citerus.collabsearch.store.facades.SearchOperationDAO;
-import se.citerus.collabsearch.store.mongodb.SearchOperationDAOMongoDB;
+import se.citerus.collabsearch.store.mongodb.SearchMissionDAOMongoDB;
 
 @Path("/ws")
 public class RestServer implements RestService {
@@ -31,7 +29,7 @@ public class RestServer implements RestService {
 	
 	public RestServer() {
 		try {
-			dao = new SearchOperationDAOMongoDB();
+			dao = new SearchMissionDAOMongoDB();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

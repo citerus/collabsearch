@@ -1,11 +1,13 @@
 package se.citerus.collabsearch.adminui.logic;
 
-import java.io.IOException;
 import java.util.List;
 
+import org.apache.commons.lang.Validate;
+
+import se.citerus.collabsearch.model.SearchZone;
 import se.citerus.collabsearch.model.Status;
 import se.citerus.collabsearch.store.facades.SearchOperationDAO;
-import se.citerus.collabsearch.store.inmemory.SearchOperationDAOInMemory;
+import se.citerus.collabsearch.store.inmemory.SearchMissionDAOInMemory;
 
 public class SearchOperationService { //TODO refactor into spring service
 	
@@ -14,7 +16,7 @@ public class SearchOperationService { //TODO refactor into spring service
 	public SearchOperationService() {
 		//TODO choose type of DAO by config file
 		//searchOperationDAO = new SearchOperationDAOMongoDB();
-		searchOperationDAO = new SearchOperationDAOInMemory();
+		searchOperationDAO = new SearchMissionDAOInMemory();
 	}
 	
 	public List<Status> getAllSearchOpStatuses() throws Exception {
@@ -26,11 +28,11 @@ public class SearchOperationService { //TODO refactor into spring service
 	}
 
 	public void cleanUp() {
-		try {
-			searchOperationDAO.disconnect();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+//		try {
+//			searchOperationDAO.disconnect();
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
 	}
 
 	public String endOperation(String opId) throws Exception {
@@ -51,5 +53,10 @@ public class SearchOperationService { //TODO refactor into spring service
 		if (groupId != null) {
 			searchOperationDAO.deleteGroup(groupId);
 		}
+	}
+
+	public SearchZone getZone(String zoneId) {
+		Validate.notNull(zoneId);
+		return searchOperationDAO.getZoneById(zoneId);
 	}
 }

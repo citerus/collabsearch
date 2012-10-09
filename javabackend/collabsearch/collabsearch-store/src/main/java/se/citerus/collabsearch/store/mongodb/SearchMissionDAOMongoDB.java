@@ -325,4 +325,13 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 		return null;
 	}
 
+	@Override
+	public void editZone(String zoneId, SearchZone zone) {
+	}
+
+	@Override
+	public String createZone(String opId, SearchZone zone) {
+		return null;
+	}
+
 }

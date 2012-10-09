@@ -1,5 +1,6 @@
 package se.citerus.collabsearch.store.inmemory;
 
+import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.sql.Date;
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import java.util.Random;
 import se.citerus.collabsearch.model.FileMetadata;
 import se.citerus.collabsearch.model.GroupNode;
 import se.citerus.collabsearch.model.Rank;
+import se.citerus.collabsearch.model.SearchFinding;
 import se.citerus.collabsearch.model.SearchGroup;
 import se.citerus.collabsearch.model.SearchMission;
 import se.citerus.collabsearch.model.SearchOperation;
@@ -19,8 +21,6 @@ import se.citerus.collabsearch.model.SearchOperationWrapper;
 import se.citerus.collabsearch.model.SearchZone;
 import se.citerus.collabsearch.model.SearcherInfo;
 import se.citerus.collabsearch.model.Status;
-import se.citerus.collabsearch.model.Zone;
-import se.citerus.collabsearch.model.exceptions.NotImplementedException;
 import se.citerus.collabsearch.store.facades.SearchMissionDAO;
 import se.citerus.collabsearch.store.facades.SearchOperationDAO;
 
@@ -151,10 +151,26 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 		groups.add(new SearchGroup("" + r.nextLong(), "Grupp B", addMockGroupTree(searchers)));
 		groups.add(new SearchGroup("" + r.nextLong(), "Grupp C", addMockGroupTree(searchers)));
 		
-		List<Zone> zones = new ArrayList<Zone>();
-		zones.add(new Zone("" + r.nextLong(), "Zon Alfa"));
-		zones.add(new Zone("" + r.nextLong(), "Zon Beta"));
-		zones.add(new Zone("" + r.nextLong(), "Zon Gamma"));
+		List<SearchZone> zones = new ArrayList<SearchZone>();
+		Point2D.Double[] points = new Point2D.Double[]{
+			new Point2D.Double(22.376060485839844,60.45886826784022),
+			new Point2D.Double(22.405071258544922,60.46001085184192),
+			new Point2D.Double(22.396144866943360,60.44672053773407),
+			new Point2D.Double(22.376060485839844,60.45886826784022)
+		};
+		SearchFinding[] findings = new SearchFinding[] {
+				new SearchFinding("" + r.nextLong(), 20.3, 60.4522, "Fynd 1", "Fotspår"),
+				new SearchFinding("" + r.nextLong(), 21.3, 60.4522, "Fynd 2", "Upphittat klädesplagg")
+		};
+		SearchZone zone = new SearchZone("Zon Alfa", 3, 22.3, 60.4522, points, findings);
+		zone.setId("" + r.nextLong());
+		zones.add(zone);
+		zone = new SearchZone("Zon Beta", 2, 23.3, 60.4522, points, findings);
+		zone.setId("" + r.nextLong());
+		zones.add(zone);
+		zone = new SearchZone("Zon Gamma", 1, 24.3, 60.4522, points, findings);
+		zone.setId("" + r.nextLong());
+		zones.add(zone);
 		
 		SearchOperation searchOp = new SearchOperation(
 				"" + r.nextLong() ,"Operation 1", "beskrivn...", 
@@ -470,6 +486,22 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 
 	@Override
 	public SearchZone getZoneById(String zoneId) {
+		return null;
+	}
+
+	@Override
+	public void editZone(String zoneId, SearchZone zone) {
+		for (SearchMission mission : missionsList) {
+			for (SearchOperation op : mission.getOpsList()) {
+				for (SearchZone existingZone : op.getZones()) {
+					
+				}
+			}
+		}
+	}
+
+	@Override
+	public String createZone(String opId, SearchZone zone) {
 		return null;
 	}
 }

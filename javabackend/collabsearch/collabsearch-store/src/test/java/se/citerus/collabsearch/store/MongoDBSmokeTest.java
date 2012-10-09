@@ -41,18 +41,14 @@ public class MongoDBSmokeTest extends TestCase {
 			DB db = mongo.getDB("lookingfor");
 			DBCollection userColl = db.getCollection("users");
 			DBCursor cursor = userColl.find();
-			if (cursor == null) {
-				fail("Empty user collection");
-			}
-			if (cursor.hasNext() == false) {
-				fail("Empty user collection");
-			}
+			assertNotNull("Empty user collection", cursor);
+			assertTrue("Empty user collection", cursor.hasNext());
 		} catch (UnknownHostException e) {
-			fail();
+			fail(e.getMessage());
 		} catch (MongoException e) {
 			fail("No connection to db, is the server running?");
 		} catch (Exception e) {
-			fail();
+			fail(e.getMessage());
 		} finally {
 			if (mongo != null) {
 				mongo.close();

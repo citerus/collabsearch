@@ -1,7 +1,8 @@
-package se.citerus.collabsearch.publicwebsite;
+package se.citerus.collabsearch.publicwebsite.mockups;
 
 import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.SearchOperationWrapper;
+import se.citerus.collabsearch.publicwebsite.ControllerListener;
 
 public class MockupController implements ControllerListener {
 		

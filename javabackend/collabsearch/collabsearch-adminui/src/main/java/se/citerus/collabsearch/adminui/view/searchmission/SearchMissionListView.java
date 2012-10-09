@@ -3,7 +3,6 @@ package se.citerus.collabsearch.adminui.view.searchmission;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
 import se.citerus.collabsearch.adminui.ViewSwitchController;
@@ -13,26 +12,19 @@ import se.citerus.collabsearch.model.FileMetadata;
 import se.citerus.collabsearch.model.SearchGroup;
 import se.citerus.collabsearch.model.SearchMission;
 import se.citerus.collabsearch.model.SearchOperation;
-import se.citerus.collabsearch.model.Zone;
+import se.citerus.collabsearch.model.SearchZone;
 
 import com.vaadin.data.Item;
-import com.vaadin.data.util.HierarchicalContainer;
 import com.vaadin.event.Action;
-import com.vaadin.event.ItemClickEvent;
 import com.vaadin.event.Action.Handler;
-import com.vaadin.service.ApplicationContext;
-import com.vaadin.terminal.ExternalResource;
 import com.vaadin.terminal.FileResource;
-import com.vaadin.terminal.gwt.server.WebApplicationContext;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
-import com.vaadin.ui.Component;
 import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.Link;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.Table.ColumnGenerator;
 import com.vaadin.ui.TreeTable;
@@ -377,9 +369,9 @@ public class SearchMissionListView extends CustomComponent {
 					setupItemProperties(zoneParentId, "Zoner", NodeType.ZONEROOT, null);
 					treeTable.setParent(zoneParentId, opItemId);
 					//add zones
-					for (Zone zone : op.getZones()) {
+					for (SearchZone zone : op.getZones()) {
 						itemId++;
-						setupItemProperties(itemId, zone.getName(), NodeType.ZONE, zone.getId());
+						setupItemProperties(itemId, zone.getTitle(), NodeType.ZONE, zone.getId());
 						treeTable.setParent(itemId, zoneParentId);
 						treeTable.setChildrenAllowed(itemId, false);
 					}

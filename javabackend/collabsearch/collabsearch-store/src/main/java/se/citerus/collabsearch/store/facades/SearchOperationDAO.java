@@ -43,5 +43,9 @@ public interface SearchOperationDAO {
 	public String[] getAllOpTitles();
 
 	public SearchZone getZoneById(String zoneId);
+
+	public void editZone(String zoneId, SearchZone zone);
+
+	public String createZone(String opId, SearchZone zone);
 	
 }

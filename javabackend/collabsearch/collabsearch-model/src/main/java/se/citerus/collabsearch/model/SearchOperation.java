@@ -17,7 +17,7 @@ public class SearchOperation {
 	
 	private List<SearcherInfo> searchers;
 	
-	private List<Zone> zones;
+	private List<SearchZone> zones;
 	private List<SearchGroup> groups;
 	
 	/**
@@ -36,7 +36,7 @@ public class SearchOperation {
 		this.location = location;
 		this.status = status;
 		
-		zones = new ArrayList<Zone>();
+		zones = new ArrayList<SearchZone>();
 		groups = new ArrayList<SearchGroup>();
 		searchers = new ArrayList<SearcherInfo>();
 	}
@@ -89,11 +89,11 @@ public class SearchOperation {
 		this.status = status;
 	}
 
-	public List<Zone> getZones() {
+	public List<SearchZone> getZones() {
 		return zones;
 	}
 
-	public void setZones(List<Zone> zones) {
+	public void setZones(List<SearchZone> zones) {
 		this.zones = zones;
 	}
 

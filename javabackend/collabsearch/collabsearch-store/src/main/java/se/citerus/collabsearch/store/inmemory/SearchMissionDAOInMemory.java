@@ -4,11 +4,15 @@ import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.sql.Date;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
 
 import se.citerus.collabsearch.model.FileMetadata;
 import se.citerus.collabsearch.model.GroupNode;
@@ -388,7 +392,7 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 	}
 
 	@Override
-	public void addSearchGroup(SearchGroup group, String opId) {
+	public void addSearchGroup(SearchGroup group, String opId) throws IOException {
 		for (SearchMission mission : missionsList) {
 			for (SearchOperation op : mission.getOpsList()) {
 				if (op.getId().equals(opId)) {
@@ -397,6 +401,7 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 				}
 			}
 		}
+		throw new IOException("Failed to add SearchGroup");
 	}
 
 	@Override
@@ -440,11 +445,37 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 	}
 
 	@Override
-	public void deleteZone(String zoneId) {
+	public void deleteZone(String zoneId) throws IOException {
+		for (SearchMission mission : missionsList) {
+			for (SearchOperation op : mission.getOpsList()) {
+				List<SearchZone> zones = op.getZones();
+				for (int i = 0; i < zones.size(); i++) {
+					SearchZone existingZone = zones.get(i);
+					if (existingZone.getId().equals(zoneId)) {
+						zones.remove(i);
+						return;
+					}
+				}
+			}
+		}
+		throw new IOException("Zone not found");
 	}
 
 	@Override
-	public void deleteGroup(String groupId) {
+	public void deleteGroup(String groupId) throws IOException {
+		for (SearchMission mission : missionsList) {
+			for (SearchOperation op : mission.getOpsList()) {
+				List<SearchGroup> groups = op.getGroups();
+				for (int i = 0; i < groups.size(); i++) {
+					SearchGroup group = groups.get(i);
+					if (group.getId().equals(groupId)) {
+						groups.remove(i);
+						return;
+					}
+				}
+			}
+		}
+		throw new IOException("Group not found");
 	}
 
 	@Override
@@ -458,23 +489,60 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 	}
 
 	@Override
-	public SearchOperation getSearchOpById(String name) throws IOException {
+	public SearchOperation getSearchOpById(String opId) throws IOException {
+		for (SearchMission mission : missionsList) {
+			for (SearchOperation op : mission.getOpsList()) {
+				if (op.getId().equals(opId)) {
+					return op;
+				}
+			}
+		}
 		return null;
 	}
 
 	@Override
-	public void assignUserToSearchOp(String opName, String name, String email,
+	public void assignUserToSearchOp(String opId, String name, String email,
 			String tele) throws IOException {
+		Random r = new Random();
+		for (SearchMission mission : missionsList) {
+			for (SearchOperation op : mission.getOpsList()) {
+				if (op.getId().equals(opId)) {
+					op.getSearchers().add(new SearcherInfo("" + r.nextInt(), name, email, tele));
+					return;
+				}
+			}
+		}
+		throw new IOException("SearchOperation not found");
 	}
 
 	@Override
 	public String[] getAllOpLocations() {
-		return null;
+		ArrayList<String> list = new ArrayList<String>();
+		for (SearchMission mission : missionsList) {
+			for (SearchOperation op : mission.getOpsList()) {
+				list.add(op.getLocation());
+			}
+		}
+		String[] arr = new String[list.size()];
+		for (int i = 0; i < arr.length; i++) {
+			arr[i] = list.get(i);
+		}
+		return arr;
 	}
 
 	@Override
 	public String[] getAllOpTitles() {
-		return null;
+		ArrayList<String> list = new ArrayList<String>();
+		for (SearchMission mission : missionsList) {
+			for (SearchOperation op : mission.getOpsList()) {
+				list.add(op.getTitle());
+			}
+		}
+		String[] arr = new String[list.size()];
+		for (int i = 0; i < arr.length; i++) {
+			arr[i] = list.get(i);
+		}
+		return arr;
 	}
 
 	@Override
@@ -485,23 +553,46 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 	}
 
 	@Override
-	public SearchZone getZoneById(String zoneId) {
-		return null;
-	}
-
-	@Override
-	public void editZone(String zoneId, SearchZone zone) {
+	public SearchZone getZoneById(String zoneId) throws IOException {
 		for (SearchMission mission : missionsList) {
 			for (SearchOperation op : mission.getOpsList()) {
-				for (SearchZone existingZone : op.getZones()) {
-					
+				for (SearchZone zone : op.getZones()) {
+					if (zone.getId().equals(zoneId)) {
+						return zone;
+					}
 				}
 			}
 		}
+		throw new IOException("Zone not found");
+	}
+
+	@Override
+	public void editZone(String zoneId, SearchZone zone) throws IOException {
+		for (SearchMission mission : missionsList) {
+			for (SearchOperation op : mission.getOpsList()) {
+				List<SearchZone> zones = op.getZones();
+				for (int i = 0; i < zones.size(); i++) {
+					SearchZone existingZone = zones.get(i);
+					if (existingZone.getId().equals(zoneId)) {
+						zones.set(i, zone);
+						return;
+					}
+				}
+			}
+		}
+		throw new IOException("Zone not found");
 	}
 
 	@Override
 	public String createZone(String opId, SearchZone zone) {
+		for (SearchMission mission : missionsList) {
+			for (SearchOperation op : mission.getOpsList()) {
+				if (op.getId().equals(opId)) {
+					zone.setId("" + new Random().nextInt());
+					op.getZones().add(zone);
+				}
+			}
+		}
 		return null;
 	}
 }

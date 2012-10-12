@@ -6,5 +6,8 @@ target/
 .cache
 .classpath
 
+# GWT
+.gwt
+
 # No temp files
 *~

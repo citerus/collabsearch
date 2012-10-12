@@ -66,31 +66,4 @@ public interface SearchMissionDAO {
 
 	public void editSearchGroup(SearchGroup group, String opId)
 			throws IOException;
-
-	public SearchOperationWrapper[] getAllSearchOps() throws IOException;
-
-	public List<Status> getAllSearchOpStatuses() throws IOException;
-
-	public Status getSearchOpStatusByName(String statusName) throws IOException;
-
-	public String endOperation(String opName);
-
-	public void deleteZone(String zoneId);
-
-	public void deleteGroup(String groupId);
-
-	public SearchOperation getSearchOpById(String name) throws IOException;
-
-	public void assignUserToSearchOp(String opName, String name, String email,
-			String tele) throws IOException;
-
-	public SearchOperationWrapper[] getSearchOpsByFilter(String title,
-			String location, String startDate, String endDate)
-			throws IOException;
-
-	public String[] getAllOpLocations();
-
-	public String[] getAllOpTitles();
-
-	public SearchZone getZoneById(String zoneId);
 }

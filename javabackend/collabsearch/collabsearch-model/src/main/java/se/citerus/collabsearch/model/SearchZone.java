@@ -10,6 +10,7 @@ public class SearchZone {
 	private double startingY;
 	private Double[] zoneCoords;
 	private SearchFinding[] findings;
+	private int zoomLevel;
 	
 	public SearchZone() {
 		zoneCoords = new Double[0];
@@ -24,6 +25,11 @@ public class SearchZone {
 		this.startingY = startingY;
 		this.zoneCoords = zoneCoords;
 		this.findings = findings;
+	}
+
+	public SearchZone(String title, int priority, Double[] points, int zoomLevel) {
+		this(title, priority, 0, 0, points, new SearchFinding[0]);
+		this.zoomLevel = zoomLevel;
 	}
 
 	public String getId() {
@@ -80,6 +86,14 @@ public class SearchZone {
 
 	public void setTitle(String title) {
 		this.title = title;
+	}
+
+	public int getZoomLevel() {
+		return zoomLevel;
+	}
+
+	public void setZoomLevel(int zoomLevel) {
+		this.zoomLevel = zoomLevel;
 	}
 	
 }

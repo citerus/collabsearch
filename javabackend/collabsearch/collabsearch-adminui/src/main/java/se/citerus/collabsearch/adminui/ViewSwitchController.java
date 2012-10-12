@@ -55,10 +55,10 @@ public interface ViewSwitchController {
 	
 	/**
 	 * Switches to the file mgmt view, with a reference to the mission whose files will be managed.
-	 * @param missionName the name of the Search Mission whose files will be managed.
+	 * @param missionId the id of the Search Mission whose files will be managed.
 	 * @param fileName 
 	 */
-	public void switchToFileUploadView(String missionName);
+	public void switchToFileUploadView(String missionId);
 	
 	public void switchToEditZoneView(String zoneId, String opId);
 	

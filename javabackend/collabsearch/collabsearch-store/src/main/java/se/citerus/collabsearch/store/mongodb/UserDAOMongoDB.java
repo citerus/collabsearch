@@ -18,6 +18,7 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
+import com.mongodb.MongoOptions;
 import com.mongodb.WriteResult;
 
 public class UserDAOMongoDB implements UserDAO {
@@ -34,7 +35,9 @@ public class UserDAOMongoDB implements UserDAO {
 
 	public UserDAOMongoDB() {
 		try {
-			mongo = new Mongo();
+			MongoOptions options = new MongoOptions();
+			options.socketTimeout = 5*60*1000;
+			mongo = new Mongo("localhost", options);
 			DB db = mongo.getDB("lookingfor");
 			userColl = db.getCollection("users");
 			authColl = db.getCollection("auth");

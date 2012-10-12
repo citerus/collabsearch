@@ -54,12 +54,12 @@ public class OperationsListView extends CustomComponent {
 	private DateField dateStartQueryField;
 	private Button advSearchCommitButton;
 	private DateField dateEndQueryField;
+	private Button refreshButton;
 
 	public OperationsListView(final ControllerListener listener) {
 		this.listener = listener;
 		mainLayout = new VerticalLayout();
 		setCompositionRoot(mainLayout);
-		
 	}
 	
 	public void init() {
@@ -106,6 +106,13 @@ public class OperationsListView extends CustomComponent {
 				closeAdvSearchPopup();
 			}
 		});
+		
+		refreshButton.addListener(new ClickListener() {
+			@Override
+			public void buttonClick(ClickEvent event) {
+				resetView();
+			}
+		});
 	}
 
 	public void resetView() {
@@ -113,10 +120,14 @@ public class OperationsListView extends CustomComponent {
 		clearRowComponents();
 		
 		//requery db for searchops list
-		SearchOperationWrapper[] opsArray = listener.getAllSearchOpsIntros();
-		for (int i = 0; i < opsArray.length; i++) {
-			SearchOperationWrapper dto = opsArray[i];
-			addRowComponent(dto.getId(), dto.getTitle(), dto.getDescr(), "Läs mer");
+		try {
+			SearchOperationWrapper[] opsArray = listener.getAllSearchOpsIntros();
+			for (int i = 0; i < opsArray.length; i++) {
+				SearchOperationWrapper dto = opsArray[i];
+				addRowComponent(dto.getId(), dto.getTitle(), dto.getDescr(), "Läs mer");
+			}
+		} catch (Exception e) {
+			listener.showErrorMessage("Kommunikationsfel", "Ett fel uppstod vid kommunikationen med servern");
 		}
 	}
 
@@ -139,6 +150,12 @@ public class OperationsListView extends CustomComponent {
 		
 		//build Advanced Search popup window
 		buildAdvSearchWindow();
+		
+		HorizontalLayout bottomLayout = new HorizontalLayout();
+		bottomLayout.setWidth("100%");
+		refreshButton = new Button("Uppdatera");
+		bottomLayout.addComponent(refreshButton);
+		mainLayout.addComponent(bottomLayout);
 	}
 
 	private void buildTopLayout() {

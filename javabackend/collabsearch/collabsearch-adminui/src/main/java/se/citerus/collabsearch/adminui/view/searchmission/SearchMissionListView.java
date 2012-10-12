@@ -451,7 +451,7 @@ public class SearchMissionListView extends CustomComponent {
 				break;
 			case ZONEROOT: 
 				id = getParentProperty(1, itemId, "id");
-				listener.switchToEditZoneView(null, id);
+				listener.switchToNewZoneView(id);
 				break;
 			case ZONE: 
 				id = getParentProperty(2, itemId, "id");

@@ -1,5 +1,7 @@
 package se.citerus.collabsearch.adminui.logic;
 
+import java.awt.geom.Point2D;
+import java.awt.geom.Point2D.Double;
 import java.util.List;
 
 import org.apache.commons.lang.Validate;
@@ -55,20 +57,51 @@ public class SearchOperationService { // TODO refactor into spring service
 		}
 	}
 
-	public SearchZone getZone(String zoneId) {
+	public SearchZone getZone(String zoneId) throws Exception {
 		Validate.notNull(zoneId);
 		return searchOperationDAO.getZoneById(zoneId);
 	}
 
-	public void editZone(String zoneId, SearchZone zone) {
-		Validate.notNull(zoneId);
-		Validate.notNull(zone);
-		searchOperationDAO.editZone(zoneId, zone);
-	}
-
-	public void createZone(String opId, SearchZone zone) {
+	public String createZone(String opId, SearchZone zone) throws Exception {
 		Validate.notNull(opId);
 		Validate.notNull(zone);
 		String zoneId = searchOperationDAO.createZone(opId, zone);
+		Validate.notNull(zoneId);
+		return zoneId;
+	}
+
+	public void editZone(String zoneId, String title, String prioStr, 
+			Double[] points, int zoomLevel) throws Exception {
+		validateZoneInput(zoneId, title, prioStr, points, zoomLevel);
+		
+		int priority = Integer.parseInt(prioStr);
+		
+		SearchZone zone = new SearchZone(title, priority, points, zoomLevel);
+		searchOperationDAO.editZone(zoneId, zone);
+	}
+
+	public void createZone(String opId, String title, String prioStr,
+			Double[] points, int zoomLevel) throws Exception {
+		validateZoneInput(opId, title, prioStr, points, zoomLevel);
+		
+		int priority = Integer.parseInt(prioStr);
+		
+		SearchZone zone = new SearchZone(title, priority, points, zoomLevel);
+		String createdZoneId = searchOperationDAO.createZone(opId, zone);
+		Validate.notNull(createdZoneId);
+	}
+	
+	private void validateZoneInput(String id, String title, String prioStr,
+			Double[] points, int zoomLevel) {
+		Validate.notNull(id);
+		Validate.notNull(title);
+		Validate.notEmpty(title);
+		Validate.notNull(prioStr);
+		Validate.notEmpty(prioStr);
+		Validate.notNull(points); //XXX should empty zones be allowed?
+		Validate.notEmpty(points);
+		if (zoomLevel <= 0) {
+			throw new IllegalArgumentException("Zoom level must be higher than zero.");
+		}
 	}
 }

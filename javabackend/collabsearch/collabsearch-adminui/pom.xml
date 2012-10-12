@@ -18,6 +18,7 @@
 		<vaadin.version>6.8.2</vaadin.version>
 		<gwt.version>2.3.0</gwt.version>
 		<gwt.plugin.version>2.2.0</gwt.plugin.version>
+		<port>8081</port>
 	</properties>
 
 	<build>
@@ -28,11 +29,11 @@
 				<configuration>
 					<source>1.6</source>
 					<target>1.6</target>
+<!-- 					<extraJvmArgs>-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=4000</extraJvmArgs> -->
 				</configuration>
 			</plugin>
 	
-			<!-- Compile custom GWT components or widget dependencies with the GWT 
-				compiler -->
+			<!-- Compile custom GWT components or widget dependencies with the GWT compiler -->
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>gwt-maven-plugin</artifactId>
@@ -45,12 +46,13 @@
 					<!-- On Mac running Snow Leopard, add "-d32" -->
 					<!-- This causes error messages (but build works) in phase "package": 
 						two processes would use the same debug port -->
-					<!--extraJvmArgs>-Xmx512M -Xss1024k -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8998</extraJvmArgs -->
+<!-- 					<extraJvmArgs>-Xmx512M -Xss1024k -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=4000</extraJvmArgs> -->
+<!-- 					<extraJvmArgs>-Xmx512M -Xss1024k -Xdebug -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=4000</extraJvmArgs> -->
 					<extraJvmArgs>-Xmx512M -Xss1024k</extraJvmArgs>
 					<runTarget>widgettest</runTarget>
 					<hostedWebapp>${project.build.directory}/${project.build.finalName}</hostedWebapp>
 					<noServer>true</noServer>
-					<port>8080</port>
+					<port>8081</port> <!-- default: 8080 -->
 					<compileReport>false</compileReport>
 				</configuration>
 				<executions>
@@ -116,6 +118,13 @@
 							<resourcesAsCSV>src/main/webapp,${project.build.directory}/${project.build.finalName}</resourcesAsCSV>
 						</baseResource>
 					</webAppConfig>
+<!-- 					<extraJvmArgs>-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=4000</extraJvmArgs> -->
+					<systemProperties>
+						<systemProperty>
+							<name>jetty.port</name>
+							<value>${port}</value>
+						</systemProperty>
+					</systemProperties>
 				</configuration>
 			</plugin>
 			
@@ -125,6 +134,8 @@
 				<artifactId>tomcat7-maven-plugin</artifactId>
 				<version>2.0</version>
 				<configuration>
+					<url>http://localhost:${port}</url>
+					<port>${port}</port>
 					<stopPort>9966</stopPort>
 					<stopKey>collabsearch-adminui</stopKey>
 					<!-- Redeploy every x seconds if changes are detected, 0 for no automatic 

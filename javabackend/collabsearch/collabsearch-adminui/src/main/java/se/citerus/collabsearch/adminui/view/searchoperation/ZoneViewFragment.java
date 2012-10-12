@@ -1,5 +1,8 @@
 package se.citerus.collabsearch.adminui.view.searchoperation;
 
+import org.vaadin.hezamu.googlemapwidget.GoogleMap;
+
+import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.HorizontalLayout;
@@ -16,12 +19,15 @@ import com.vaadin.ui.VerticalLayout;
 public class ZoneViewFragment extends CustomComponent {
 	
 	private VerticalLayout mainLayout;
-	protected VerticalLayout mapLayout;
+	private VerticalLayout mapLayout;
 	protected TextField nameField;
 	protected TextField prioField;
 	protected Button saveButton;
 	protected Button backButton;
 	protected Label headerLabel;
+	protected Button clearMapButton;
+	protected Button createZoneButton;
+	protected Button setMapCenterButton;
 
 	protected ZoneViewFragment() {
 		mainLayout = new VerticalLayout();
@@ -29,17 +35,18 @@ public class ZoneViewFragment extends CustomComponent {
 	}
 	
 	protected void init(String headerString) {
-		mainLayout.setSizeFull(); //unnecessary?
+		mainLayout.setSizeFull();
 		
 		HorizontalLayout topLayout = new HorizontalLayout();
-		topLayout.setWidth("100%");
-		
-		headerLabel = new Label(headerString);
-		headerLabel.setContentMode(Label.CONTENT_XHTML);
-		topLayout.addComponent(headerLabel);
+		topLayout.setSpacing(true);
 		
 		backButton = new Button("Tillbaka");
 		topLayout.addComponent(backButton);
+		topLayout.setComponentAlignment(backButton, Alignment.MIDDLE_LEFT);
+		
+		headerLabel = new Label("<h1><b>" + headerString + "</b></h1>");
+		headerLabel.setContentMode(Label.CONTENT_XHTML);
+		topLayout.addComponent(headerLabel);
 		
 		mainLayout.addComponent(topLayout);
 		
@@ -47,21 +54,40 @@ public class ZoneViewFragment extends CustomComponent {
 		mapLayout.setSizeFull();
 		mainLayout.addComponent(mapLayout);
 		
+		HorizontalLayout mapControlLayout = new HorizontalLayout();
+		mapControlLayout.setSpacing(true);
+		
+		clearMapButton = new Button("Rensa kartan");
+		mapControlLayout.addComponent(clearMapButton);
+		
+		createZoneButton = new Button("Bilda zon från markörer");
+		mapControlLayout.addComponent(createZoneButton);
+		
+		setMapCenterButton = new Button("Nuvarande vy som kartcentrum");
+		mapControlLayout.addComponent(setMapCenterButton);
+		
+		mainLayout.addComponent(mapControlLayout);
+		
 		HorizontalLayout textFieldLayout = new HorizontalLayout();
 		textFieldLayout.setWidth("100%");
+		textFieldLayout.setSpacing(true);
 		
 		nameField = new TextField("Titel");
 		textFieldLayout.addComponent(nameField);
+		textFieldLayout.setComponentAlignment(nameField, Alignment.MIDDLE_LEFT);
 		
 		prioField = new TextField("Prioritet");
 		textFieldLayout.addComponent(prioField);
-		
-		mainLayout.addComponent(textFieldLayout);
-		
-		HorizontalLayout bottomLayout = new HorizontalLayout();
-		bottomLayout.setWidth("100%");
+		textFieldLayout.setComponentAlignment(prioField, Alignment.MIDDLE_LEFT);
 		
 		saveButton = new Button("Spara");
-		bottomLayout.addComponent(saveButton);
+		textFieldLayout.addComponent(saveButton);
+		textFieldLayout.setComponentAlignment(saveButton, Alignment.MIDDLE_RIGHT);
+		
+		mainLayout.addComponent(textFieldLayout);
+	}
+	
+	protected void setMap(GoogleMap map) {
+		mapLayout.addComponent(map);
 	}
 }

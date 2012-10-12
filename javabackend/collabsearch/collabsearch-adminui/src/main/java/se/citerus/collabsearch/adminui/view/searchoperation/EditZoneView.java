@@ -2,13 +2,17 @@ package se.citerus.collabsearch.adminui.view.searchoperation;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Point2D.Double;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.Queue;
 import java.util.Random;
 
 import org.apache.commons.lang.Validate;
 import org.vaadin.hezamu.googlemapwidget.GoogleMap;
 import org.vaadin.hezamu.googlemapwidget.GoogleMap.MapClickListener;
+import org.vaadin.hezamu.googlemapwidget.GoogleMap.MapControl;
 import org.vaadin.hezamu.googlemapwidget.overlay.BasicMarker;
 import org.vaadin.hezamu.googlemapwidget.overlay.BasicMarkerSource;
 import org.vaadin.hezamu.googlemapwidget.overlay.InfoWindowTab;
@@ -39,14 +43,16 @@ import com.vaadin.ui.Component.Event;
 public class EditZoneView extends CustomComponent {
 	
 	private static final int DEFAULT_ZOOM = 9;
-	private VerticalLayout mainLayout;
 	private final ViewSwitchController listener;
+	private VerticalLayout mainLayout;
 	private GoogleMap map;
 	private String zoneId;
-	private String opId;
-	private double startingX;
-	private double startingY;
 	private ZoneViewFragment fragment;
+	
+	private List<Marker> markerPoints;
+	private Random random;
+	private Double mapCenter;
+	private int mapZoom;
 
 	public EditZoneView(ViewSwitchController listener) {
 		this.listener = listener;
@@ -55,37 +61,37 @@ public class EditZoneView extends CustomComponent {
 	}
 
 	public void init() {
-		mainLayout.setSizeFull();
+		mainLayout.setWidth("50%");
+		mainLayout.setHeight("100%");
+		mainLayout.setMargin(false, true, false, true);
 		
 		fragment = new ZoneViewFragment();
-		fragment.init("<h1>Redigera zon</h1>");
+		fragment.init("Redigera zon");
 		fragment.setHeight("10%");
 		mainLayout.addComponent(fragment);
+		
+		markerPoints = new ArrayList<Marker>();
 		
 		fragment.saveButton.addListener(new ClickListener() {
 			@Override
 			public void buttonClick(ClickEvent event) {
 				try {
 					SearchOperationService service = new SearchOperationService();
-					
-					SearchZone zone = new SearchZone();
-					zone.setId(zoneId);
+					String title = fragment.nameField.getValue().toString();
 					String prioStr = fragment.prioField.getValue().toString();
-					zone.setPriority(Integer.parseInt(prioStr));
-					zone.setStartingX(startingX);
-					zone.setStartingY(startingY);
+					Double[] points = null;
 					Collection<PolyOverlay> overlays = map.getOverlays();
-					if (!overlays.isEmpty()) {
+					if (overlays != null && !overlays.isEmpty()) {
 						PolyOverlay overlay = overlays.iterator().next();
-						zone.setZoneCoords(overlay.getPoints());
+						points = overlay.getPoints();
 					}
-					service.editZone(zoneId, zone);
+					service.editZone(zoneId, title, prioStr, points, map.getZoom());
 					
 					listener.switchToSearchMissionListView();
 				} catch (Exception e) {
 					e.printStackTrace();
 					listener.displayError("Fel vid sparning", 
-							"Ett fel uppstod vid sparningen av zonen");
+						"Ett fel uppstod vid sparningen av zonen");
 				}
 			}
 		});
@@ -96,6 +102,55 @@ public class EditZoneView extends CustomComponent {
 				listener.switchToSearchMissionListView();
 			}
 		});
+		
+		fragment.clearMapButton.addListener(new ClickListener() {
+			@Override
+			public void buttonClick(ClickEvent event) {
+				for (Marker marker : markerPoints) {
+					map.removeMarker(marker);
+				}
+				markerPoints.clear();
+				for (PolyOverlay overlay : map.getOverlays()) {
+					map.removeOverlay(overlay);
+				}
+			}
+		});
+		
+		fragment.createZoneButton.addListener(new ClickListener() {
+			@Override
+			public void buttonClick(ClickEvent event) {
+				//Make points array one slot bigger to allow for polygon-closing point.
+				Double[] points = new Double[markerPoints.size()+1];
+				for (int i = 0; i < markerPoints.size(); i++) {
+					points[i] = markerPoints.get(i).getLatLng();
+				}
+				//add a reference to the first point at the end of the array, to close the polygon.
+				points[points.length-1] = markerPoints.get(0).getLatLng();
+				
+				map.addPolyOverlay(new Polygon(generateId(), points, 
+						"#000000", 2, 1.0, "#F00C0C", 0.3, true));
+				
+				for (Marker marker : markerPoints) {
+					map.removeMarker(marker);
+				}
+				markerPoints.clear();
+			}
+		});
+		
+		fragment.setMapCenterButton.addListener(new ClickListener() {
+			@Override
+			public void buttonClick(ClickEvent event) {
+				mapCenter = map.getCenter();
+				mapZoom = map.getZoom();
+			}
+		});
+	}
+
+	private Long generateId() {
+		if (random == null) {
+			random = new Random();
+		}
+		return random.nextLong();
 	}
 
 	public void resetView(String zoneId, String opId) {
@@ -103,6 +158,8 @@ public class EditZoneView extends CustomComponent {
 		if (map == null) {
 			initMap();
 		}
+		
+		markerPoints.clear();
 		
 		map.removeAllMarkers();
 		Collection<PolyOverlay> overlays = map.getOverlays();
@@ -116,46 +173,91 @@ public class EditZoneView extends CustomComponent {
 			service = new SearchOperationService();
 			zone = service.getZone(zoneId);
 			
-			startingX = zone.getStartingX();
-			startingY = zone.getStartingY();
-			map.setCenter(new Double(startingX, startingY));
-			map.setZoom(DEFAULT_ZOOM);
-			
 			//paint the predefined zone
+			Polygon overlay;
 			Double[] points = zone.getZoneCoords();
-			if (points.length > 0) {
-				map.addPolyOverlay(new Polygon(1L, points, "#000000", 2, 1.0, "#F00C0C", 0.3, true));
+			if (points.length > 0) { //TODO change here to enable multiple zones
+				overlay = new Polygon(1L, points, 
+						"#000000", 2, 1.0, "#F00C0C", 0.3, true);
+				map.addPolyOverlay(overlay);
+			}
+			
+			//center map on center of zone
+//			centerMapOnZone(points);
+			map.setCenter(points[0]);
+			
+			if (zone.getZoomLevel() > 0) {
+				map.setZoom(zone.getZoomLevel());
+			} else {
+				map.setZoom(DEFAULT_ZOOM);
 			}
 			
 			//paint the findings
 			SearchFinding[] findings = zone.getFindings();
 			long genId = 2L;
 			for (SearchFinding finding : findings) {
-				BasicMarker marker = new BasicMarker(genId, null, finding.getTitle());
+				Double latLon = new Double(finding.getLat(), finding.getLon());
+				BasicMarker marker = new BasicMarker(genId, latLon, finding.getTitle());
 				marker.setInfoWindowContent(map, new Label(finding.getDescr()));
 				marker.setDraggable(false);
 				map.addMarker(marker);
 				genId++;
 			}
+			
+			fragment.nameField.setValue(zone.getTitle());
+			fragment.prioField.setValue(zone.getPriority());
 		} catch (Exception e) {
 			e.printStackTrace();
+			listener.displayError("Fel vid hämtning av data", 
+				"Ett fel uppstod vid hämtningen av data från servern: " + e.getMessage());
 		}
-		
-		fragment.nameField.setValue("Exempelzon");
-		fragment.prioField.setValue("1");
+	}
+
+	private void centerMapOnZone(Double[] points) {
+		//TODO error in calculation
+		double minX = java.lang.Double.MAX_VALUE;
+		double maxX = java.lang.Double.MIN_VALUE;
+		double minY = java.lang.Double.MAX_VALUE;
+		double maxY = java.lang.Double.MIN_VALUE;
+		for (int i = 0; i < points.length; i++) {
+			Double point = points[i];
+			if (point.x < minX) {
+				minX = point.x;
+			}
+			if (point.x > maxX) {
+				maxX = point.x;
+			}
+			if (point.y < minY) {
+				minX = point.y;
+			}
+			if (point.y > maxY) {
+				maxX = point.y;
+			}
+		}
+		Double center = new Double();
+		center.x = minX + ((maxX - minX) / 2);
+		center.y = minY + ((maxY - minY) / 2);
+		map.setCenter(new Double(center.x, center.y));
 	}
 
 	private void initMap() {
-//		mapLayout.removeComponent(map);
 		map = makeGoogleMap();
-		fragment.mapLayout.addComponent(map);
+		fragment.setMap(map);
 		
 		map.addListener(new MapClickListener() {
 			@Override
 			public void mapClicked(Double clickPos) {
-				System.out.println("(" + clickPos.x + "," + clickPos.y + ")");
+				try {
+					BasicMarker marker = new BasicMarker(generateId(), clickPos, "" + markerPoints.size());
+					map.addMarker(marker);
+					markerPoints.add(marker);
+					System.out.println("Created marker at (" + clickPos.x + "," + clickPos.y + ")");
+				} catch (NullPointerException e) {
+					e.printStackTrace();
+				}
 			}
 		});
+		
 		map.addListener(new GoogleMap.MarkerClickListener() {
 			@Override
 			public void markerClicked(Marker clickedMarker) {
@@ -172,37 +274,10 @@ public class EditZoneView extends CustomComponent {
 		final double lat = 11.977844238281250;
 		final double lon = 57.717352096870876;
 		
-		Point2D.Double itMillOfficeMarker = new Point2D.Double(lat, lon);
-		GoogleMap googleMap = new GoogleMap(application, itMillOfficeMarker, 9);
-		googleMap.setWidth("800px");
+		Point2D.Double mapCenterMarker = new Point2D.Double(lat, lon);
+		GoogleMap googleMap = new GoogleMap(application, mapCenterMarker, 9);
+		googleMap.setWidth("100%");
 		googleMap.setHeight("600px");
-		
-//		BasicMarker marker = new BasicMarker(1L, itMillOfficeMarker,
-//				"Test marker " + lat + "," + lon);
-//		marker.setInfoWindowContent(googleMap, new Label(marker.getTitle()));
-//		googleMap.addMarker(marker);
-//		
-//		BasicMarker marker2 = new BasicMarker(2L, new Point2D.Double(lat+1, lon), "Test marker 2");
-//		marker.setInfoWindowContent(googleMap, new Label(marker.getTitle()));
-//		googleMap.addMarker(marker2);
-		
-//		Double[] points = new Double[]{
-//			new Double(22.376060485839844,60.45886826784022),
-//			new Double(22.405071258544922,60.46001085184192),
-//			new Double(22.396144866943360,60.44672053773407),
-//			new Double(22.376060485839844,60.45886826784022)
-//		};
-//		Polygon poly3 = new Polygon(4L, points, "#000000", 2, 1.0, "#F00C0C", 0.3, true);
-//		poly3.setClickable(true);
-//		googleMap.addPolyOverlay(poly3);
-		
-//		PolyOverlay po = new PolyOverlay(5L, points, "#000000", 2, 1.0, true);
-//		po.setClickable(true);
-//		googleMap.addPolyOverlay(po);
-		
-//		googleMap.removeOverlay(new PolyOverlay(5L, null));
-		
-//		googleMap.removeOverlay(poly3);
 		
 		return googleMap;
 	}

@@ -24,6 +24,7 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.Mongo;
+import com.mongodb.MongoOptions;
 import com.mongodb.WriteResult;
 
 public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperationDAO {
@@ -34,7 +35,9 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 	private DBCollection operationsColl;
 
 	public SearchMissionDAOMongoDB() throws Exception {
-		mongo = new Mongo();
+		MongoOptions options = new MongoOptions();
+		options.socketTimeout = 5*60*1000;
+		mongo = new Mongo("localhost", options );
 		DB db = mongo.getDB("lookingfor");
 		missionColl = db.getCollection("searchmissions");
 		operationsColl = db.getCollection("searchops");

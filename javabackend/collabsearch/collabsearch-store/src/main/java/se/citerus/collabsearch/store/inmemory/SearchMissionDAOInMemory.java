@@ -179,7 +179,7 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 		SearchOperation searchOp = new SearchOperation(
 				"" + r.nextLong() ,"Operation 1", "beskrivn...", 
 				new Date(System.currentTimeMillis()), "Plats X", 
-				new Status(0, "status 1", "beskrivn..."));
+				new Status(0, "Ej påbörjad", "beskrivn..."));
 		searchOp.setSearchers(searchers);
 		searchOp.setGroups(groups);
 		searchOp.setZones(zones);
@@ -188,7 +188,7 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 		searchOp = new SearchOperation(
 				"" + r.nextLong(), "Operation 2", "beskrivn...", 
 				new Date(System.currentTimeMillis()+86400000L), "Plats Y", 
-				new Status(1, "status 2", "beskrivn..."));
+				new Status(1, "Sökning inledd", "beskrivn..."));
 		searchOp.setSearchers(searchers);
 		searchOp.setGroups(groups);
 		searchOp.setZones(zones);
@@ -197,7 +197,7 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 		searchOp = new SearchOperation(
 				"" + r.nextLong(), "Operation 3", "beskrivn...", 
 				new Date(System.currentTimeMillis()+(2*86400000L)), "Plats Z", 
-				new Status(2, "status 3", "beskrivn..."));
+				new Status(2, "Sökning avslutad", "beskrivn..."));
 		searchOp.setSearchers(searchers);
 		searchOp.setGroups(groups);
 		searchOp.setZones(zones);
@@ -590,6 +590,7 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 				if (op.getId().equals(opId)) {
 					zone.setId("" + new Random().nextInt());
 					op.getZones().add(zone);
+					return zone.getId();
 				}
 			}
 		}

@@ -15,6 +15,8 @@ import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.SearchZone;
 
 import com.vaadin.data.Item;
+import com.vaadin.data.Property;
+import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.event.Action;
 import com.vaadin.event.Action.Handler;
 import com.vaadin.terminal.FileResource;
@@ -34,12 +36,20 @@ import com.vaadin.ui.themes.BaseTheme;
 @SuppressWarnings("serial")
 public class SearchMissionListView extends CustomComponent {
 	
+	private static final String ID = "id";
+	private static final String NAME = "name";
+	private static final String DESCR = "descr";
+	private static final String PRIO = "prio";
+	private static final String STATUS = "status";
+	private static final String TYPE = "type";
+	
 	private final ViewSwitchController listener;
 	private VerticalLayout mainLayout;
 	private Button homeButton;
-	private Button endMissionButton;
+	private Button endButton;
 	private Button editButton;
 	private Button addButton;
+	private Button removeButton;
 	private TreeTable treeTable;
 	
 	private Handler contextMenuHandler;
@@ -80,77 +90,83 @@ public class SearchMissionListView extends CustomComponent {
 		});
 		addButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				listener.switchToSearchMissionEditView(null);
+				handleAddButtonClick();
 			}
 		});
 		editButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				try { //add more nodetypes or remove?
-					String missionId = null;
-					NodeType type = NodeType.UNDEFINED;
-					Item item = treeTable.getItem(treeTable.getValue());
-					missionId = item.getItemProperty("id").getValue().toString();
-					type = (NodeType) item.getItemProperty("type").getValue();
-					if (type == NodeType.MISSION) {
-						if (missionId != null) {
-							listener.switchToSearchMissionEditView(missionId);
-						} else {
-							listener.displayNotification("Inget sökuppdrag markerat", 
-									"Du måste markera ett sökuppdrag för redigering");
-						}
-					} else {
-						listener.displayNotification("Markeringen ej sökuppdrag", 
-								"Endast sökuppdrag får markeras för avslutning.");
-					}
-				} catch (NullPointerException e) {
-					listener.displayNotification("Inget sökuppdrag markerat", 
-							"Du måste markera ett sökuppdrag för redigering");
-				} catch (Exception e) {
-					e.printStackTrace();
-					listener.displayError("Fel", e.getMessage());
+				handleEditButtonClick();
+			}
+		});
+		endButton.addListener(new ClickListener() {
+			public void buttonClick(ClickEvent event) {
+				handleEndButtonClick();
+			}
+		});
+		removeButton.addListener(new ClickListener() {
+			@Override
+			public void buttonClick(ClickEvent event) {
+				handleRemoveButtonClick();
+			}
+		});
+		
+		treeTable.addListener(new Property.ValueChangeListener() {
+			@Override
+			public void valueChange(ValueChangeEvent event) {
+				Object itemId = treeTable.getValue();
+				if (itemId == null) {
+					return;
+				}
+				
+				endButton.setEnabled(false);
+				addButton.setEnabled(false);
+				editButton.setEnabled(false);
+				removeButton.setEnabled(false);
+				
+				Item item = treeTable.getItem(itemId);
+				NodeType type = (NodeType) item.getItemProperty(TYPE).getValue();
+				switch (type) {
+					case MISSION: 
+						endButton.setEnabled(true);
+						addButton.setEnabled(true);
+						editButton.setEnabled(true);
+						break;
+					case OPERATIONROOT: 
+						addButton.setEnabled(true);
+						break;
+					case OPERATION: 
+						endButton.setEnabled(true);
+						addButton.setEnabled(true);
+						editButton.setEnabled(true);
+						removeButton.setEnabled(true);
+						break;
+					case FILEROOT: 
+						addButton.setEnabled(true);
+						break;
+					case FILE: 
+						addButton.setEnabled(true);
+						removeButton.setEnabled(true);
+						break;
+					case ZONEROOT: 
+						addButton.setEnabled(true);
+						break;
+					case ZONE: 
+						addButton.setEnabled(true);
+						editButton.setEnabled(true);
+						removeButton.setEnabled(true);
+						break;
+					case GROUPROOT: 
+						addButton.setEnabled(true);
+						break;
+					case GROUP: 
+						addButton.setEnabled(true);
+						editButton.setEnabled(true);
+						removeButton.setEnabled(true);
+						break;
+					default: return;
 				}
 			}
 		});
-		endMissionButton.addListener(new ClickListener() {
-			public void buttonClick(ClickEvent event) {
-				try {
-					SearchMissionService service = null;
-					String missionId = null;
-					NodeType type = NodeType.UNDEFINED;
-					Item item = treeTable.getItem(treeTable.getValue());
-					missionId = item.getItemProperty("id").getValue().toString();
-					type = (NodeType) item.getItemProperty("type").getValue();
-					if (type == NodeType.MISSION) {
-						if (missionId != null) {
-							try {
-								service = new SearchMissionService();
-								service.endMission(missionId);
-							} catch (Exception e) {
-								e.printStackTrace();
-								listener.displayError("Fel", e.getMessage());
-							} finally {
-								if (service != null) {
-									service.cleanUp();
-								}
-							}
-							refreshMissionTree();
-						} else {
-							listener.displayNotification("Inget sökuppdrag markerat", 
-									"Du måste markera ett sökuppdrag för avslutning");
-						}
-					} else {
-						listener.displayNotification("Markeringen ej sökuppdrag", 
-								"Endast sökuppdrag får markeras för avslutning.");
-					}
-				} catch (NullPointerException e) {
-					listener.displayNotification("Inget sökuppdrag markerat", 
-							"Du måste markera ett sökuppdrag för avslutning");
-				} catch (Exception e) {
-					e.printStackTrace();
-					listener.displayError("Fel", e.getMessage());
-				}
-			}
-		});	
 		
 		//create menu items
 		ACTION_ADDITEM = new Action("Lägg till");
@@ -175,7 +191,7 @@ public class SearchMissionListView extends CustomComponent {
 				} else {
 					int itemId = (Integer) target;
 					Item item = treeTable.getItem(itemId);
-					NodeType type = (NodeType) item.getItemProperty("type").getValue();
+					NodeType type = (NodeType) item.getItemProperty(TYPE).getValue();
 					if (action == ACTION_ADDITEM) {
 						handleAddActions(itemId, type);
 					} else if (action == ACTION_EDITITEM) {
@@ -192,7 +208,7 @@ public class SearchMissionListView extends CustomComponent {
 			public Action[] getActions(Object target, Object sender) {
 				try {
 					NodeType type = (NodeType) treeTable.getItem(target)
-							.getItemProperty("type").getValue();
+							.getItemProperty(TYPE).getValue();
 					switch (type) { //setup different menus depending on tree branch
 						case MISSION: return addEditEndMenu;
 						case OPERATIONROOT: return addMenu;
@@ -255,25 +271,25 @@ public class SearchMissionListView extends CustomComponent {
 		treeTable = new TreeTable();
 		treeTable.setSelectable(true);
 		treeTable.setSizeFull();
-		treeTable.addContainerProperty("id", String.class, "");
-		treeTable.addContainerProperty("name", String.class, "");
-		treeTable.addContainerProperty("descr", String.class, "");
-		treeTable.addContainerProperty("prio", Integer.class, "");
-		treeTable.addContainerProperty("status", String.class, "");
-		treeTable.addContainerProperty("type", NodeType.class, NodeType.UNDEFINED);
-		treeTable.setVisibleColumns(new Object[]{"name", "descr", "prio", "status"});
+		treeTable.addContainerProperty(ID, String.class, "");
+		treeTable.addContainerProperty(NAME, String.class, "");
+		treeTable.addContainerProperty(DESCR, String.class, "");
+		treeTable.addContainerProperty(PRIO, Integer.class, "");
+		treeTable.addContainerProperty(STATUS, String.class, "");
+		treeTable.addContainerProperty(TYPE, NodeType.class, NodeType.UNDEFINED);
+		treeTable.setVisibleColumns(new Object[]{NAME, DESCR, PRIO, STATUS});
 		treeTable.setColumnHeaders(new String[]{"Namn", "Beskrivning", "Prioritet", "Status"});
 		treeTable.setImmediate(true);
 		innerLayout.addComponent(treeTable);
 		
-		treeTable.addGeneratedColumn("descr", new ColumnGenerator() {
+		treeTable.addGeneratedColumn(DESCR, new ColumnGenerator() {
 			@Override
 			public Object generateCell(Table table, Object itemId, Object columnId) {
 				final Item item = table.getItem(itemId);
-				NodeType type = (NodeType) item.getItemProperty("type").getValue();
+				NodeType type = (NodeType) item.getItemProperty(TYPE).getValue();
 				if (type == NodeType.FILE) {
-					final String missionId = getParentProperty(2, (Integer)itemId, "id");
-					final String fileName = item.getItemProperty("name").getValue().toString();
+					final String missionId = getParentProperty(2, (Integer)itemId, ID);
+					final String fileName = item.getItemProperty(NAME).getValue().toString();
 					Button linkButton = new Button("Öppna filen");
 					linkButton.setStyleName(BaseTheme.BUTTON_LINK);
 					linkButton.addListener(new ClickListener() {
@@ -286,7 +302,7 @@ public class SearchMissionListView extends CustomComponent {
 					});
 					return linkButton;
 				} else {
-					return item.getItemProperty("descr").getValue();
+					return item.getItemProperty(DESCR).getValue();
 				}
 			}
 		});
@@ -296,14 +312,22 @@ public class SearchMissionListView extends CustomComponent {
 		HorizontalLayout buttonLayout = new HorizontalLayout();
 		buttonLayout.setSpacing(true);
 		
-		endMissionButton = new Button("Avsluta");
-		buttonLayout.addComponent(endMissionButton);
+		endButton = new Button("Avsluta");
+		buttonLayout.addComponent(endButton);
+		
+		removeButton = new Button("Ta bort");
+		buttonLayout.addComponent(removeButton);
 		
 		editButton = new Button("Redigera");
 		buttonLayout.addComponent(editButton);
 		
 		addButton = new Button("Lägg till");
 		buttonLayout.addComponent(addButton);
+		
+		endButton.setEnabled(false);
+		removeButton.setEnabled(false);
+		editButton.setEnabled(false);
+		addButton.setEnabled(false);
 		
 		innerLayout.addComponent(buttonLayout);
 		innerLayout.setComponentAlignment(buttonLayout, Alignment.TOP_RIGHT);
@@ -335,13 +359,14 @@ public class SearchMissionListView extends CustomComponent {
 			for (SearchMission mission : list) {
 				//add SearchMission to highest level
 				int missionItemId = itemId;
-				Item missionItem = treeTable.addItem(missionItemId);
-				missionItem.getItemProperty("name").setValue(mission.getName());
-				missionItem.getItemProperty("descr").setValue(mission.getDescription());
-				missionItem.getItemProperty("prio").setValue(mission.getPrio());
-				missionItem.getItemProperty("status").setValue(mission.getStatus().getName());
-				missionItem.getItemProperty("type").setValue(NodeType.MISSION);
-				missionItem.getItemProperty("id").setValue(mission.getId());
+//				Item missionItem = treeTable.addItem(missionItemId);
+//				missionItem.getItemProperty("name").setValue(mission.getName());
+//				missionItem.getItemProperty("type").setValue(NodeType.MISSION);
+//				missionItem.getItemProperty("id").setValue(mission.getId());
+				Item missionItem = setupItemProperties(missionItemId, mission.getName(), NodeType.MISSION, mission.getId());
+				missionItem.getItemProperty(DESCR).setValue(mission.getDescription());
+				missionItem.getItemProperty(PRIO).setValue(mission.getPrio());
+				missionItem.getItemProperty(STATUS).setValue(mission.getStatus().getName());
 				
 				//allow children
 				treeTable.setChildrenAllowed(missionItemId, true);
@@ -355,12 +380,13 @@ public class SearchMissionListView extends CustomComponent {
 				for (SearchOperation op : mission.getOpsList()) {
 					itemId++;
 					int opItemId = itemId;
-					Item opItem = treeTable.addItem(itemId);
-					opItem.getItemProperty("name").setValue(op.getTitle());
-					opItem.getItemProperty("descr").setValue(op.getDescr());
-					opItem.getItemProperty("status").setValue(op.getStatus());
-					opItem.getItemProperty("type").setValue(NodeType.OPERATION);
-					opItem.getItemProperty("id").setValue(op.getId());
+//					Item opItem = treeTable.addItem(itemId);
+//					opItem.getItemProperty("name").setValue(op.getTitle());
+//					opItem.getItemProperty("type").setValue(NodeType.OPERATION);
+//					opItem.getItemProperty("id").setValue(op.getId());
+					Item opItem = setupItemProperties(opItemId, op.getTitle(), NodeType.OPERATION, op.getId());
+					opItem.getItemProperty(DESCR).setValue(op.getDescr());
+					opItem.getItemProperty(STATUS).setValue(op.getStatus());
 					treeTable.setParent(itemId, opsParentId);
 					
 					//add zone parent label
@@ -371,7 +397,8 @@ public class SearchMissionListView extends CustomComponent {
 					//add zones
 					for (SearchZone zone : op.getZones()) {
 						itemId++;
-						setupItemProperties(itemId, zone.getTitle(), NodeType.ZONE, zone.getId());
+						Item item = setupItemProperties(itemId, zone.getTitle(), NodeType.ZONE, zone.getId());
+						item.getItemProperty(PRIO).setValue(zone.getPriority());
 						treeTable.setParent(itemId, zoneParentId);
 						treeTable.setChildrenAllowed(itemId, false);
 					}
@@ -416,11 +443,12 @@ public class SearchMissionListView extends CustomComponent {
 		}
 	}
 	
-	private void setupItemProperties(int itemId, String name, NodeType type, String id) {
+	private Item setupItemProperties(int itemId, String name, NodeType type, String id) {
 		Item item = treeTable.addItem(itemId);
-		item.getItemProperty("name").setValue(name);
-		item.getItemProperty("type").setValue(type);
-		item.getItemProperty("id").setValue(id);
+		item.getItemProperty(NAME).setValue(name);
+		item.getItemProperty(TYPE).setValue(type);
+		item.getItemProperty(ID).setValue(id);
+		return item;
 	}
 
 	public void resetView() {
@@ -434,35 +462,35 @@ public class SearchMissionListView extends CustomComponent {
 				listener.switchToSearchMissionEditView(null);
 				break;
 			case OPERATIONROOT: 
-				id = getParentProperty(1, itemId, "id");
+				id = getParentProperty(1, itemId, ID);
 				listener.switchToSearchOperationEditView(null, id);
 				break;
 			case OPERATION: 
-				id = getParentProperty(2, itemId, "id");
+				id = getParentProperty(2, itemId, ID);
 				listener.switchToSearchOperationEditView(null, id);
 				break;
 			case FILEROOT: 
-				id = getParentProperty(1, itemId, "id");
+				id = getParentProperty(1, itemId, ID);
 				listener.switchToFileUploadView(id);
 				break;
 			case FILE: 
-				id = getParentProperty(2, itemId, "id");
+				id = getParentProperty(2, itemId, ID);
 				listener.switchToFileUploadView(id);
 				break;
 			case ZONEROOT: 
-				id = getParentProperty(1, itemId, "id");
+				id = getParentProperty(1, itemId, ID);
 				listener.switchToNewZoneView(id);
 				break;
 			case ZONE: 
-				id = getParentProperty(2, itemId, "id");
+				id = getParentProperty(2, itemId, ID);
 				listener.switchToEditZoneView(null, id);
 				break;
 			case GROUPROOT: 
-				id = getParentProperty(1, itemId, "id");
+				id = getParentProperty(1, itemId, ID);
 				listener.switchToGroupEditView(null, id);
 				break;
 			case GROUP: 
-				id = getParentProperty(2, itemId, "id");
+				id = getParentProperty(2, itemId, ID);
 				listener.switchToGroupEditView(null, id);
 				break;
 			default: break;
@@ -470,25 +498,28 @@ public class SearchMissionListView extends CustomComponent {
 	}
 
 	private void handleEditActions(int itemId, Item item, NodeType type) {
-		String id = item.getItemProperty("id").getValue().toString();
+		String id = item.getItemProperty(ID).getValue().toString();
 		if (type == NodeType.MISSION) {
 			listener.switchToSearchMissionEditView(id);
 		} else if (type == NodeType.OPERATION) {
-			String missionId = getParentProperty(2, itemId, "id");
+			String missionId = getParentProperty(2, itemId, ID);
 			listener.switchToSearchOperationEditView(id, missionId);
 		} else if (type == NodeType.ZONE) {
-			String opId = getParentProperty(2, itemId, "id");
+			String opId = getParentProperty(2, itemId, ID);
 			listener.switchToEditZoneView(id, opId);
 		} else if (type == NodeType.GROUP) {
-			String opId = getParentProperty(2, itemId, "id");
+			String opId = getParentProperty(2, itemId, ID);
 			listener.switchToGroupEditView(id, opId);
+		} else {
+			listener.displayNotification("Kan ej redigeras", 
+					"Det valda objektet kan ej redigeras.");
 		}
 	}
 	
 	private void handleRemoveActions(int itemId, Item item, NodeType type) {
 		if (type == NodeType.FILE) {
-			String fileName = item.getItemProperty("name").getValue().toString();
-			String missionId = getParentProperty(2, itemId, "id");
+			String fileName = item.getItemProperty(NAME).getValue().toString();
+			String missionId = getParentProperty(2, itemId, ID);
 			SearchMissionService service = null;
 			try {
 				service = new SearchMissionService();
@@ -503,10 +534,10 @@ public class SearchMissionListView extends CustomComponent {
 				}
 			}
 		} else if (type == NodeType.OPERATION) {
-			SearchMissionService service = null;
-			String opId = item.getItemProperty("id").getValue().toString();
+			SearchOperationService service = null;
+			String opId = item.getItemProperty(ID).getValue().toString();
 			try {
-				service = new SearchMissionService();
+				service = new SearchOperationService();
 				service.deleteSearchOperation(opId);
 				removeItemsRecursively(itemId);
 			} catch (Exception e) {
@@ -518,7 +549,7 @@ public class SearchMissionListView extends CustomComponent {
 				}
 			}
 		} else if (type == NodeType.ZONE) {
-			String zoneId = item.getItemProperty("id").getValue().toString();
+			String zoneId = item.getItemProperty(ID).getValue().toString();
 			SearchOperationService service = null;
 			try {
 				service = new SearchOperationService();
@@ -533,7 +564,7 @@ public class SearchMissionListView extends CustomComponent {
 				}
 			}
 		} else if (type == NodeType.GROUP) {
-			String groupId = item.getItemProperty("id").getValue().toString();
+			String groupId = item.getItemProperty(ID).getValue().toString();
 			SearchOperationService service = null;
 			try {
 				service = new SearchOperationService();
@@ -551,13 +582,13 @@ public class SearchMissionListView extends CustomComponent {
 	}
 
 	private void handleEndActions(int itemId, Item item, NodeType type) {
-		String itemName = item.getItemProperty("name").getValue().toString();
+		String itemName = item.getItemProperty(NAME).getValue().toString();
 		if (type == NodeType.MISSION) {
 			SearchMissionService service = null;
 			try {
 				service = new SearchMissionService();
 				String statusName = service.endMission(itemName);
-				item.getItemProperty("status").setValue(statusName);
+				item.getItemProperty(STATUS).setValue(statusName);
 				treeTable.requestRepaintAll();
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -571,9 +602,9 @@ public class SearchMissionListView extends CustomComponent {
 			SearchOperationService service = null;
 			try {
 				service = new SearchOperationService();
-				String opId = item.getItemProperty("id").getValue().toString();
+				String opId = item.getItemProperty(ID).getValue().toString();
 				String statusName = service.endOperation(opId);
-				item.getItemProperty("status").setValue(statusName);
+				item.getItemProperty(STATUS).setValue(statusName);
 			} catch (Exception e) {
 				e.printStackTrace();
 				listener.displayError("Fel", e.getMessage());
@@ -612,4 +643,39 @@ public class SearchMissionListView extends CustomComponent {
 		}
 	}
 	
+	private void handleAddButtonClick() {
+		Object itemId = treeTable.getValue();
+		if (itemId != null) {
+			Item item = treeTable.getItem(itemId);
+			NodeType type = (NodeType) item.getItemProperty(TYPE).getValue();
+			handleAddActions((Integer)itemId, type);
+		}
+	}
+	
+	private void handleEditButtonClick() {
+		Object itemId = treeTable.getValue();
+		if (itemId != null) {
+			Item item = treeTable.getItem(itemId);
+			NodeType type = (NodeType) item.getItemProperty(TYPE).getValue();
+			handleEditActions((Integer)itemId, item, type);
+		}
+	}
+	
+	private void handleEndButtonClick() {
+		Object itemId = treeTable.getValue();
+		if (itemId != null) {
+			Item item = treeTable.getItem(itemId);
+			NodeType type = (NodeType) item.getItemProperty(TYPE).getValue();
+			handleEndActions((Integer)itemId, item, type);
+		}
+	}
+	
+	private void handleRemoveButtonClick() {
+		Object itemId = treeTable.getValue();
+		if (itemId != null) {
+			Item item = treeTable.getItem(itemId);
+			NodeType type = (NodeType) item.getItemProperty(TYPE).getValue();
+			handleRemoveActions((Integer)itemId, item, type);
+		}
+	}
 }

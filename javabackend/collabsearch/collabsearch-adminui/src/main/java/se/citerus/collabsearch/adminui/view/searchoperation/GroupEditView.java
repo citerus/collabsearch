@@ -17,6 +17,7 @@ import org.apache.commons.collections15.Transformer;
 import se.citerus.collabsearch.adminui.LookingForApp;
 import se.citerus.collabsearch.adminui.ViewSwitchController;
 import se.citerus.collabsearch.adminui.logic.SearchMissionService;
+import se.citerus.collabsearch.adminui.logic.SearchOperationService;
 import se.citerus.collabsearch.model.GroupNode;
 import se.citerus.collabsearch.model.Rank;
 import se.citerus.collabsearch.model.Rank.Title;
@@ -459,10 +460,10 @@ public class GroupEditView extends CustomComponent {
 	}
 	
 	private void saveGroup() {
-		SearchMissionService service = null;
+		SearchOperationService service = null;
 		try {
 			if (nameField.isValid() && validateGroupHierarchy()) {
-				service = new SearchMissionService();
+				service = new SearchOperationService();
 				SearchGroup group = null;
 				group = convertTreeToGroup();
 				group.setName(nameField.getValue().toString());
@@ -619,9 +620,9 @@ public class GroupEditView extends CustomComponent {
 			headerLabel.setValue("<h1><b>" + "Redigera grupp" + "</b></h1>");
 			
 			//get group data from db
-			SearchMissionService service = null;
+			SearchOperationService service = null;
 			try {
-				service = new SearchMissionService();
+				service = new SearchOperationService();
 				group = service.getSearchGroup(groupId);
 				searcherMap = service.getSearchersByOp(opId);
 				

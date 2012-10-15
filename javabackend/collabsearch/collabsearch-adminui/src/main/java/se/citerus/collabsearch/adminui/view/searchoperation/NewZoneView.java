@@ -150,15 +150,13 @@ public class NewZoneView extends CustomComponent {
 	}
 
 	private void initMap() {
-//		mapLayout.removeComponent(map);
 		map = makeGoogleMap();
 		fragment.setMap(map);
 		
 		map.addListener(new MapClickListener() {
 			@Override
 			public void mapClicked(Double clickPos) {
-				System.out.println("(" + clickPos.x + "," + clickPos.y + ")");
-				//TODO testa denna metod
+//				System.out.println("(" + clickPos.x + "," + clickPos.y + ")");
 				BasicMarker marker = new BasicMarker(generateId(), 
 						clickPos, "" + markerPoints.size());
 				map.addMarker(marker);

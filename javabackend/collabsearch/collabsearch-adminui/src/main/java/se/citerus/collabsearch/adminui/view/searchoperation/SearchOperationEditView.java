@@ -65,10 +65,8 @@ public class SearchOperationEditView extends CustomComponent {
 		saveButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
 				if (allFieldsValid()) {
-					SearchMissionService missionService = null;
 					SearchOperationService opService = null;
 					try {
-						missionService = new SearchMissionService();
 						opService = new SearchOperationService();
 						Status status = opService.getSearchOpStatusByName((String)statusField.getValue());
 						SearchOperation op = new SearchOperation(
@@ -78,14 +76,11 @@ public class SearchOperationEditView extends CustomComponent {
 								(Date) dateField.getValue(), 
 								(String) locationField.getValue(),
 								status);
-						missionService.editSearchOp(op, opId, missionId);
+						opService.editSearchOp(op, opId, missionId);
 						listener.switchToSearchMissionListView();
 					} catch (Exception e) {
 						listener.displayError("Sparningsfel", e.getMessage());
 					} finally {
-						if (missionService != null) {
-							missionService.cleanUp();
-						}
 						if (opService != null) {
 							opService.cleanUp();
 						}
@@ -118,9 +113,9 @@ public class SearchOperationEditView extends CustomComponent {
 		if (opId != null) { //existing operation	
 			this.missionId = null;
 			
-			SearchMissionService service = null;
+			SearchOperationService service = null;
 			try { //find operation
-				service = new SearchMissionService();
+				service = new SearchOperationService();
 				SearchOperation searchOp = service.getSearchOp(opId);
 				if (searchOp != null) {
 					//load data from operation into fields

@@ -2,10 +2,16 @@ package se.citerus.collabsearch.adminui.logic;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Point2D.Double;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.Validate;
 
+import se.citerus.collabsearch.model.FileMetadata;
+import se.citerus.collabsearch.model.SearchGroup;
+import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.SearchZone;
 import se.citerus.collabsearch.model.Status;
 import se.citerus.collabsearch.store.facades.SearchOperationDAO;
@@ -102,6 +108,75 @@ public class SearchOperationService { // TODO refactor into spring service
 		Validate.notEmpty(points);
 		if (zoomLevel <= 0) {
 			throw new IllegalArgumentException("Zoom level must be higher than zero.");
+		}
+	}
+	
+	public List<SearchOperation> getListOfSearchOps(String missionId) {
+		try {
+			return searchOperationDAO.getAllSearchOpsForMission(missionId);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public SearchOperation getSearchOp(String searchOpId) throws Exception {
+		return searchOperationDAO.findOperation(searchOpId);
+	}
+
+	/**
+	 * Deletes a search operation and all it's zones and groups.
+	 * @param searchOpId
+	 * @throws Exception
+	 */
+	public void deleteSearchOperation(String searchOpId) throws Exception {
+		searchOperationDAO.deleteSearchOperation(searchOpId);
+	}
+
+	public void editSearchOp(SearchOperation operation, String opId, String missionId) throws Exception {
+		if (opId == null && missionId != null) {
+			searchOperationDAO.addSearchOperation(operation, missionId);
+		} else if (opId != null && missionId == null) {
+			searchOperationDAO.editSearchOperation(operation, opId);
+		}
+	}
+
+
+	public SearchGroup getSearchGroup(String groupId) throws Exception {
+		if (groupId == null) {
+			throw new Exception("Inget gruppid specifierat");
+		}
+		SearchGroup group = searchOperationDAO.getSearchGroup(groupId);
+		if (group == null) {
+			throw new Exception("Ingen gruppdata funnen");
+		}
+		return group;
+	}
+
+	/**
+	 * Get a list of Searchers who have volunteered for the specified SearchOperation.
+	 * @param opId the id of the SearchOperation.
+	 * @return a list of SearcherInfo objects representing the searchers applied to the operation.
+	 * @throws Exception
+	 */
+	public Map<String, String> getSearchersByOp(String opId) throws Exception {
+		if (opId == null) {
+			throw new Exception("Inget sökoperationsid specifierat");
+		}
+		Map<String, String> map = searchOperationDAO.getUsersForSearchOp(opId); 
+		return map;
+	}
+
+	public void addorModifySearchGroup(SearchGroup group, String groupId, String opId) throws Exception {
+		if (opId == null || group == null) {
+			throw new Exception("Ingen sökgrupp eller sökoperationsid specifierat");
+		} else if (group.getId() == null || group.getName() == null) {
+			throw new Exception("Gruppen har ett ogiltigt namn eller id");
+		}
+		if (groupId == null) {
+			searchOperationDAO.addSearchGroup(group, opId);
+		} else {
+			searchOperationDAO.editSearchGroup(group, opId);
 		}
 	}
 }

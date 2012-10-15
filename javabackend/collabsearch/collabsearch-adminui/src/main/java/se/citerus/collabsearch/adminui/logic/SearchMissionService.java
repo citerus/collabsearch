@@ -40,15 +40,6 @@ public class SearchMissionService { //TODO refactor into spring service
 	public String endMission(String missionId) throws Exception {
 		return searchMissionDAL.endMission(missionId);
 	}
-
-	public List<SearchOperation> getListOfSearchOps(String missionId) {
-		try {
-			return searchMissionDAL.getAllSearchOpsForMission(missionId);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
 	
 	public List<Status> getListOfStatuses() throws Exception {
 		return searchMissionDAL.getAllStatuses();
@@ -58,10 +49,6 @@ public class SearchMissionService { //TODO refactor into spring service
 		return searchMissionDAL.findMission(missionId);
 	}
 
-	public SearchOperation getSearchOp(String searchOpId) throws Exception {
-		return searchMissionDAL.findOperation(searchOpId);
-	}
-
 	public void addOrModifyMission(SearchMission mission, String missionId) throws Exception {
 		if (missionId == null) {
 			searchMissionDAL.addNewSearchMission(mission);
@@ -69,11 +56,11 @@ public class SearchMissionService { //TODO refactor into spring service
 			searchMissionDAL.editExistingMission(mission, missionId);
 		}
 	}
-
+	
 	public void addFileToMission(String missionId, FileMetadata metadata) throws Exception {
 		searchMissionDAL.addFileMetadata(missionId, metadata);
 	}
-
+	
 	public void deleteFile(String filename, String missionId) throws Exception {		
 		try {
 			FileMetadata metadata = searchMissionDAL.getFileMetadata(filename, missionId);
@@ -87,63 +74,8 @@ public class SearchMissionService { //TODO refactor into spring service
 		}
 	}
 
-	/**
-	 * Deletes a search operation and all it's zones and groups.
-	 * @param searchOpId
-	 * @throws Exception
-	 */
-	public void deleteSearchOperation(String searchOpId) throws Exception {
-		searchMissionDAL.deleteSearchOperation(searchOpId);
-	}
-
-	public void editSearchOp(SearchOperation operation, String opId, String missionId) throws Exception {
-		if (opId == null && missionId != null) {
-			searchMissionDAL.addSearchOperation(operation, missionId);
-		} else if (opId != null && missionId == null) {
-			searchMissionDAL.editSearchOperation(operation, opId);
-		}
-	}
-
 	public Status getStatusByName(String statusName) throws Exception {
 		return searchMissionDAL.findStatus(statusName);
-	}
-
-	public SearchGroup getSearchGroup(String groupId) throws Exception {
-		if (groupId == null) {
-			throw new Exception("Inget gruppid specifierat");
-		}
-		SearchGroup group = searchMissionDAL.getSearchGroup(groupId);
-		if (group == null) {
-			throw new Exception("Ingen gruppdata funnen");
-		}
-		return group;
-	}
-
-	/**
-	 * Get a list of Searchers who have volunteered for the specified SearchOperation.
-	 * @param opId the id of the SearchOperation.
-	 * @return a list of SearcherInfo objects representing the searchers applied to the operation.
-	 * @throws Exception
-	 */
-	public Map<String, String> getSearchersByOp(String opId) throws Exception {
-		if (opId == null) {
-			throw new Exception("Inget sökoperationsid specifierat");
-		}
-		Map<String, String> map = searchMissionDAL.getUsersForSearchOp(opId); 
-		return map;
-	}
-
-	public void addorModifySearchGroup(SearchGroup group, String groupId, String opId) throws Exception {
-		if (opId == null || group == null) {
-			throw new Exception("Ingen sökgrupp eller sökoperationsid specifierat");
-		} else if (group.getId() == null || group.getName() == null) {
-			throw new Exception("Gruppen har ett ogiltigt namn eller id");
-		}
-		if (groupId == null) {
-			searchMissionDAL.addSearchGroup(group, opId);
-		} else {
-			searchMissionDAL.editSearchGroup(group, opId);
-		}
 	}
 
 }

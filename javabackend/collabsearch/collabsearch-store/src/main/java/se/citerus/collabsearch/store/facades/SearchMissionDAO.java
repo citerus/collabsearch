@@ -6,6 +6,7 @@ import java.util.List;
 import se.citerus.collabsearch.model.FileMetadata;
 import se.citerus.collabsearch.model.SearchMission;
 import se.citerus.collabsearch.model.Status;
+import se.citerus.collabsearch.store.mongodb.SearchMissionNotFoundException;
 
 public interface SearchMissionDAO {
 
@@ -13,11 +14,11 @@ public interface SearchMissionDAO {
 
 	public void disconnect() throws Exception;
 
-	public String endMission(String missionId) throws IOException;
+	public void endMission(String missionId) throws IOException;
 
-	public List<Status> getAllStatuses() throws IOException;
+	public List<Status> getAllSearchMissionStatuses() throws IOException;
 
-	public SearchMission findMission(String missionId) throws IOException;
+	public SearchMission findMission(String missionId) throws IOException, SearchMissionNotFoundException, Exception;
 
 	public void addFileMetadata(String missionId, FileMetadata metadata)
 			throws IOException;
@@ -32,6 +33,6 @@ public interface SearchMissionDAO {
 	public void editExistingMission(SearchMission mission, String missionId)
 			throws IOException;
 
-	public Status findStatus(String statusName) throws IOException;
+	public Status findMissionStatusByName(String statusName) throws IOException;
 
 }

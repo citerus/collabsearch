@@ -24,6 +24,9 @@ public class SearchMission {
 		this.description = description;
 		this.prio = prio;
 		this.status = status;
+		
+		fileList = new ArrayList<FileMetadata>(0);
+		opsList = new ArrayList<SearchOperation>(0);
 	}
 
 	public String getId() {

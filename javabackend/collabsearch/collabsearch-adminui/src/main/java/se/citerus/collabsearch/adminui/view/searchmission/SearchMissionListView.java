@@ -359,10 +359,6 @@ public class SearchMissionListView extends CustomComponent {
 			for (SearchMission mission : list) {
 				//add SearchMission to highest level
 				int missionItemId = itemId;
-//				Item missionItem = treeTable.addItem(missionItemId);
-//				missionItem.getItemProperty("name").setValue(mission.getName());
-//				missionItem.getItemProperty("type").setValue(NodeType.MISSION);
-//				missionItem.getItemProperty("id").setValue(mission.getId());
 				Item missionItem = setupItemProperties(missionItemId, mission.getName(), NodeType.MISSION, mission.getId());
 				missionItem.getItemProperty(DESCR).setValue(mission.getDescription());
 				missionItem.getItemProperty(PRIO).setValue(mission.getPrio());
@@ -380,10 +376,6 @@ public class SearchMissionListView extends CustomComponent {
 				for (SearchOperation op : mission.getOpsList()) {
 					itemId++;
 					int opItemId = itemId;
-//					Item opItem = treeTable.addItem(itemId);
-//					opItem.getItemProperty("name").setValue(op.getTitle());
-//					opItem.getItemProperty("type").setValue(NodeType.OPERATION);
-//					opItem.getItemProperty("id").setValue(op.getId());
 					Item opItem = setupItemProperties(opItemId, op.getTitle(), NodeType.OPERATION, op.getId());
 					opItem.getItemProperty(DESCR).setValue(op.getDescr());
 					opItem.getItemProperty(STATUS).setValue(op.getStatus());
@@ -425,7 +417,7 @@ public class SearchMissionListView extends CustomComponent {
 				//add files, set parent to above file itemid
 				for (FileMetadata file : mission.getFileList()) {
 					itemId++;
-					setupItemProperties(itemId, file.getFilename(), NodeType.FILE, file.getId());
+					setupItemProperties(itemId, file.getFileName(), NodeType.FILE, file.getId());
 					treeTable.setParent(itemId, filesParentId);
 					treeTable.setChildrenAllowed(itemId, false);
 				}
@@ -587,8 +579,8 @@ public class SearchMissionListView extends CustomComponent {
 			SearchMissionService service = null;
 			try {
 				service = new SearchMissionService();
-				String statusName = service.endMission(itemName);
-				item.getItemProperty(STATUS).setValue(statusName);
+				service.endMission(itemName);
+				item.getItemProperty(STATUS).setValue("Avslutat");
 				treeTable.requestRepaintAll();
 			} catch (Exception e) {
 				e.printStackTrace();

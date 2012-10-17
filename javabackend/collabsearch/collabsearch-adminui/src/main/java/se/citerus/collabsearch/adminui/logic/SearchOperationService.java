@@ -1,15 +1,11 @@
 package se.citerus.collabsearch.adminui.logic;
 
-import java.awt.geom.Point2D;
 import java.awt.geom.Point2D.Double;
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.Validate;
 
-import se.citerus.collabsearch.model.FileMetadata;
 import se.citerus.collabsearch.model.SearchGroup;
 import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.SearchZone;
@@ -28,11 +24,16 @@ public class SearchOperationService { // TODO refactor into spring service
 	}
 
 	public List<Status> getAllSearchOpStatuses() throws Exception {
-		return searchOperationDAO.getAllSearchOpStatuses();
+		List<Status> statuses = searchOperationDAO.getAllSearchOpStatuses();
+		Validate.notNull(statuses);
+		return statuses;
 	}
 
 	public Status getSearchOpStatusByName(String opName) throws Exception {
-		return searchOperationDAO.getSearchOpStatusByName(opName);
+		Validate.notNull(opName);
+		Status status = searchOperationDAO.getSearchOpStatus(opName);
+		Validate.notNull(status);
+		return status;
 	}
 
 	public void cleanUp() {
@@ -52,20 +53,20 @@ public class SearchOperationService { // TODO refactor into spring service
 	}
 
 	public void deleteZone(String zoneId) throws Exception {
-		if (zoneId != null) {
-			searchOperationDAO.deleteZone(zoneId);
-		}
+		Validate.notNull(zoneId);
+		searchOperationDAO.deleteZone(zoneId);
 	}
 
 	public void deleteGroup(String groupId) throws Exception {
-		if (groupId != null) {
-			searchOperationDAO.deleteGroup(groupId);
-		}
+		Validate.notNull(groupId);
+		searchOperationDAO.deleteGroup(groupId);
 	}
 
 	public SearchZone getZone(String zoneId) throws Exception {
 		Validate.notNull(zoneId);
-		return searchOperationDAO.getZoneById(zoneId);
+		SearchZone zone = searchOperationDAO.getZoneById(zoneId);
+		Validate.notNull(zone);
+		return zone;
 	}
 
 	public String createZone(String opId, SearchZone zone) throws Exception {
@@ -111,17 +112,11 @@ public class SearchOperationService { // TODO refactor into spring service
 		}
 	}
 	
-	public List<SearchOperation> getListOfSearchOps(String missionId) {
-		try {
-			return searchOperationDAO.getAllSearchOpsForMission(missionId);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-	
 	public SearchOperation getSearchOp(String searchOpId) throws Exception {
-		return searchOperationDAO.findOperation(searchOpId);
+		Validate.notNull(searchOpId);
+		SearchOperation searchOperation = searchOperationDAO.findOperation(searchOpId);
+		Validate.notNull(searchOperation);
+		return searchOperation;
 	}
 
 	/**
@@ -130,26 +125,25 @@ public class SearchOperationService { // TODO refactor into spring service
 	 * @throws Exception
 	 */
 	public void deleteSearchOperation(String searchOpId) throws Exception {
+		Validate.notNull(searchOpId);
 		searchOperationDAO.deleteSearchOperation(searchOpId);
 	}
 
 	public void editSearchOp(SearchOperation operation, String opId, String missionId) throws Exception {
+		//TODO break into two methods 
 		if (opId == null && missionId != null) {
+			//TODO create operation object here
 			searchOperationDAO.addSearchOperation(operation, missionId);
 		} else if (opId != null && missionId == null) {
+			//TODO create operation object here
 			searchOperationDAO.editSearchOperation(operation, opId);
 		}
 	}
 
-
 	public SearchGroup getSearchGroup(String groupId) throws Exception {
-		if (groupId == null) {
-			throw new Exception("Inget gruppid specifierat");
-		}
+		Validate.notNull(groupId);
 		SearchGroup group = searchOperationDAO.getSearchGroup(groupId);
-		if (group == null) {
-			throw new Exception("Ingen gruppdata funnen");
-		}
+		Validate.notNull(group);
 		return group;
 	}
 
@@ -160,10 +154,9 @@ public class SearchOperationService { // TODO refactor into spring service
 	 * @throws Exception
 	 */
 	public Map<String, String> getSearchersByOp(String opId) throws Exception {
-		if (opId == null) {
-			throw new Exception("Inget sökoperationsid specifierat");
-		}
-		Map<String, String> map = searchOperationDAO.getUsersForSearchOp(opId); 
+		Validate.notNull(opId);
+		Map<String, String> map = searchOperationDAO.getUsersForSearchOp(opId);
+		Validate.notNull(map);
 		return map;
 	}
 

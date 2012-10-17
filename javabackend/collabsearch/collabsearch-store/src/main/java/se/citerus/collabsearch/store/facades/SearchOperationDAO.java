@@ -17,7 +17,7 @@ public interface SearchOperationDAO {
 
 	public List<Status> getAllSearchOpStatuses() throws IOException;
 
-	public Status getSearchOpStatusByName(String statusName) throws IOException;
+	public Status getSearchOpStatus(String statusName) throws IOException;
 
 	public String endOperation(String opName);
 
@@ -45,9 +45,6 @@ public interface SearchOperationDAO {
 	public String createZone(String opId, SearchZone zone) throws IOException;
 
 	public SearchOperation findOperation(String opId) throws IOException;
-
-	public List<SearchOperation> getAllSearchOpsForMission(String missionId)
-			throws IOException;
 
 	public void deleteSearchOperation(String searchOpId) throws IOException;
 

@@ -15,19 +15,13 @@
  */
 package se.citerus.collabsearch.adminui;
 
-import java.util.Locale;
-
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import se.citerus.collabsearch.adminui.logic.LocalizationService;
 
-import com.mongodb.Mongo;
 import com.vaadin.Application;
 import com.vaadin.terminal.gwt.server.HttpServletRequestListener;
-import com.vaadin.terminal.gwt.server.WebApplicationContext;
-import com.vaadin.terminal.gwt.server.WebBrowser;
 import com.vaadin.ui.Window;
 
 /**

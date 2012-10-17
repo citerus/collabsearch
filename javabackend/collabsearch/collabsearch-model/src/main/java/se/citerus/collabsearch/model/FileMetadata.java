@@ -2,23 +2,23 @@ package se.citerus.collabsearch.model;
 
 public class FileMetadata {
 	private String id;
-	private String filename;
+	private String fileName;
 	private String mimeType;
 	private String filePath;
 	
 	public FileMetadata(String id, String fileName, String mimeType, String filePath) {
-		this.setId(id);
-		this.filename = fileName;
+		this.id = id;
+		this.fileName = fileName;
 		this.mimeType = mimeType;
 		this.filePath = filePath;
 	}
 
-	public String getFilename() {
-		return filename;
+	public String getFileName() {
+		return fileName;
 	}
 
 	public void setFileName(String filename) {
-		this.filename = filename;
+		this.fileName = filename;
 	}
 
 	public String getMimeType() {

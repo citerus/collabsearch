@@ -29,7 +29,6 @@ import se.citerus.collabsearch.store.facades.SearchMissionDAO;
 import se.citerus.collabsearch.store.facades.SearchOperationDAO;
 
 public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperationDAO {
-	//TODO replace loops with Commons Collections methods
 	private static List<SearchMission> missionsList;
 	private static List<Status> statusList;
 	private List<Rank> ranksList;
@@ -63,17 +62,14 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 		//need not be implemented for in-memory storage
 	}
 
-	public String endMission(String missionId) throws IOException {
+	public void endMission(String missionId) throws IOException {
 		SearchMission mission = findMission(missionId);
 		if (mission == null) {
 			throw new IOException("Sökuppdraget " + missionId + " ej funnet");
 		}
 		
-		//to be replaced with db-stored status table/collection
 		final String endStatusName = "Avslutat uppdrag";
 		mission.setStatus(findStatusByName(endStatusName));
-		
-		return endStatusName;
 	}
 
 	private Status findStatusByName(String name) {
@@ -94,11 +90,12 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 		return null;
 	}
 
-	public List<Status> getAllStatuses() throws IOException {
+	public List<Status> getAllSearchMissionStatuses() throws IOException {
 		return statusList;
 	}
 
 	private void addMockStatuses() {
+		statusList.add(new Status(0, "Avslutat uppdrag", "Sökninguppdraget avslutat"));
 		statusList.add(new Status(1,"1.","Anmälan om försvinnande ankommer"));
 		statusList.add(new Status(2,"2.","Anhörigkontakt tas per telefon av X för att kontrollera om uppgifterna är korrekta"));
 		statusList.add(new Status(3,"3.A","OM NEJ - Anmälan avskrivs"));
@@ -115,8 +112,7 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 		statusList.add(new Status(13,"9.B","OM NEJ - Skall nytt sök göras?"));
 		statusList.add(new Status(14,"10.A","OM NEJ - Anmälan avskrivs"));
 		statusList.add(new Status(15,"10.B","OM JA - Gå till punkt 7"));
-		statusList.add(new Status(16, "Avslutat uppdrag", "Sökninguppdraget avslutat"));
-		statusList.add(new Status(17, "Okänd status", "Okänd status/processfas"));
+		statusList.add(new Status(16, "Okänd status", "Okänd status/processfas"));
 	}
 
 	private void addMockMissions(Random r) {
@@ -236,7 +232,7 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 		return null;
 	}
 	
-	public Status findStatus(String statusName) throws IOException {
+	public Status findMissionStatusByName(String statusName) throws IOException {
 		for (Status status : statusList) {
 			if (status.getName().equals(statusName)) {
 				return status;
@@ -313,7 +309,7 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 		
 		List<FileMetadata> fileList = mission.getFileList();
 		for (int i = 0; i < fileList.size(); i++) {
-			if (fileList.get(i).getFilename().equals(filename)) {
+			if (fileList.get(i).getFileName().equals(filename)) {
 				fileList.remove(i);
 				break;
 			}
@@ -325,7 +321,7 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 		SearchMission mission = findMission(missionId);
 		if (mission != null) {
 			for (FileMetadata metadata : mission.getFileList()) {
-				if (metadata.getFilename().equals(filename)) {
+				if (metadata.getFileName().equals(filename)) {
 					return metadata;
 				}
 			}
@@ -430,13 +426,13 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 	}
 
 	@Override
-	public Status getSearchOpStatusByName(String opName) throws IOException {
+	public Status getSearchOpStatus(String statusName) throws IOException {
 		for (Status status : opStatusList) {
-			if (status.getName().equals(opName)) {
+			if (status.getName().equals(statusName)) {
 				return status;
 			}
 		}
-		throw new IOException("Status " + opName + " not found");
+		throw new IOException("Status " + statusName + " not found");
 	}
 
 	@Override

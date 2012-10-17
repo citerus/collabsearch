@@ -56,10 +56,10 @@ public class FileUploadHandler implements Upload.SucceededListener,
 
 	public void uploadSucceeded(SucceededEvent event) {
 		//add filemetadata to db
-		SearchMissionService handler = null;
+		SearchMissionService service = null;
 		try {
-			handler = new SearchMissionService();
-			handler.addFileToMission(parentMissionId, metadata);
+			service = new SearchMissionService();
+			service.addFileToMission(parentMissionId, metadata);
 		} catch (RuntimeException e) {
 			e.printStackTrace();
 			listener.displayError("Fel", "Ett fel uppstod vid filöverföringen");
@@ -67,8 +67,8 @@ public class FileUploadHandler implements Upload.SucceededListener,
 			e.printStackTrace();
 			listener.displayError("Fel", e.getMessage());
 		} finally {
-			if (handler != null) {
-				handler.cleanUp();
+			if (service != null) {
+				service.cleanUp();
 			}
 			parentMissionId = null;
 			metadata = null;

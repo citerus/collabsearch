@@ -36,7 +36,7 @@ public class UserDAOMongoDB implements UserDAO {
 	public UserDAOMongoDB() {
 		try {
 			MongoOptions options = new MongoOptions();
-			options.socketTimeout = 5*60*1000;
+			options.socketTimeout = 2*60*1000;
 			mongo = new Mongo("localhost", options);
 			DB db = mongo.getDB("lookingfor");
 			userColl = db.getCollection("users");

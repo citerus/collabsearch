@@ -1,11 +1,50 @@
 //db.users.find().forEach(function(collection) {
 //	print(collection.username);
 //});
-db.users.insert({"username" : "test", "password" : "test", "email" : "awdwa@awfdf.com", "tele" : "1458373883", "role" : "admin"});
-db.users.insert({"username" : "alfa", "email" : "alfa@beta.com", "password" : "beta", "role" : "user", "tele" : "123"});
-db.searchmissions.insert({ "description" : "text...", "files" : [ "fil1.pdf", "fil2.png" ], "name" : "Sökuppdrag 1", "prio" : 0, "status" : 1 });
-db.searchmissions.insert({ "description" : "text...", "files" : [ "fil1.pdf", "fil2.png" ], "name" : "Sökuppdrag 2", "prio" : 0, "status" : 3 });
-db.searchmissions.insert({ "description" : "text...", "files" : [ "fil1.pdf", "fil2.png" ], "name" : "Sökuppdrag 3", "prio" : 0, "status" : 7 });
-db.searchops.insert({ "title" : "Sökop 2", "descr" : "blablabla", "date" : NumberLong("1221724810000"), "location" : "platsyx", "status" : "Sökning pågår" });
-db.searchops.insert({ "title" : "Sökop 3", "descr" : "blablabla", "date" : NumberLong("1221724820000"), "location" : "plats z", "status" : "Sökning pågår" });
-db.searchops.insert({ "date" : NumberLong("1221724800000"), "descr" : "blablabla", "location" : "plats x", "searchers" : [ 	{ 	"name" : "ola", 	"tele" : "123", 	"email" : "bla@bla.se" }, 	{ 	"name" : "ola", 	"tele" : "123", 	"email" : "ola@mail.se" } ], "status" : "Sökning pågår", "title" : "Sökop 1" });
+
+//insert users
+db.users.update({"username" : "test"}, {"username" : "test", "password" : "test", "email" : "awdwa@awfdf.com", "tele" : "1458373883", "role" : "admin"}, true, true);
+db.users.update({"username" : "alfa"}, {"username" : "alfa", "email" : "alfa@beta.com", "password" : "beta", "role" : "user", "tele" : "123"}, true, true);
+
+//insert searchmissions
+db.searchmissions.update({"name" : "Sökuppdrag 1"},{ "description" : "text...", "name" : "Sökuppdrag 1", "prio" : 0, "status" : 1 }, true, true);
+db.searchmissions.update({"name" : "Sökuppdrag 2"},{ "description" : "text...", "name" : "Sökuppdrag 2", "prio" : 0, "status" : 3 }, true, true);
+db.searchmissions.update({"name" : "Sökuppdrag 3"},{ "description" : "text...", "name" : "Sökuppdrag 3", "prio" : 0, "status" : 7 }, true, true);
+
+db.searchmissions.find({},{"_id" : 1}).forEach(function(doc) {
+    path = "/tmp/uploads/" + doc._id;
+    db.searchmissions.update({"_id" : doc._id}, {"$set" : {"files" : [{filename : "fil1.pdf", mimetype : "application/pdf", filepath : path}, {filename : "fil2.png", mimetype : "image/png", filepath : path}]}});
+});
+
+//insert searchoperations
+db.searchops.update({"title" : "Sökop 2"}, { "title" : "Sökop 2", "descr" : "Skallgång i skogdunge 3", "date" : NumberLong("1221724810000"), "location" : "plats x", "status" : 0 }, true, true);
+db.searchops.update({"title" : "Sökop 3"}, { "title" : "Sökop 3", "descr" : "Skallgång på kulle 104", "date" : NumberLong("1221724820000"), "location" : "plats y", "status" : 1 }, true, true);
+db.searchops.update({"title" : "Sökop 1"}, { "title" : "Sökop 1", "descr" : "Skallgång på holme 15", "date" : NumberLong("1221724800000"), "location" : "plats z", "status" : 2, "searchers" : [ { "name" : "ola", "tele" : "123", "email" : "bla@bla.se" }, { "name" : "ola", "tele" : "123", "email" : "ola@mail.se" } ]}, true, true);
+
+//assign parent mission to searchops
+result = db.searchmissions.findOne({name : "Sökuppdrag 1"});
+db.searchops.update({},{"$set" : {mission : result._id}}, false, true);
+
+//insert op statuses
+db.opstatuses.update({statusid : 0}, {"$set" : {statusid : 0, name : "Ej inledd", descr : "Sökoperationen har inte ännu inletts."}}, true, true);
+db.opstatuses.update({statusid : 1}, {"$set" : {statusid : 1, name : "Sökning inledd", descr : "Sökoperationen har inletts."}}, true, true);
+db.opstatuses.update({statusid : 2}, {"$set" : {statusid : 2, name : "Sökning avslutad", descr : "Sökoperationen har avslutats."}}, true, true);
+
+//insert mission statuses
+db.missionstatuses.update({statusid : 0}, {"$set" : {statusid : 0, name : "Avslutat uppdrag", descr : "Sökninguppdraget avslutat"}}, true, true);
+db.missionstatuses.update({statusid : 1}, {"$set" : {statusid : 1, name : "1.", descr : "Anmälan om försvinnande ankommer"}}, true, true);
+db.missionstatuses.update({statusid : 2}, {"$set" : {statusid : 2, name : "2.", descr : "Anhörigkontakt tas per telefon av X för att kontrollera om uppgifterna är korrekta"}}, true, true);
+db.missionstatuses.update({statusid : 3}, {"$set" : {statusid : 3, name : "3.A", descr : "OM NEJ - Anmälan avskrivs"}}, true, true);
+db.missionstatuses.update({statusid : 4}, {"$set" : {statusid : 4, name : "3.B", descr : "OM JA - Kontakt tas med polis av X för att kontrollera om en polisanmälan är gjord"}}, true, true);
+db.missionstatuses.update({statusid : 5}, {"$set" : {statusid : 5, name : "4.A", descr : "OM NEJ - Anmälan avskrivs"}}, true, true);
+db.missionstatuses.update({statusid : 6}, {"$set" : {statusid : 6, name : "4.B", descr : "OM JA - Möte med anhöriga och rapportering till organisationen"}}, true, true);
+db.missionstatuses.update({statusid : 7}, {"$set" : {statusid : 7, name : "5.", descr : "Analys av information. Finns tillräckligt med underlag för att påbörja sök?"}}, true, true);
+db.missionstatuses.update({statusid : 8}, {"$set" : {statusid : 8, name : "6.A", descr : "OM NEJ - Avvakta tills mer information inkommer innan fortsättning av process sker"}}, true, true);
+db.missionstatuses.update({statusid : 9}, {"$set" : {statusid : 9, name : "6.B", descr : "OM JA - Akut eftersök påbörjas"}}, true, true);
+db.missionstatuses.update({statusid : 10}, {"$set" : {statusid : 10, name : "7.", descr : "Y informerar organisation genom hemsida och telefonkejda angående tid och plats. Q informerar media. W tar fram material så som kartor, västar och patrullistor m.m"}}, true, true);
+db.missionstatuses.update({statusid : 11}, {"$set" : {statusid : 11, name : "8.", descr : "Samling - Information, gruppindelning - Sök påbörjas - Gav eftersök resultat?"}}, true, true);
+db.missionstatuses.update({statusid : 12}, {"$set" : {statusid : 12, name : "9.A", descr : "OM JA - Kontakta polisen. Sök avslutas"}}, true, true);
+db.missionstatuses.update({statusid : 13}, {"$set" : {statusid : 13, name : "9.B", descr : "OM NEJ - Skall nytt sök göras?"}}, true, true);
+db.missionstatuses.update({statusid : 14}, {"$set" : {statusid : 14, name : "10.A", descr : "OM NEJ - Anmälan avskrivs"}}, true, true);
+db.missionstatuses.update({statusid : 15}, {"$set" : {statusid : 15, name : "10.B", descr : "OM JA - Gå till punkt 7"}}, true, true);
+db.missionstatuses.update({statusid : 16}, {"$set" : {statusid : 16, name : "Okänd status", descr : "Okänd status/processfas"}}, true, true);

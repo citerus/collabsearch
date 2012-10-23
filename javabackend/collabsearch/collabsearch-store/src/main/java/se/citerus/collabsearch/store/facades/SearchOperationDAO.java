@@ -51,7 +51,7 @@ public interface SearchOperationDAO {
 	public void editSearchOperation(SearchOperation operation, String missionId)
 			throws IOException;
 
-	public void addSearchOperation(SearchOperation operation, String missionId)
+	public void createSearchOperation(SearchOperation operation, String missionId)
 			throws IOException;
 
 	public SearchGroup getSearchGroup(String groupId) throws IOException;

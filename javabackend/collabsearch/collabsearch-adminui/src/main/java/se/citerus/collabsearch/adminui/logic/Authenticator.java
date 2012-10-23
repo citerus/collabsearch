@@ -2,6 +2,7 @@ package se.citerus.collabsearch.adminui.logic;
 
 import java.io.IOException;
 
+import se.citerus.collabsearch.model.exceptions.UserNotFoundException;
 import se.citerus.collabsearch.store.facades.UserDAO;
 import se.citerus.collabsearch.store.mongodb.UserDAOMongoDB;
 
@@ -29,12 +30,17 @@ public class Authenticator {
 		if (username == null || password == null) {
 			return false;
 		}
-		boolean userFound = userDAL.findUser(username, password);
+		boolean userFound;
+		try {
+			userFound = userDAL.findUser(username, password);
+		} catch (UserNotFoundException e) {
+			userFound = false;
+		}
 		userDAL.disconnect();
 		return userFound;
 	}
 	
-	public boolean isAuthorized(String username, String role) throws IOException {
+	public boolean isAuthorized(String username, String role) throws IOException, UserNotFoundException {
 		return userDAL.findUserWithRole(username, role);
 	}
 	
@@ -49,7 +55,7 @@ public class Authenticator {
 		return null;
 	}
 
-	private void generateSaltForUser(String username) {
+	private void generateSaltForUser(String username) throws UserNotFoundException {
 		try {
 			userDAL.makeSaltForUser(username);
 		} catch (IOException e) {

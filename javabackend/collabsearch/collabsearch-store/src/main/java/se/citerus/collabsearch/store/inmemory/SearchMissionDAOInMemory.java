@@ -242,15 +242,16 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 	}
 	
 	@Override
-	public void addNewSearchMission(SearchMission mission) throws IOException {
+	public String createSearchMission(SearchMission mission) throws IOException {
 		if (mission.getId() == null || mission.equals("")) {
 			mission.setId("" + new Random().nextLong());
 		}
 		missionsList.add(mission);
+		return mission.getId();
 	}
 	
 	@Override
-	public void editExistingMission(SearchMission mission, String missionId)
+	public void editSearchMission(SearchMission mission, String missionId)
 			throws IOException {
 		for (SearchMission listedMission : missionsList) {
 			if (missionId.equals(listedMission.getId())) {
@@ -347,7 +348,7 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 	}
 	
 	@Override
-	public void addSearchOperation(SearchOperation operation, String missionId) throws IOException {
+	public void createSearchOperation(SearchOperation operation, String missionId) throws IOException {
 		operation.setId("" + new Random().nextLong());
 		for (SearchMission mission : missionsList) {
 			if (mission.getId().equals(missionId)) {

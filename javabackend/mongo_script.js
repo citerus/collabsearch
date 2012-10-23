@@ -3,23 +3,23 @@
 //});
 
 //insert users
-db.users.update({"username" : "test"}, {"username" : "test", "password" : "test", "email" : "awdwa@awfdf.com", "tele" : "1458373883", "role" : "admin"}, true, true);
-db.users.update({"username" : "alfa"}, {"username" : "alfa", "email" : "alfa@beta.com", "password" : "beta", "role" : "user", "tele" : "123"}, true, true);
+db.users.update({username : "test"}, {username : "test", password : "test", email : "awdwa@awfdf.com", tele : "1458373883", role : "admin"}, true, true);
+db.users.update({username : "alfa"}, {username : "alfa", password : "beta", email : "alfa@beta.com", tele : "123", role : "user"}, true, true);
 
 //insert searchmissions
-db.searchmissions.update({"name" : "Sökuppdrag 1"},{ "description" : "text...", "name" : "Sökuppdrag 1", "prio" : 0, "status" : 1 }, true, true);
-db.searchmissions.update({"name" : "Sökuppdrag 2"},{ "description" : "text...", "name" : "Sökuppdrag 2", "prio" : 0, "status" : 3 }, true, true);
-db.searchmissions.update({"name" : "Sökuppdrag 3"},{ "description" : "text...", "name" : "Sökuppdrag 3", "prio" : 0, "status" : 7 }, true, true);
+db.searchmissions.update({name : "Sökuppdrag 1"},{ descr : "text...", name : "Sökuppdrag 1", prio : 0, status : 1 }, true, true);
+db.searchmissions.update({name : "Sökuppdrag 2"},{ descr : "text...", name : "Sökuppdrag 2", prio : 0, status : 3 }, true, true);
+db.searchmissions.update({name : "Sökuppdrag 3"},{ descr : "text...", name : "Sökuppdrag 3", prio : 0, status : 7 }, true, true);
 
 db.searchmissions.find({},{"_id" : 1}).forEach(function(doc) {
     path = "/tmp/uploads/" + doc._id;
-    db.searchmissions.update({"_id" : doc._id}, {"$set" : {"files" : [{filename : "fil1.pdf", mimetype : "application/pdf", filepath : path}, {filename : "fil2.png", mimetype : "image/png", filepath : path}]}});
+    db.searchmissions.update({"_id" : doc._id}, {"$set" : {files : [{filename : "fil1.pdf", mimetype : "application/pdf", filepath : path}, {filename : "fil2.png", mimetype : "image/png", filepath : path}]}});
 });
 
 //insert searchoperations
-db.searchops.update({"title" : "Sökop 2"}, { "title" : "Sökop 2", "descr" : "Skallgång i skogdunge 3", "date" : NumberLong("1221724810000"), "location" : "plats x", "status" : 0 }, true, true);
-db.searchops.update({"title" : "Sökop 3"}, { "title" : "Sökop 3", "descr" : "Skallgång på kulle 104", "date" : NumberLong("1221724820000"), "location" : "plats y", "status" : 1 }, true, true);
-db.searchops.update({"title" : "Sökop 1"}, { "title" : "Sökop 1", "descr" : "Skallgång på holme 15", "date" : NumberLong("1221724800000"), "location" : "plats z", "status" : 2, "searchers" : [ { "name" : "ola", "tele" : "123", "email" : "bla@bla.se" }, { "name" : "ola", "tele" : "123", "email" : "ola@mail.se" } ]}, true, true);
+db.searchops.update({title : "Sökop 2"}, { title : "Sökop 2", descr : "Skallgång i skogdunge 3", date : NumberLong("1221724810000"), location : "plats x", status : 0 }, true, true);
+db.searchops.update({title : "Sökop 3"}, { title : "Sökop 3", descr : "Skallgång på kulle 104", date : NumberLong("1221724820000"), location : "plats y", status : 1 }, true, true);
+db.searchops.update({title : "Sökop 1"}, { title : "Sökop 1", descr : "Skallgång på holme 15", date : NumberLong("1221724800000"), location : "plats z", status : 2, "searchers" : [ { name : "ola", tele : "123", email : "bla@bla.se" }, { name : "ola", tele : "123", email : "ola@mail.se" } ]}, true, true);
 
 //assign parent mission to searchops
 result = db.searchmissions.findOne({name : "Sökuppdrag 1"});

@@ -28,6 +28,10 @@ public class SearchMission {
 		fileList = new ArrayList<FileMetadata>(0);
 		opsList = new ArrayList<SearchOperation>(0);
 	}
+	
+	public SearchMission(String name, String description, int prio, Status status) {
+		this(null, name, description, prio, status);
+	}
 
 	public String getId() {
 		return id;

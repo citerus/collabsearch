@@ -16,10 +16,13 @@ public class Status {
 	}
 	
 	public Status(int id, String name, String descr) {
-		super();
 		this.id = id;
 		this.name = name;
 		this.descr = descr;
+	}
+
+	public Status(int id) {
+		this(id, "", "");
 	}
 
 	public int getId() {

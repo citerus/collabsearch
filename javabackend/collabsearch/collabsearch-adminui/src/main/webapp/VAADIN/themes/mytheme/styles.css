@@ -1,0 +1,26 @@
+@import url("../reindeer/styles.css");
+
+/* .loginPanelStyleName { */
+/* 	background: #000000; */
+/* } */
+
+/* .mainlayout_login { */
+/* 	background: #000000; */
+/* } */
+
+.v-button-caption:hover {
+	color: red;
+}
+
+.v-table-header-wrap {
+	-webkit-border-top-left-radius: 5px;
+	-webkit-border-top-right-radius: 5px;
+	-moz-border-radius-topleft: 5px;
+	-moz-border-radius-topright: 5px;
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+}
+
+.v-table-row td:hover, .v-table-row-odd td:hover {
+	background: green;
+}

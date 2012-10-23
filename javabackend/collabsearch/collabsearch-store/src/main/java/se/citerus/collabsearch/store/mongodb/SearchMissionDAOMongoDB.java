@@ -18,6 +18,7 @@ import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.SearchOperationWrapper;
 import se.citerus.collabsearch.model.SearchZone;
 import se.citerus.collabsearch.model.Status;
+import se.citerus.collabsearch.model.exceptions.SearchMissionNotFoundException;
 import se.citerus.collabsearch.store.facades.SearchMissionDAO;
 import se.citerus.collabsearch.store.facades.SearchOperationDAO;
 
@@ -36,33 +37,37 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 
 	private Mongo mongo;
 	private DBCollection missionColl;
-	private DBCollection opStatusColl;
 	private DBCollection missionStatusColl;
+	private DBCollection opStatusColl;
 	private DBCollection operationsColl;
 
+	private enum OPTYPE {
+		INSERT, UPDATE, REMOVE
+	}
+	
 	public SearchMissionDAOMongoDB() throws Exception {
 		MongoOptions options = new MongoOptions();
 		options.socketTimeout = 2*60*1000;
-		mongo = new Mongo("localhost", options );
+		mongo = new Mongo("localhost", options);
 		DB db = mongo.getDB("lookingfor");
 		missionColl = db.getCollection("searchmissions");
+		missionStatusColl = db.getCollection("missionstatuses");
 		operationsColl = db.getCollection("searchops");
 		opStatusColl = db.getCollection("opstatuses");
-		missionStatusColl = db.getCollection("missionstatuses");
 	}
 	
+	@Override
 	public List<SearchMission> getAllSearchMissions() throws IOException {
 		BasicDBObject query = new BasicDBObject();
-		DBObject limit = new BasicDBObject("_id",0);
-		DBCursor cursor = missionColl.find(query, limit);
+		DBCursor cursor = missionColl.find(query);
 		if (cursor != null) {
 			ArrayList<SearchMission> list = new ArrayList<SearchMission>();
 			while (cursor.hasNext()) {
 				BasicDBObject dbo = (BasicDBObject) cursor.next();
 				SearchMission searchMission = new SearchMission(
-						dbo.getObjectId("_id").toString(),
+						dbo.get("_id").toString(), 
 						dbo.getString("name"), 
-						dbo.getString("description"), 
+						dbo.getString("descr"), 
 						dbo.getInt("prio"), 
 						getSearchMissionStatusById(dbo.getInt("status"))
 				);
@@ -92,15 +97,18 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 		return Collections.emptyList();
 	}
 
+	@Override
 	public void disconnect() {
 		mongo.close();
 	}
 
+	@Override
 	public void endMission(String missionId) throws IOException {
 		BasicDBObject query = makeObjectIdQuery(missionId);
 		//status : 0 = id of mission status "ended", to be move to separate collection
-		BasicDBObject update = new BasicDBObject("status", 0);
-		WriteResult result = missionColl.update(query, update);
+		BasicDBObject updateObj = new BasicDBObject("status", 0);
+		BasicDBObject setObj = new BasicDBObject("$set", updateObj);
+		WriteResult result = missionColl.update(query, setObj);
 		CommandResult lastError = result.getLastError();
 		if (!lastError.ok()) {
 			throw new IOException(lastError.getErrorMessage());
@@ -110,14 +118,13 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 	private List<SearchOperation> getAllSearchOpsForMission(String missionId)
 			throws IOException {
 		DBObject query = new BasicDBObject("mission", new ObjectId(missionId));
-		DBObject keys = new BasicDBObject(0);
-		DBCursor cursor = operationsColl.find(query, keys);
+		DBCursor cursor = operationsColl.find(query);
 		List<SearchOperation> list = new ArrayList<SearchOperation>(3);
 		if (cursor != null) {
 			while (cursor.hasNext()) {
 				BasicDBObject dbo = (BasicDBObject) cursor.next();
 				SearchOperation op = new SearchOperation();
-				op.setId(dbo.getObjectId("_id").toString());
+				op.setId(dbo.getString("_id"));
 				op.setTitle(dbo.getString("title"));
 				op.setDescr(dbo.getString("descr"));
 				op.setDate(new Date(dbo.getLong("date")));
@@ -132,6 +139,7 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 		return list;
 	}
 
+	@Override
 	public List<Status> getAllSearchMissionStatuses() throws IOException {
 		DBObject query = new BasicDBObject(0);
 		DBObject keys = new BasicDBObject("_id",0);
@@ -149,6 +157,7 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 		return list;
 	}
 
+	@Override
 	public SearchMission findMission(String missionId) 
 			throws SearchMissionNotFoundException, Exception {
 		DBObject query = new BasicDBObject("_id", new ObjectId(missionId));
@@ -159,7 +168,7 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 		SearchMission mission = new SearchMission();
 		mission.setId(dbo.getObjectId("_id").toString());
 		mission.setName(dbo.getString("name"));
-		mission.setDescription(dbo.getString(""));
+		mission.setDescription(dbo.getString("descr"));
 		mission.setPrio(dbo.getInt("prio"));
 		mission.setStatus(getSearchMissionStatusById(dbo.getInt("status")));
 		return mission;
@@ -175,11 +184,13 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 		return status;
 	}
 
+	@Override
 	public void addFileMetadata(String missionId, FileMetadata metadata)
 			throws IOException {
 		
 	}
 
+	@Override
 	public void deleteFileMetadata(String fileName, String missionId)
 			throws IOException {
 		BasicDBObject query = new BasicDBObject("_id", missionId);
@@ -199,22 +210,24 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 		}
 		BasicDBObject updateObj = new BasicDBObject("$set", new BasicDBObject("files", list));
 		WriteResult result = missionColl.update(query, updateObj);
-		checkResult(result);
+		checkResult(result, OPTYPE.REMOVE);
 	}
 
-	public void editSearchOperation(SearchOperation op,
-			String missionId) throws IOException {
-		BasicDBObject query = new BasicDBObject("_id", op.getId());
-		BasicDBObject updateObj = new BasicDBObject(5);
-		updateObj.append("title", op.getTitle());
-		updateObj.append("descr", op.getDescr());
-		updateObj.append("date", op.getDate().getTime());
-		updateObj.append("location", op.getLocation());
-		updateObj.append("status", op.getStatus().getId());
-		WriteResult result = missionColl.update(query, updateObj);
-		checkResult(result);
+	@Override
+	public FileMetadata getFileMetadata(String filename, String missionId) throws IOException {
+		BasicDBObject query = new BasicDBObject("_id", missionId);
+		BasicDBObject keys = new BasicDBObject("files", 1).append("_id", 0);
+		BasicDBObject dbo = (BasicDBObject) missionColl.findOne(query, keys);
+		if (dbo == null) {
+			throw new IOException();
+		}
+		return new FileMetadata(null, 
+				dbo.getString("filename"), 
+				dbo.getString("mimetype"), 
+				dbo.getString("filepath"));
 	}
 
+	@Override
 	public Status findMissionStatusByName(String statusName) throws IOException {
 		DBObject query = new BasicDBObject("name", statusName);
 		DBObject keys = new BasicDBObject("_id", 0);
@@ -230,21 +243,30 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 	}
 
 	@Override
-	public void addNewSearchMission(SearchMission mission) throws IOException {
+	public String createSearchMission(SearchMission mission) throws IOException {
 		BasicDBObject dbo = new BasicDBObject();
-		//TODO insert mission data into dbo
-		missionColl.insert(dbo);
+		dbo.append("name", mission.getName());
+		dbo.append("descr", mission.getDescription());
+		dbo.append("prio", mission.getPrio());
+		dbo.append("status", mission.getStatus().getId());
+		dbo.append("files", new BasicDBList());
+		WriteResult result = missionColl.insert(dbo);
+		checkResult(result, OPTYPE.INSERT);
+		return dbo.getObjectId("_id").toString();
 	}
 
 	@Override
-	public void editExistingMission(SearchMission mission, String missionId)
+	public void editSearchMission(SearchMission mission, String missionId)
 			throws IOException {
-		
-	}
-
-	@Override
-	public FileMetadata getFileMetadata(String filename, String missionId) {
-		return null;
+		BasicDBObject query = makeObjectIdQuery(missionId);
+		BasicDBObject dbo = new BasicDBObject();
+		dbo.append("name", mission.getName());
+		dbo.append("descr", mission.getDescription());
+		dbo.append("prio", mission.getPrio());
+		dbo.append("status", mission.getStatus().getId());
+		BasicDBObject setObj = new BasicDBObject("$set", dbo);
+		WriteResult result = missionColl.update(query, setObj);
+		checkResult(result, OPTYPE.UPDATE);
 	}
 
 	@Override
@@ -257,9 +279,23 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 	}
 
 	@Override
-	public void addSearchOperation(SearchOperation operation, String missionId) throws IOException {
+	public void createSearchOperation(SearchOperation operation, String missionId) throws IOException {
 	}
 
+	@Override
+	public void editSearchOperation(SearchOperation op,
+			String missionId) throws IOException {
+		BasicDBObject query = new BasicDBObject("_id", op.getId());
+		BasicDBObject updateObj = new BasicDBObject(5);
+		updateObj.append("title", op.getTitle());
+		updateObj.append("descr", op.getDescr());
+		updateObj.append("date", op.getDate().getTime());
+		updateObj.append("location", op.getLocation());
+		updateObj.append("status", op.getStatus().getId());
+		WriteResult result = operationsColl.update(query, updateObj);
+		checkResult(result, OPTYPE.UPDATE);
+	}
+	
 	@Override
 	public SearchGroup getSearchGroup(String groupId) throws IOException {
 		return null;
@@ -496,13 +532,18 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 		return basicDBObject;
 	}
 	
-	private void checkResult(WriteResult result) throws IOException {
+	private void checkResult(WriteResult result, OPTYPE opType) throws IOException {
 		CommandResult lastError = result.getLastError();
 		if (!lastError.ok()) {
 			throw new IOException(lastError.getErrorMessage());
 		}
-		if (result.getN() == 0) {
-			throw new IOException("No documents were affected by the operation");
+		if (result.getError() != null) {
+			throw new IOException(result.getError());
+		}
+		if (opType == OPTYPE.UPDATE || opType == OPTYPE.REMOVE) {
+			if (result.getN() == 0) {
+				throw new IOException("No documents were affected by the operation");
+			}
 		}
 	}
 }

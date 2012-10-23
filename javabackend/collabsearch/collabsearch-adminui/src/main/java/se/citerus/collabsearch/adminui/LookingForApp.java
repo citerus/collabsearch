@@ -46,6 +46,7 @@ public class LookingForApp extends Application implements HttpServletRequestList
 		window = new MainWindow();
 		((MainWindow)window).initWindow();
 		setMainWindow(window);
+		setTheme("mytheme");
 	}
 
 	public static LookingForApp getInstance() {

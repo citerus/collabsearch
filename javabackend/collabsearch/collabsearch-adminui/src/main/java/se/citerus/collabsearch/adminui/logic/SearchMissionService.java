@@ -45,26 +45,34 @@ public class SearchMissionService { //TODO refactor into spring service
 	}
 	
 	public List<Status> getListOfStatuses() throws Exception {
-		return searchMissionDAO.getAllSearchMissionStatuses();
+		List<Status> list = searchMissionDAO.getAllSearchMissionStatuses();
+		Validate.notNull(list);
+		Validate.notEmpty(list);
+		return list;
 	}
 
 	public SearchMission getSearchMissionData(String missionId) throws Exception {
 		Validate.notNull(missionId);
-		return searchMissionDAO.findMission(missionId);
+		SearchMission searchMission = searchMissionDAO.findMission(missionId);
+		Validate.notNull(searchMission);
+		return searchMission;
 	}
 
-	public void addOrModifyMission(SearchMission mission, String missionId) throws Exception {
-		//break into two methods
+	public String addOrModifyMission(SearchMission mission, String missionId) throws Exception {
+		Validate.notNull(mission);
+		//TODO break into two methods
 		if (missionId == null) {
-			//create mission obj here instead
-			searchMissionDAO.addNewSearchMission(mission);
+			//TODO create mission obj here instead
+			return searchMissionDAO.createSearchMission(mission);
 		} else {
-			//create mission obj here instead
-			searchMissionDAO.editExistingMission(mission, missionId);
+			//TODO create mission obj here instead
+			searchMissionDAO.editSearchMission(mission, missionId);
+			return null;
 		}
 	}
 	
 	public void addFileToMission(String missionId, FileMetadata metadata) throws Exception {
+		//TODO create filemetadata here instead
 		Validate.notNull(missionId);
 		Validate.notNull(metadata);
 		searchMissionDAO.addFileMetadata(missionId, metadata);
@@ -81,7 +89,9 @@ public class SearchMissionService { //TODO refactor into spring service
 
 	public Status getStatusByName(String statusName) throws Exception {
 		Validate.notNull(statusName);
-		return searchMissionDAO.findMissionStatusByName(statusName);
+		Status status = searchMissionDAO.findMissionStatusByName(statusName);
+		Validate.notNull(status);
+		return status;
 	}
 
 }

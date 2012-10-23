@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Random;
 
 import se.citerus.collabsearch.model.User;
+import se.citerus.collabsearch.model.exceptions.UserNotFoundException;
 import se.citerus.collabsearch.store.facades.UserDAO;
 
 import com.mongodb.BasicDBList;
@@ -49,7 +50,7 @@ public class UserDAOMongoDB implements UserDAO {
 		}
 	}
 
-	public boolean findUser(String username, char[] password) throws IOException {
+	public boolean findUser(String username, char[] password) throws IOException, UserNotFoundException {
 		try {
 			BasicDBObject query = new BasicDBObject("username", username).
 					append("password", String.valueOf(password));
@@ -59,6 +60,8 @@ public class UserDAOMongoDB implements UserDAO {
 						String.valueOf(password).equals(result.get("password"))) {
 					return true; //auth successful
 				}
+			} else {
+				throw new UserNotFoundException();
 			}
 		} catch (MongoException e) {
 			throw new IOException("Kontakt med databasen kunde ej upprättas", e);
@@ -70,7 +73,7 @@ public class UserDAOMongoDB implements UserDAO {
 		mongo.close();
 	}
 
-	public boolean findUserWithRole(String username, String role) throws IOException {
+	public boolean findUserWithRole(String username, String role) throws IOException, UserNotFoundException {
 		try {
 			BasicDBObject query = new BasicDBObject("username",username).append("role", role);
 			DBObject result = userColl.findOne(query);
@@ -133,7 +136,7 @@ public class UserDAOMongoDB implements UserDAO {
 		return list;
 	}
 
-	public User getUserByUsername(String username) throws IOException {
+	public User getUserByUsername(String username) throws IOException, UserNotFoundException {
 		User user = null;
 		try {
 			BasicDBObject query = new BasicDBObject("username",username);
@@ -154,7 +157,7 @@ public class UserDAOMongoDB implements UserDAO {
 		return user;
 	}
 
-	public void deleteUserByUsername(String username) throws IOException {
+	public void deleteUserByUsername(String username) throws IOException, UserNotFoundException {
 		try {
 			BasicDBObject query = new BasicDBObject("username", username);
 			WriteResult result = userColl.remove(query);
@@ -221,7 +224,7 @@ public class UserDAOMongoDB implements UserDAO {
 		}
 	}
 
-	public void editExistingUser(User user) throws IOException {
+	public void editExistingUser(User user) throws IOException, UserNotFoundException {
 		BasicDBObject query = new BasicDBObject("username", user.getUsername());
 		BasicDBObject userObject = makeUserDBO(user);
 		WriteResult result = userColl.update(query, userObject);

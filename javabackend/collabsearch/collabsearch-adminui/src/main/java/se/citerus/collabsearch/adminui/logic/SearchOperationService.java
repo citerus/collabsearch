@@ -1,10 +1,11 @@
 package se.citerus.collabsearch.adminui.logic;
 
+import static org.apache.commons.lang.Validate.notEmpty;
+import static org.apache.commons.lang.Validate.notNull;
+
 import java.awt.geom.Point2D.Double;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.lang.Validate;
 
 import se.citerus.collabsearch.model.SearchGroup;
 import se.citerus.collabsearch.model.SearchOperation;
@@ -25,14 +26,14 @@ public class SearchOperationService { // TODO refactor into spring service
 
 	public List<Status> getAllSearchOpStatuses() throws Exception {
 		List<Status> statuses = searchOperationDAO.getAllSearchOpStatuses();
-		Validate.notNull(statuses);
+		notEmpty(statuses);
 		return statuses;
 	}
 
 	public Status getSearchOpStatusByName(String opName) throws Exception {
-		Validate.notNull(opName);
+		notEmpty(opName);
 		Status status = searchOperationDAO.getSearchOpStatus(opName);
-		Validate.notNull(status);
+		notNull(status);
 		return status;
 	}
 
@@ -45,35 +46,34 @@ public class SearchOperationService { // TODO refactor into spring service
 	}
 
 	public String endOperation(String opId) throws Exception {
-		if (opId != null && !opId.equals("")) {
-			String statusName = searchOperationDAO.endOperation(opId);
-			return statusName;
-		}
-		throw new Exception("Felaktigt operations- eller uppdragsnamn");
+		notEmpty(opId);
+		String statusName = searchOperationDAO.endOperation(opId);
+		notEmpty(statusName);
+		return statusName;
 	}
 
 	public void deleteZone(String zoneId) throws Exception {
-		Validate.notNull(zoneId);
+		notEmpty(zoneId);
 		searchOperationDAO.deleteZone(zoneId);
 	}
 
 	public void deleteGroup(String groupId) throws Exception {
-		Validate.notNull(groupId);
+		notEmpty(groupId);
 		searchOperationDAO.deleteGroup(groupId);
 	}
 
 	public SearchZone getZone(String zoneId) throws Exception {
-		Validate.notNull(zoneId);
+		notEmpty(zoneId);
 		SearchZone zone = searchOperationDAO.getZoneById(zoneId);
-		Validate.notNull(zone);
+		notNull(zone);
 		return zone;
 	}
 
 	public String createZone(String opId, SearchZone zone) throws Exception {
-		Validate.notNull(opId);
-		Validate.notNull(zone);
+		notEmpty(opId);
+		notNull(zone);
 		String zoneId = searchOperationDAO.createZone(opId, zone);
-		Validate.notNull(zoneId);
+		notEmpty(zoneId);
 		return zoneId;
 	}
 
@@ -95,27 +95,25 @@ public class SearchOperationService { // TODO refactor into spring service
 		
 		SearchZone zone = new SearchZone(title, priority, points, zoomLevel);
 		String createdZoneId = searchOperationDAO.createZone(opId, zone);
-		Validate.notNull(createdZoneId);
+		notEmpty(createdZoneId);
 	}
 	
 	private void validateZoneInput(String id, String title, String prioStr,
 			Double[] points, int zoomLevel) {
-		Validate.notNull(id);
-		Validate.notNull(title);
-		Validate.notEmpty(title);
-		Validate.notNull(prioStr);
-		Validate.notEmpty(prioStr);
-		Validate.notNull(points); //XXX should empty zones be allowed?
-		Validate.notEmpty(points);
+		notEmpty(id);
+		notEmpty(title);
+		notEmpty(prioStr);
+		notNull(points); //XXX should empty zones be allowed?
+		notEmpty(points);
 		if (zoomLevel <= 0) {
 			throw new IllegalArgumentException("Zoom level must be higher than zero.");
 		}
 	}
 	
 	public SearchOperation getSearchOp(String searchOpId) throws Exception {
-		Validate.notNull(searchOpId);
+		notEmpty(searchOpId);
 		SearchOperation searchOperation = searchOperationDAO.findOperation(searchOpId);
-		Validate.notNull(searchOperation);
+		notNull(searchOperation);
 		return searchOperation;
 	}
 
@@ -125,7 +123,7 @@ public class SearchOperationService { // TODO refactor into spring service
 	 * @throws Exception
 	 */
 	public void deleteSearchOperation(String searchOpId) throws Exception {
-		Validate.notNull(searchOpId);
+		notEmpty(searchOpId);
 		searchOperationDAO.deleteSearchOperation(searchOpId);
 	}
 
@@ -133,7 +131,7 @@ public class SearchOperationService { // TODO refactor into spring service
 		//TODO break into two methods 
 		if (opId == null && missionId != null) {
 			//TODO create operation object here
-			searchOperationDAO.addSearchOperation(operation, missionId);
+			searchOperationDAO.createSearchOperation(operation, missionId);
 		} else if (opId != null && missionId == null) {
 			//TODO create operation object here
 			searchOperationDAO.editSearchOperation(operation, opId);
@@ -141,9 +139,9 @@ public class SearchOperationService { // TODO refactor into spring service
 	}
 
 	public SearchGroup getSearchGroup(String groupId) throws Exception {
-		Validate.notNull(groupId);
+		notEmpty(groupId);
 		SearchGroup group = searchOperationDAO.getSearchGroup(groupId);
-		Validate.notNull(group);
+		notNull(group);
 		return group;
 	}
 
@@ -154,9 +152,9 @@ public class SearchOperationService { // TODO refactor into spring service
 	 * @throws Exception
 	 */
 	public Map<String, String> getSearchersByOp(String opId) throws Exception {
-		Validate.notNull(opId);
+		notEmpty(opId);
 		Map<String, String> map = searchOperationDAO.getUsersForSearchOp(opId);
-		Validate.notNull(map);
+		notNull(map);
 		return map;
 	}
 

@@ -1,4 +1,4 @@
-package se.citerus.collabsearch.store.mongodb;
+package se.citerus.collabsearch.model.exceptions;
 
 public class SearchMissionNotFoundException extends Exception {
 

@@ -18,23 +18,25 @@ public class LoginView extends CustomComponent {
 		setCompositionRoot(mainLayout);
 	}
 	
-	public Panel getView() {
-		return null;
-	}
-
 	private void buildMainLayout() {
 		mainLayout = new VerticalLayout();
 		mainLayout.setWidth(100f, UNITS_PERCENTAGE);
 		mainLayout.setHeight(100f, UNITS_PERCENTAGE);
+		mainLayout.setStyleName("mainlayout_login");
+		
 		Panel loginPanel = new Panel("Collaborative Search Admin Login");
+		loginPanel.setStyleName("loginPanelStyleName");
 		loginPanel.setWidth("250px");
+		
 		LoginForm loginForm = new LoginForm();
+		loginForm.setStyleName("loginFormStyleName");
 		loginForm.setUsernameCaption("Användarnamn:");
 		loginForm.setPasswordCaption("Lösenord:");
 		loginForm.setLoginButtonCaption("Logga in");
 		loginForm.addListener(listener);
 		//loginForm.setWidth("100%");
 		loginForm.setSizeFull();
+
 		loginPanel.addComponent(loginForm);
 		mainLayout.addComponent(loginPanel);
 		mainLayout.setComponentAlignment(loginPanel, Alignment.MIDDLE_CENTER);

@@ -1,13 +1,16 @@
 package se.citerus.collabsearch.adminui.view.login;
 
+import static com.vaadin.ui.Alignment.MIDDLE_CENTER;
 import se.citerus.collabsearch.adminui.ViewSwitchController;
 
+import com.vaadin.terminal.ThemeResource;
 import com.vaadin.terminal.gwt.client.ui.AlignmentInfo.Bits;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.CustomComponent;
+import com.vaadin.ui.Embedded;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.VerticalLayout;
@@ -57,10 +60,15 @@ public class WelcomeView extends CustomComponent {
 		outerLayout.setHeight("100%");
 		outerLayout.setSpacing(true);
 		
+		Embedded embImg = new Embedded("", 
+			new ThemeResource("../mytheme/dual_color_extended_trans.png"));
+		outerLayout.addComponent(embImg);
+		outerLayout.setComponentAlignment(embImg, MIDDLE_CENTER);
+		
 		Label loginSuccessLabel = new Label("Inloggningen lyckades!");
 		loginSuccessLabel.setWidth(null);
 		outerLayout.addComponent(loginSuccessLabel);
-		outerLayout.setComponentAlignment(loginSuccessLabel, Alignment.MIDDLE_CENTER);
+		outerLayout.setComponentAlignment(loginSuccessLabel, MIDDLE_CENTER);
 		
 		HorizontalLayout innerLayout = new HorizontalLayout();
 		innerLayout.setSpacing(true);
@@ -72,10 +80,10 @@ public class WelcomeView extends CustomComponent {
 		innerLayout.addComponent(logoutButton);
 		innerLayout.addComponent(searchMissionButton);
 		outerLayout.addComponent(innerLayout);
-		outerLayout.setComponentAlignment(innerLayout, Alignment.MIDDLE_CENTER);
+		outerLayout.setComponentAlignment(innerLayout, MIDDLE_CENTER);
 		
 		mainLayout.addComponent(outerLayout);
-		mainLayout.setComponentAlignment(outerLayout, Alignment.MIDDLE_CENTER);
+		mainLayout.setComponentAlignment(outerLayout, MIDDLE_CENTER);
 		mainLayout.setExpandRatio(outerLayout, UNITS_PERCENTAGE);
 		mainLayout.setMargin(true);
 		

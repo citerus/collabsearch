@@ -71,10 +71,11 @@ public class MainWindow extends Window implements LoginListener, ViewSwitchContr
 			displayError("Fel", e.getMessage());
 		}
 		
-		WebApplicationContext context = (WebApplicationContext) getApplication().getContext();
-		int h = context.getBrowser().getScreenHeight();
-		int w = context.getBrowser().getScreenWidth();
-		System.out.println("Height:" + h + " Width:" + w);
+		//Outputs height and width of the monitor, not very useful here...
+//		WebApplicationContext context = (WebApplicationContext) getApplication().getContext();
+//		int h = context.getBrowser().getScreenHeight();
+//		int w = context.getBrowser().getScreenWidth();
+//		System.out.println("Height:" + h + " Width:" + w);
 	}
 
 	@Override

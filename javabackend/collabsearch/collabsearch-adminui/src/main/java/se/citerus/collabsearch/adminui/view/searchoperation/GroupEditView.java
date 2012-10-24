@@ -143,6 +143,7 @@ public class GroupEditView extends CustomComponent {
 		searcherTable.setHeight("200px");
 		searcherTable.setSelectable(true);
 		searcherTable.setDragMode(Table.TableDragMode.ROW);
+		searcherTable.setStyleName("searcher-table");
 		
 		groupTree = new Tree("Sökgrupp");
 		groupTree.setSizeUndefined();

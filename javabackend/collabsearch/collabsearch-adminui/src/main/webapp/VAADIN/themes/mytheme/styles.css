@@ -1,15 +1,85 @@
 @import url("../reindeer/styles.css");
 
-/* .loginPanelStyleName { */
-/* 	background: #000000; */
-/* } */
+/* As Vaadin is a single page app, this file applies to everything. */
 
-/* .mainlayout_login { */
-/* 	background: #000000; */
-/* } */
+.v-theme-mytheme {
+	background-image: linear-gradient(top, #66BBDD 11%, #E2F0F5 100%);
+	background-image: -o-linear-gradient(top, #66BBDD 11%, #E2F0F5 100%);
+	background-image: -moz-linear-gradient(top, #66BBDD 11%, #E2F0F5 100%) !important;
+	background-image: -webkit-linear-gradient(top, #66BBDD 11%, #E2F0F5 100%);
+	background-image: -ms-linear-gradient(top, #66BBDD 11%, #E2F0F5 100%);
+	
+	background-image: -webkit-gradient(
+		linear,
+		left top,
+		left bottom,
+		color-stop(0.11, #66BBDD),
+		color-stop(1, #E2F0F5)
+	);
+}
 
 .v-button-caption:hover {
-	color: red;
+/* 	color: #0000AB; */ /*dark blue*/
+	color: #FFDD35; /*dark yellow*/
+}
+
+.v-button, 
+.v-button-caption:hover {
+	cursor: pointer;
+}
+
+.small-logo img {
+	width: 80px;
+    height: 60px;
+}
+
+h1 {
+	text-align: center;
+	color: #0000AB;
+    font: Arial,Tahoma,Helvetica,FreeSans,sans-serif;
+    font-family: Arial,Tahoma,Helvetica,FreeSans,sans-serif;
+    text-shadow: -1px -1px 1px rgba(0, 0, 0, 0.2);
+}
+
+.v-label {
+	font: 'Helvetica', Helvetica, sans-serif;
+	font-family: 'Helvetica', Helvetica, sans-serif;
+}
+
+.v-app-loginpage .v-button, 
+.v-app-loginpage .v-button {
+	margin-left: auto;
+	margin-right: auto;
+	text-align: center; 
+	margin: 1em auto; 
+	margin-left: 43px;
+}
+
+.login-outer-panel {
+	margin-top: 1cm;
+/* 	opacity: 0.75; */
+/* 	-moz-opacity: 0.75; */
+/* 	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha"(Opacity=75); */
+	-webkit-box-shadow: 1px 2px 1px 0px rgba(0, 0, 0, 0.5);
+	box-shadow: 1px 2px 1px 0px rgba(0, 0, 0, 0.5);
+	-webkit-border-radius: 10px;
+	-moz-border-radius: 10px;
+	border-radius: 10px;
+	background-image: url(../mytheme/transp_background.png);
+/* 	background: white repeat; */
+}
+
+#loginf input {
+	opacity: 1;
+	-moz-opacity: 1;
+	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha"(Opacity=100);
+/* 	background-image: url('../mytheme/white_bg_pic.png'); */
+}
+
+#loginf > div {
+	margin-left: 53px;
+	font-weight: bold;
+/* 	background-image: url('../mytheme/white_bg_pic.png'); */
 }
 
 .v-table-header-wrap {
@@ -21,6 +91,7 @@
 	border-top-right-radius: 5px;
 }
 
-.v-table-row td:hover, .v-table-row-odd td:hover {
-	background: green;
+.searcher-table .v-table-row td:hover, 
+.searcher-table .v-table-row-odd td:hover {
+	background: #66BBDD;
 }

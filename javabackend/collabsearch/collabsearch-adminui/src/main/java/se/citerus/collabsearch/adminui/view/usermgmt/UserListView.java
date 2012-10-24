@@ -10,14 +10,17 @@ import se.citerus.collabsearch.model.User;
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.util.BeanContainer;
+import com.vaadin.terminal.ThemeResource;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.CustomComponent;
+import com.vaadin.ui.Embedded;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Layout;
+import com.vaadin.ui.Panel;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.VerticalLayout;
 
@@ -35,7 +38,7 @@ public class UserListView extends CustomComponent {
 	private BeanContainer<String, User> beans;
 	
 	public UserListView(final ViewSwitchController listener) {
-		mainLayout = buildMainLayout2();
+		mainLayout = buildMainLayout();
 		setCompositionRoot(mainLayout);
 		listener.setMainWindowCaption("Collaborative Search - Användare");
 		
@@ -108,10 +111,13 @@ public class UserListView extends CustomComponent {
 		table.setColumnHeaders(new String[]{"Användarnamn","Roll"});
 	}
 	
-	private Layout buildMainLayout2() {
+	private Layout buildMainLayout() {
 		VerticalLayout mainLayout2 = new VerticalLayout();
 		mainLayout2.setSizeFull();
 		mainLayout2.setMargin(false, false, false, true);
+		
+		Panel outerPanel = new Panel();
+		outerPanel.setWidth("36%");
 		
 		VerticalLayout outerLayout = new VerticalLayout();
 		outerLayout.setWidth("33%");
@@ -119,13 +125,16 @@ public class UserListView extends CustomComponent {
 		HorizontalLayout upperLayout = new HorizontalLayout();
 		upperLayout.setSpacing(true);
 		
-		homeButton = new Button("Tillbaka");
-		upperLayout.addComponent(homeButton);
-		upperLayout.setComponentAlignment(homeButton, Alignment.MIDDLE_LEFT);
+		Embedded embImg = new Embedded("", 
+			new ThemeResource("../mytheme/dual_color_extended_trans.png"));
+		embImg.setStyleName("small-logo");
+		upperLayout.addComponent(embImg);
+		upperLayout.setComponentAlignment(embImg, Alignment.MIDDLE_LEFT);
 		
 		headerLabel = new Label("<h1><b>Användare</b></h1>");
 		headerLabel.setContentMode(Label.CONTENT_XHTML);
 		upperLayout.addComponent(headerLabel);
+		upperLayout.setComponentAlignment(headerLabel, Alignment.MIDDLE_LEFT);
 		
 		outerLayout.addComponent(upperLayout);
 		
@@ -134,23 +143,38 @@ public class UserListView extends CustomComponent {
 		table.setSelectable(true);
 		table.setImmediate(true);
 		outerLayout.addComponent(table);
-		
+
 		HorizontalLayout buttonLayout = new HorizontalLayout();
+		buttonLayout.setWidth("100%");
 		buttonLayout.setSpacing(true);
+		buttonLayout.setMargin(true, false, false, false);
+
+		homeButton = new Button("Tillbaka");
+		buttonLayout.addComponent(homeButton);
+		
+		upperLayout.addComponent(buttonLayout);
+		
+		HorizontalLayout innerButtonLayout = new HorizontalLayout();
+		innerButtonLayout.setSpacing(true);
 		
 		deleteButton = new Button("Ta bort");
-		buttonLayout.addComponent(deleteButton);
+		innerButtonLayout.addComponent(deleteButton);
 		
 		editButton = new Button("Redigera");
-		buttonLayout.addComponent(editButton);
+		innerButtonLayout.addComponent(editButton);
 		
 		addButton = new Button("Lägg till");
-		buttonLayout.addComponent(addButton);
+		innerButtonLayout.addComponent(addButton);
+		
+		buttonLayout.addComponent(innerButtonLayout);
+		buttonLayout.setComponentAlignment(innerButtonLayout, Alignment.MIDDLE_RIGHT);
 		
 		outerLayout.addComponent(buttonLayout);
 		outerLayout.setComponentAlignment(buttonLayout, Alignment.TOP_RIGHT);
 		
-		mainLayout2.addComponent(outerLayout);
+		outerPanel.addComponent(outerLayout);
+		mainLayout2.addComponent(outerPanel);
+		mainLayout2.setComponentAlignment(outerPanel, Alignment.TOP_CENTER);
 		
 		return mainLayout2;
 	}

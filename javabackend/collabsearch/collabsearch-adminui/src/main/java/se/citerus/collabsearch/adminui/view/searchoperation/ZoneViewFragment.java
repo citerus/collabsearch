@@ -56,6 +56,7 @@ public class ZoneViewFragment extends CustomComponent {
 		
 		HorizontalLayout mapControlLayout = new HorizontalLayout();
 		mapControlLayout.setSpacing(true);
+		mapControlLayout.setMargin(true, false, false, false);
 		
 		clearMapButton = new Button("Rensa kartan");
 		mapControlLayout.addComponent(clearMapButton);

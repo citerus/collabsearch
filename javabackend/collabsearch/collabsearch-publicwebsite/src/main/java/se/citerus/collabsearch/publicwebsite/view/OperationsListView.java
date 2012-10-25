@@ -140,9 +140,10 @@ public class OperationsListView extends CustomComponent {
 		listPanel.setHeight("600px");
 		listPanel.setWidth("50%");
 		listLayout = new VerticalLayout();
-		listLayout.setMargin(false, true, false, true);
+		listLayout.setMargin(true, true, false, true);
 		listLayout.setSpacing(true);
 		listPanel.setContent(listLayout);
+		listPanel.setStyleName("op-list");
 		mainLayout.addComponent(listPanel);
 		
 		//build "ApplyMe" popup window
@@ -152,7 +153,9 @@ public class OperationsListView extends CustomComponent {
 		buildAdvSearchWindow();
 		
 		HorizontalLayout bottomLayout = new HorizontalLayout();
+		bottomLayout.setMargin(true, false, false, false);
 		bottomLayout.setWidth("100%");
+		bottomLayout.setStyleName("bottom-layout");
 		refreshButton = new Button("Uppdatera");
 		bottomLayout.addComponent(refreshButton);
 		mainLayout.addComponent(bottomLayout);
@@ -291,6 +294,7 @@ public class OperationsListView extends CustomComponent {
 		Panel panel = new Panel();
 		panel.setWidth("100%");
 		panel.setData(id);
+		panel.setStyleName("op-panel");
 		
 		VerticalLayout layout = new VerticalLayout();
 		layout.setWidth("100%");
@@ -307,9 +311,16 @@ public class OperationsListView extends CustomComponent {
 		Label descrLabel = new Label(opDescr);
 		layout.addComponent(descrLabel);
 		
+		HorizontalLayout bottomLayout = new HorizontalLayout();
+		bottomLayout.setStyleName("ops-bottom-layout");
+		bottomLayout.setMargin(true, true, true, false);
+		
 		Button lowerRightButton = new Button(buttonText, lowerRightClickListener);
-		layout.addComponent(lowerRightButton);
-		layout.setComponentAlignment(lowerRightButton, Alignment.BOTTOM_RIGHT);
+		lowerRightButton.setStyleName("read-more-button");
+		bottomLayout.addComponent(lowerRightButton);
+		
+		layout.addComponent(bottomLayout);
+		layout.setComponentAlignment(bottomLayout, Alignment.BOTTOM_RIGHT);
 		
 		panel.setContent(layout);
 		return panel;

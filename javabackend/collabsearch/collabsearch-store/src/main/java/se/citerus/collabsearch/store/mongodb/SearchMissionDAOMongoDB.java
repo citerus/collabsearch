@@ -279,7 +279,8 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 	}
 
 	@Override
-	public void createSearchOperation(SearchOperation operation, String missionId) throws IOException {
+	public String createSearchOperation(SearchOperation operation, String missionId) throws IOException {
+		return null;
 	}
 
 	@Override

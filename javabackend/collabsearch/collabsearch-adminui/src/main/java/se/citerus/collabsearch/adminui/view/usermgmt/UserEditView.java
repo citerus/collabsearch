@@ -9,6 +9,7 @@ import se.citerus.collabsearch.model.validator.PhoneNumberValidator;
 
 import com.vaadin.data.validator.EmailValidator;
 import com.vaadin.data.validator.StringLengthValidator;
+import com.vaadin.terminal.ThemeResource;
 import com.vaadin.ui.AbstractField;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
@@ -16,8 +17,10 @@ import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.CustomComponent;
+import com.vaadin.ui.Embedded;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
+import com.vaadin.ui.Panel;
 import com.vaadin.ui.PasswordField;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
@@ -64,12 +67,12 @@ public class UserEditView extends CustomComponent {
 		if (selectedUsername != null) {
 			populateForms(selectedUsername);
 			popupMessage.setValue("Användare redigerad.");
-			headerLabel.setValue("Redigera användare");
+			headerLabel.setValue("<h1><b>Redigera användare</b></h1>");
 			existingUser = true;
 		} else {
 			emptyForms();
 			popupMessage.setValue("Ny användare skapad.");
-			headerLabel.setValue("Ny användare");
+			headerLabel.setValue("<h1><b>Ny användare</b></h1>");
 			existingUser = false;
 		}
 	}
@@ -114,56 +117,74 @@ public class UserEditView extends CustomComponent {
 
 	private void buildMainLayout() {
 		mainLayout = new VerticalLayout();
-		mainLayout.setMargin(false, false, false, true);
+		mainLayout.setSizeFull();
+		mainLayout.setMargin(true);
 
+		Panel mainPanel = new Panel();
+		mainPanel.setWidth("25%");
+		
+		HorizontalLayout headerLayout = new HorizontalLayout();
+		headerLayout.setSpacing(true);
+//		headerLayout.setWidth("100%");
+		
+		Embedded logo = new Embedded("", 
+			new ThemeResource("../mytheme/dual_color_extended_trans.png"));
+		logo.setStyleName("small-logo");
+		headerLayout.addComponent(logo);
+		headerLayout.setComponentAlignment(logo, Alignment.TOP_LEFT);
+		
 		headerLabel = new Label("<h1><b>Användare</b></h1>");
 		headerLabel.setContentMode(Label.CONTENT_XHTML);
-		mainLayout.addComponent(headerLabel);
+		headerLayout.addComponent(headerLabel);
+		headerLayout.setComponentAlignment(headerLabel, Alignment.TOP_LEFT);
 		
-		mainLayout.addComponent(new Label("Namn"));
+		mainPanel.addComponent(headerLayout);
+		
+		mainPanel.addComponent(new Label("Namn"));
 		nameField = new TextField();
-		mainLayout.addComponent(nameField);
+		mainPanel.addComponent(nameField);
 		nameField.addValidator(new StringLengthValidator(
 				"Invalid username, must be between 1-99 characters", 1, 99, false));
 		nameField.setRequired(true);
 		nameField.setImmediate(true);
 		nameField.setNullRepresentation("");
 		
-		mainLayout.addComponent(new Label("Lösenord"));
+		mainPanel.addComponent(new Label("Lösenord"));
 		passwordField = new PasswordField();
-		mainLayout.addComponent(passwordField);
+		mainPanel.addComponent(passwordField);
 		passwordField.addValidator(new StringLengthValidator(
 				"Ogiltigt lösenord, måste vara mellan 1-99 tecken", 1, 99, false));
 		passwordField.setRequired(true);
 		passwordField.setImmediate(true);
 		passwordField.setNullRepresentation("");
 		
-		mainLayout.addComponent(new Label("Epost"));
+		mainPanel.addComponent(new Label("Epost"));
 		emailField = new TextField();
-		mainLayout.addComponent(emailField);
+		mainPanel.addComponent(emailField);
 		emailField.addValidator(new EmailValidator("Ogiltig mailadress"));
 		emailField.setRequired(true);
 		emailField.setImmediate(true);
 		emailField.setNullRepresentation("");
 		
-		mainLayout.addComponent(new Label("Telefon"));
+		mainPanel.addComponent(new Label("Telefon"));
 		teleField = new TextField();
-		mainLayout.addComponent(teleField);
+		mainPanel.addComponent(teleField);
 		teleField.addValidator(new PhoneNumberValidator(
 				"Ogiltigt telefonnummer, får bara innehålla siffror"));
 		teleField.setRequired(true);
 		teleField.setImmediate(true);
 		teleField.setNullRepresentation("");
 		
-		mainLayout.addComponent(new Label("Roll"));
+		mainPanel.addComponent(new Label("Roll"));
 		roleField = new ComboBox(null, getRolesDataSource());
-		mainLayout.addComponent(roleField);
+		mainPanel.addComponent(roleField);
 		roleField.setNullSelectionAllowed(false);
 		roleField.setRequired(true);
 		roleField.setImmediate(true);
 		
 		HorizontalLayout subLayout = new HorizontalLayout();
 		subLayout.setSpacing(true);
+		subLayout.setMargin(true, false, false, false);
 		
 		cancelButton = new Button("Avbryt");
 		subLayout.addComponent(cancelButton);
@@ -171,8 +192,9 @@ public class UserEditView extends CustomComponent {
 		saveButton = new Button("Spara");
 		subLayout.addComponent(saveButton);
 		
-		mainLayout.addComponent(subLayout);
-//		mainLayout.setComponentAlignment(subLayout, Alignment.TOP_RIGHT);
+		mainPanel.addComponent(subLayout);
+		mainLayout.addComponent(mainPanel);
+		mainLayout.setComponentAlignment(mainPanel, Alignment.TOP_CENTER);
 		
 		buildPopupWindow();
 	}

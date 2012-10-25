@@ -48,10 +48,6 @@ public class UserMgmtTests {
 		handler.cleanUp();
 	}
 	
-	@BeforeClass
-	public static void setUpBeforeClass() {
-	}
-	
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		DB db = new Mongo().getDB("lookingfor");

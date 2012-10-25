@@ -127,15 +127,18 @@ public class SearchOperationService { // TODO refactor into spring service
 		searchOperationDAO.deleteSearchOperation(searchOpId);
 	}
 
-	public void editSearchOp(SearchOperation operation, String opId, String missionId) throws Exception {
+	public String editSearchOp(SearchOperation operation, String opId, String missionId) throws Exception {
 		//TODO break into two methods 
 		if (opId == null && missionId != null) {
 			//TODO create operation object here
-			searchOperationDAO.createSearchOperation(operation, missionId);
+			String id = searchOperationDAO.createSearchOperation(operation, missionId);
+			notEmpty(id);
+			return id;
 		} else if (opId != null && missionId == null) {
 			//TODO create operation object here
 			searchOperationDAO.editSearchOperation(operation, opId);
 		}
+		return null;
 	}
 
 	public SearchGroup getSearchGroup(String groupId) throws Exception {

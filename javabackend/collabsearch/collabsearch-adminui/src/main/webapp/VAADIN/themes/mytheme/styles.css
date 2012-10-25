@@ -60,26 +60,43 @@ h1 {
 /* 	opacity: 0.75; */
 /* 	-moz-opacity: 0.75; */
 /* 	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha"(Opacity=75); */
-	-webkit-box-shadow: 1px 2px 1px 0px rgba(0, 0, 0, 0.5);
-	box-shadow: 1px 2px 1px 0px rgba(0, 0, 0, 0.5);
+	-webkit-box-shadow: 1px 1px 1px 0px rgba(0, 0, 0, 0.5);
+	box-shadow: 1px 1px 1px 0px rgba(0, 0, 0, 0.5);
 	-webkit-border-radius: 10px;
 	-moz-border-radius: 10px;
 	border-radius: 10px;
 	background-image: url(../mytheme/transp_background.png);
-/* 	background: white repeat; */
 }
+
+.user-panel .v-panel-content .v-panel-content-user-panel .v-scrollable {
+/* 	-webkit-border-top-left-radius: 5px; */
+/* 	-webkit-border-top-right-radius: 5px; */
+/* 	-moz-border-radius-topleft: 5px; */
+/* 	-moz-border-radius-topright: 5px; */
+/* 	border-top-left-radius: 5px; */
+/* 	border-top-right-radius: 5px; */
+/* 	background-image: url(../mytheme/transp_background.png); */
+}
+
+.login-outer-panel .v-panel-content > div {
+	background: none;
+}
+
+/* .v-panel-deco, .white .v-panel-deco { */
+/* 	background: none; */
+/*     border-top: 1px transparent; */
+/*     height: 0px; */
+/* } */
 
 #loginf input {
 	opacity: 1;
 	-moz-opacity: 1;
 	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha"(Opacity=100);
-/* 	background-image: url('../mytheme/white_bg_pic.png'); */
 }
 
 #loginf > div {
 	margin-left: 53px;
 	font-weight: bold;
-/* 	background-image: url('../mytheme/white_bg_pic.png'); */
 }
 
 .v-table-header-wrap {

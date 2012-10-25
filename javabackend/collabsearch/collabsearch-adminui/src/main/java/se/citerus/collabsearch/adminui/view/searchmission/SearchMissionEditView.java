@@ -16,6 +16,7 @@ import com.vaadin.data.util.BeanContainer;
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.data.validator.IntegerValidator;
 import com.vaadin.data.validator.StringLengthValidator;
+import com.vaadin.terminal.ThemeResource;
 import com.vaadin.ui.AbstractField;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
@@ -23,9 +24,11 @@ import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.CustomComponent;
+import com.vaadin.ui.Embedded;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.ListSelect;
+import com.vaadin.ui.Panel;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.Table.ColumnGenerator;
 import com.vaadin.ui.TextArea;
@@ -115,15 +118,30 @@ public class SearchMissionEditView extends CustomComponent {
 
 	private void buildMainLayout() {
 		mainLayout.setSizeFull();
-		mainLayout.setMargin(false, false, false, true);
+		mainLayout.setMargin(true);
 		mainLayout.setSpacing(true);
+		
+		Panel mainPanel = new Panel();
+		mainPanel.setWidth("40%");
+		mainLayout.addComponent(mainPanel);
+		
+		HorizontalLayout headerLayout = new HorizontalLayout();
+		
+		Embedded logo = new Embedded("", 
+			new ThemeResource("../mytheme/dual_color_extended_trans.png"));
+		logo.setStyleName("small-logo");
+		headerLayout.addComponent(logo);
+		headerLayout.setComponentAlignment(logo, Alignment.TOP_LEFT);
 		
 		Label headlineLabel = new Label("<h1><b>Redigera sökuppdrag</b></h1>");
 		headlineLabel.setContentMode(Label.CONTENT_XHTML);
-		mainLayout.addComponent(headlineLabel);
+		headerLayout.addComponent(headlineLabel);
+		headerLayout.setComponentAlignment(headlineLabel, Alignment.TOP_LEFT);
+		
+		mainPanel.addComponent(headerLayout);
 		
 		HorizontalLayout outerLayout = new HorizontalLayout();
-		outerLayout.setWidth("40%");
+		outerLayout.setWidth("100%");
 		
 		VerticalLayout leftFormLayout = new VerticalLayout();
 		leftFormLayout.setWidth("100%");
@@ -170,7 +188,7 @@ public class SearchMissionEditView extends CustomComponent {
 		leftFormLayout.addComponent(buttonLayout);
 		leftFormLayout.setComponentAlignment(buttonLayout, Alignment.BOTTOM_RIGHT);
 				
-		mainLayout.addComponent(outerLayout);
+		mainPanel.addComponent(outerLayout);
 		
 		setupValidators();
 	}
@@ -191,7 +209,7 @@ public class SearchMissionEditView extends CustomComponent {
 	private void makeFormItem(VerticalLayout formLayout, Label label, AbstractField field, Alignment labelAlignment) {
 		HorizontalLayout layout = new HorizontalLayout();
 		layout.setWidth("100%");
-		label.setWidth("100%");
+		label.setWidth("100%"); //TODO minska label width?
 		layout.addComponent(label);
 		layout.setExpandRatio(label, 1f);
 		layout.setComponentAlignment(label, labelAlignment);

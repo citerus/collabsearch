@@ -17,6 +17,7 @@ import com.vaadin.data.Validator;
 import com.vaadin.data.Validator.InvalidValueException;
 import com.vaadin.data.util.BeanContainer;
 import com.vaadin.data.validator.StringLengthValidator;
+import com.vaadin.terminal.ThemeResource;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.AbstractField;
@@ -24,6 +25,7 @@ import com.vaadin.ui.Alignment;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.DateField;
+import com.vaadin.ui.Embedded;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.InlineDateField;
 import com.vaadin.ui.Label;
@@ -153,13 +155,24 @@ public class SearchOperationEditView extends CustomComponent {
 		mainLayout.setMargin(false, false, false, true);
 		mainLayout.setSpacing(true);
 		
+		//TODO envelop everything in panel, round corners, top margin
+		
 		VerticalLayout subLayout = new VerticalLayout();
 		subLayout.setWidth("33%");
 		subLayout.setSpacing(true);
 		
+		HorizontalLayout headerLayout = new HorizontalLayout();
+		
+		Embedded logo = new Embedded("", 
+			new ThemeResource("../mytheme/dual_color_extended_trans.png"));
+		logo.setStyleName("small-logo");
+		headerLayout.addComponent(logo);
+		
 		headerLabel = new Label();
 		headerLabel.setContentMode(Label.CONTENT_XHTML);
-		subLayout.addComponent(headerLabel);
+		headerLayout.addComponent(headerLabel);
+		
+		mainLayout.addComponent(headerLayout);
 		
 		Label titleLabel = new Label("Titel");
 		titleField = new TextField();

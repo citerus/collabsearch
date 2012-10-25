@@ -20,13 +20,16 @@ import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.event.Action;
 import com.vaadin.event.Action.Handler;
 import com.vaadin.terminal.FileResource;
+import com.vaadin.terminal.ThemeResource;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.CustomComponent;
+import com.vaadin.ui.Embedded;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
+import com.vaadin.ui.Panel;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.Table.ColumnGenerator;
 import com.vaadin.ui.TreeTable;
@@ -247,21 +250,25 @@ public class SearchMissionListView extends CustomComponent {
 
 	private void buildMainLayout() {
 		mainLayout.setSizeFull();
-		mainLayout.setMargin(false, false, false, true);
+		mainLayout.setMargin(true, false, false, true);
 		mainLayout.setSpacing(true);
 		
+		Panel mainPanel = new Panel();
+		mainPanel.setWidth("50%");
+		
 		VerticalLayout innerLayout = new VerticalLayout();
-		innerLayout.setWidth("50%");
+		innerLayout.setWidth("100%");
 		innerLayout.setHeight("100%");
 		innerLayout.setSpacing(true);
 		
 		HorizontalLayout headerLayout = new HorizontalLayout();
 		headerLayout.setSpacing(true);
 		
-		homeButton = new Button("Tillbaka");
-		headerLayout.addComponent(homeButton);
-		headerLayout.setComponentAlignment(homeButton, Alignment.MIDDLE_LEFT);
-		
+		Embedded embImg = new Embedded("", 
+			new ThemeResource("../mytheme/dual_color_extended_trans.png"));
+		embImg.setStyleName("small-logo");
+		headerLayout.addComponent(embImg);
+				
 		Label headerLabel = new Label("<h1><b>Sökuppdrag</b></h1>");
 		headerLabel.setContentMode(Label.CONTENT_XHTML);
 		headerLayout.addComponent(headerLabel);
@@ -312,27 +319,37 @@ public class SearchMissionListView extends CustomComponent {
 		HorizontalLayout buttonLayout = new HorizontalLayout();
 		buttonLayout.setSpacing(true);
 		
+		homeButton = new Button("Tillbaka");
+		buttonLayout.addComponent(homeButton);
+		
+		HorizontalLayout rightButtonLayout = new HorizontalLayout();
+		rightButtonLayout.setSpacing(true);
+		
 		endButton = new Button("Avsluta");
-		buttonLayout.addComponent(endButton);
+		endButton.setEnabled(false);
+		rightButtonLayout.addComponent(endButton);
 		
 		removeButton = new Button("Ta bort");
-		buttonLayout.addComponent(removeButton);
+		removeButton.setEnabled(false);
+		rightButtonLayout.addComponent(removeButton);
 		
 		editButton = new Button("Redigera");
-		buttonLayout.addComponent(editButton);
+		editButton.setEnabled(false);
+		rightButtonLayout.addComponent(editButton);
 		
 		addButton = new Button("Lägg till");
-		buttonLayout.addComponent(addButton);
-		
-		endButton.setEnabled(false);
-		removeButton.setEnabled(false);
-		editButton.setEnabled(false);
 		addButton.setEnabled(false);
+		rightButtonLayout.addComponent(addButton);
+		
+		buttonLayout.addComponent(rightButtonLayout);
+		buttonLayout.setComponentAlignment(rightButtonLayout, Alignment.MIDDLE_RIGHT);
 		
 		innerLayout.addComponent(buttonLayout);
-		innerLayout.setComponentAlignment(buttonLayout, Alignment.TOP_RIGHT);
+		innerLayout.setComponentAlignment(buttonLayout, Alignment.MIDDLE_LEFT);
 		
-		mainLayout.addComponent(innerLayout);
+		mainPanel.addComponent(innerLayout);
+		mainLayout.addComponent(mainPanel);
+		mainLayout.setComponentAlignment(mainPanel, Alignment.TOP_CENTER);
 	}
 
 	/**

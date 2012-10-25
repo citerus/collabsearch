@@ -114,13 +114,17 @@ public class UserListView extends CustomComponent {
 	private Layout buildMainLayout() {
 		VerticalLayout mainLayout2 = new VerticalLayout();
 		mainLayout2.setSizeFull();
-		mainLayout2.setMargin(false, false, false, true);
+		mainLayout2.setMargin(true, false, false, true);
 		
 		Panel outerPanel = new Panel();
 		outerPanel.setWidth("36%");
+		outerPanel.setStyleName("user-panel");
+		mainLayout2.addComponent(outerPanel);
+		mainLayout2.setComponentAlignment(outerPanel, Alignment.TOP_CENTER);
 		
 		VerticalLayout outerLayout = new VerticalLayout();
-		outerLayout.setWidth("33%");
+		outerLayout.setWidth("100%");
+		outerPanel.addComponent(outerLayout);
 		
 		HorizontalLayout upperLayout = new HorizontalLayout();
 		upperLayout.setSpacing(true);
@@ -133,6 +137,7 @@ public class UserListView extends CustomComponent {
 		
 		headerLabel = new Label("<h1><b>Användare</b></h1>");
 		headerLabel.setContentMode(Label.CONTENT_XHTML);
+		headerLabel.setStyleName("user-header");
 		upperLayout.addComponent(headerLabel);
 		upperLayout.setComponentAlignment(headerLabel, Alignment.MIDDLE_LEFT);
 		
@@ -171,10 +176,6 @@ public class UserListView extends CustomComponent {
 		
 		outerLayout.addComponent(buttonLayout);
 		outerLayout.setComponentAlignment(buttonLayout, Alignment.TOP_RIGHT);
-		
-		outerPanel.addComponent(outerLayout);
-		mainLayout2.addComponent(outerPanel);
-		mainLayout2.setComponentAlignment(outerPanel, Alignment.TOP_CENTER);
 		
 		return mainLayout2;
 	}

@@ -36,6 +36,7 @@ public class MainApplication extends Application {
 	public void init() {
 		mainWindow = new Window("Collaborative Search");
 		setMainWindow(mainWindow);
+		setTheme("mytheme");
 		
 		Controller controller = new Controller(mainWindow);
 		controller.startup();

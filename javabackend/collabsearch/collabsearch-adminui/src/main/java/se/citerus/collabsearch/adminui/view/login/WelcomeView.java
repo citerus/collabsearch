@@ -9,10 +9,12 @@ import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
+import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.Embedded;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
+import com.vaadin.ui.Panel;
 import com.vaadin.ui.VerticalLayout;
 
 @SuppressWarnings("serial")
@@ -50,6 +52,7 @@ public class WelcomeView extends CustomComponent {
 //		mainLayout.setWidth("300px");
 //		mainLayout.setHeight("300px");
 		mainLayout.setSizeFull();
+		mainLayout.setMargin(true);
 		
 		Label sizer1 = new Label("");
 		sizer1.setHeight("100%");
@@ -59,33 +62,42 @@ public class WelcomeView extends CustomComponent {
 		outerLayout.setWidth("100%");
 		outerLayout.setHeight("100%");
 		outerLayout.setSpacing(true);
+		outerLayout.setMargin(false, false, true, false);
 		
 		Embedded embImg = new Embedded("", 
 			new ThemeResource("../mytheme/dual_color_extended_trans.png"));
 		outerLayout.addComponent(embImg);
 		outerLayout.setComponentAlignment(embImg, MIDDLE_CENTER);
+		mainLayout.addComponent(outerLayout);
+		mainLayout.setComponentAlignment(outerLayout, MIDDLE_CENTER);
+		
+		Panel welcomePanel = new Panel();
+		welcomePanel.setWidth("33%");
+		welcomePanel.setStyleName("welcome-panel");
+		
+		VerticalLayout innerLayout = new VerticalLayout();
+		welcomePanel.addComponent(innerLayout);
 		
 		Label loginSuccessLabel = new Label("Inloggningen lyckades!");
 		loginSuccessLabel.setWidth(null);
-		outerLayout.addComponent(loginSuccessLabel);
-		outerLayout.setComponentAlignment(loginSuccessLabel, MIDDLE_CENTER);
+		innerLayout.addComponent(loginSuccessLabel);
+		innerLayout.setComponentAlignment(loginSuccessLabel, MIDDLE_CENTER);
 		
-		HorizontalLayout innerLayout = new HorizontalLayout();
-		innerLayout.setSpacing(true);
+		HorizontalLayout innerHorizontalLayout = new HorizontalLayout();
+		innerHorizontalLayout.setSpacing(true);
 		userButton = new Button("Användare");
 		logoutButton = new Button("Logga ut");
 		
 		searchMissionButton = new Button("Sökuppdrag");
-		innerLayout.addComponent(userButton);
-		innerLayout.addComponent(logoutButton);
-		innerLayout.addComponent(searchMissionButton);
-		outerLayout.addComponent(innerLayout);
-		outerLayout.setComponentAlignment(innerLayout, MIDDLE_CENTER);
+		innerHorizontalLayout.addComponent(userButton);
+		innerHorizontalLayout.addComponent(logoutButton);
+		innerHorizontalLayout.addComponent(searchMissionButton);
 		
-		mainLayout.addComponent(outerLayout);
-		mainLayout.setComponentAlignment(outerLayout, MIDDLE_CENTER);
-		mainLayout.setExpandRatio(outerLayout, UNITS_PERCENTAGE);
-		mainLayout.setMargin(true);
+		innerLayout.addComponent(innerHorizontalLayout);
+		innerLayout.setComponentAlignment(innerHorizontalLayout, MIDDLE_CENTER);
+		
+		mainLayout.addComponent(welcomePanel);
+		mainLayout.setComponentAlignment(welcomePanel, MIDDLE_CENTER);
 		
 		Label sizer2 = new Label("");
 		sizer2.setWidth("100%");

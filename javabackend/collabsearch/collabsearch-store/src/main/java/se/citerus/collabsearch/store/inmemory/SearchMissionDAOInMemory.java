@@ -348,13 +348,17 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 	}
 	
 	@Override
-	public void createSearchOperation(SearchOperation operation, String missionId) throws IOException {
+	public String createSearchOperation(SearchOperation operation, String missionId) throws IOException {
 		operation.setId("" + new Random().nextLong());
 		for (SearchMission mission : missionsList) {
 			if (mission.getId().equals(missionId)) {
+				Status status = getSearchOpStatusById(operation.getStatus().getId());
+				operation.setStatus(status);
 				mission.getOpsList().add(operation);
+				return operation.getId();
 			}
 		}
+		return null;
 	}
 
 	@Override
@@ -434,6 +438,15 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 			}
 		}
 		throw new IOException("Status " + statusName + " not found");
+	}
+	
+	private Status getSearchOpStatusById(int statusId) throws IOException {
+		for (Status status : opStatusList) {
+			if (status.getId() == statusId) {
+				return status;
+			}
+		}
+		throw new IOException("Status " + statusId + " not found");
 	}
 
 	@Override

@@ -1,0 +1,96 @@
+@import url("../reindeer/styles.css");
+/* @import "extra-styles.css"; */
+
+/* As Vaadin is a single page app, this file applies to everything. */
+
+.v-theme-mytheme {
+	background-image: linear-gradient(top, #66BBDD 11%, #E2F0F5 100%);
+	background-image: -o-linear-gradient(top, #66BBDD 11%, #E2F0F5 100%);
+	background-image: -moz-linear-gradient(top, #66BBDD 11%, #E2F0F5 100%) !important;
+	background-image: -webkit-linear-gradient(top, #66BBDD 11%, #E2F0F5 100%);
+	background-image: -ms-linear-gradient(top, #66BBDD 11%, #E2F0F5 100%);
+	
+	background-image: -webkit-gradient(
+		linear,
+		left top,
+		left bottom,
+		color-stop(0.11, #66BBDD),
+		color-stop(1, #E2F0F5)
+	);
+}
+
+.bottom-layout > div:nth-child(1) {
+	margin: 6px 0px 0px !important;
+}
+
+.v-panel-content-op-list .v-verticallayout > div {
+	-webkit-box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.1);
+	box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+.op-panel .v-label {
+	margin-left: 6px;
+}
+
+.op-panel .ops-bottom-layout > div:nth-child(1) {
+	margin: 30px 0px 0px !important;
+}
+
+.op-list {
+	-webkit-border-radius: 10px;
+	-moz-border-radius: 10px;
+	border-radius: 10px;
+	background-image: url(../mytheme/transp_background.png);
+	-webkit-box-shadow: 1px 1px 1px 0px rgba(0, 0, 0, 0.5);
+	box-shadow: 1px 1px 1px 0px rgba(0, 0, 0, 0.5);
+}
+
+.v-button-caption:hover {
+/* 	color: #0000AB; */ /*dark blue*/
+	color: #FFDD35; /*dark yellow*/
+}
+
+.v-button, 
+.v-button-caption:hover {
+	cursor: pointer;
+}
+
+.v-button-caption {
+	color: black;
+	font: 'Helvetica', Helvetica, sans-serif;
+	font-family: 'Helvetica', Helvetica, sans-serif;
+	font-style: none;
+}
+
+.small-logo img {
+	width: 80px;
+    height: 60px;
+}
+
+h1 {
+	text-align: center;
+	color: #0000AB;
+    font: Arial,Tahoma,Helvetica,FreeSans,sans-serif;
+    font-family: Arial,Tahoma,Helvetica,FreeSans,sans-serif;
+    text-shadow: -1px -1px 1px rgba(0, 0, 0, 0.2);
+}
+
+h2 b {
+	color: #0000AB;
+	font: Arial,Tahoma,Helvetica,FreeSans,sans-serif;
+    font-family: Arial,Tahoma,Helvetica,FreeSans,sans-serif;
+}
+
+.v-label {
+	font: 'Helvetica', Helvetica, sans-serif;
+	font-family: 'Helvetica', Helvetica, sans-serif;
+}
+
+.v-table-header-wrap {
+	-webkit-border-top-left-radius: 5px;
+	-webkit-border-top-right-radius: 5px;
+	-moz-border-radius-topleft: 5px;
+	-moz-border-radius-topright: 5px;
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+}

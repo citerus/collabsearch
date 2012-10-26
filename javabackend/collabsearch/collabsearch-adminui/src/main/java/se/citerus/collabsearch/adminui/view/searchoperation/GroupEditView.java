@@ -174,6 +174,7 @@ public class GroupEditView extends CustomComponent {
 		outerTreeLayout.setWidth("100%");
 		outerTreeLayout.setHeight("200px");
 		outerTreeLayout.addComponent(treePanel);
+		outerTreeLayout.setMargin(true, false, true, false);
 		
 		mainPanel.addComponent(outerTreeLayout);
 		
@@ -190,6 +191,7 @@ public class GroupEditView extends CustomComponent {
 		HorizontalLayout buttonLayout = new HorizontalLayout();
 		buttonLayout.setWidth("100%");
 		buttonLayout.setSpacing(true);
+		buttonLayout.setMargin(true, false, false, false);
 		
 		Button backButton = new Button("Tillbaka");
 		backButton.addListener(new ClickListener() {

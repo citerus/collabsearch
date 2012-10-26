@@ -2,11 +2,14 @@ package se.citerus.collabsearch.adminui.view.searchoperation;
 
 import org.vaadin.hezamu.googlemapwidget.GoogleMap;
 
+import com.vaadin.terminal.ThemeResource;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.CustomComponent;
+import com.vaadin.ui.Embedded;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
+import com.vaadin.ui.Panel;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 
@@ -35,24 +38,36 @@ public class ZoneViewFragment extends CustomComponent {
 	}
 	
 	protected void init(String headerString) {
-		mainLayout.setSizeFull();
+//		mainLayout.setSizeFull();
+		mainLayout.setMargin(true);
+		mainLayout.setSpacing(true);
+		mainLayout.setWidth("70%");
 		
-		HorizontalLayout topLayout = new HorizontalLayout();
-		topLayout.setSpacing(true);
+		Panel mainPanel = new Panel();
+		mainPanel.setWidth("100%");
+		
+		HorizontalLayout headerLayout = new HorizontalLayout();
+		headerLayout.setSpacing(true);
 		
 		backButton = new Button("Tillbaka");
-		topLayout.addComponent(backButton);
-		topLayout.setComponentAlignment(backButton, Alignment.MIDDLE_LEFT);
+		headerLayout.addComponent(backButton);
+		headerLayout.setComponentAlignment(backButton, Alignment.MIDDLE_LEFT);
+		
+		Embedded embImg = new Embedded("", 
+			new ThemeResource("../mytheme/dual_color_extended_trans.png"));
+		embImg.setStyleName("small-logo");
+		headerLayout.addComponent(embImg);
 		
 		headerLabel = new Label("<h1><b>" + headerString + "</b></h1>");
 		headerLabel.setContentMode(Label.CONTENT_XHTML);
-		topLayout.addComponent(headerLabel);
+		headerLabel.setStyleName("logo-header");
+		headerLayout.addComponent(headerLabel);
 		
-		mainLayout.addComponent(topLayout);
+		mainPanel.addComponent(headerLayout);
 		
 		mapLayout = new VerticalLayout();
 		mapLayout.setSizeFull();
-		mainLayout.addComponent(mapLayout);
+		mainPanel.addComponent(mapLayout);
 		
 		HorizontalLayout mapControlLayout = new HorizontalLayout();
 		mapControlLayout.setSpacing(true);
@@ -67,7 +82,7 @@ public class ZoneViewFragment extends CustomComponent {
 		setMapCenterButton = new Button("Nuvarande vy som kartcentrum");
 		mapControlLayout.addComponent(setMapCenterButton);
 		
-		mainLayout.addComponent(mapControlLayout);
+		mainPanel.addComponent(mapControlLayout);
 		
 		HorizontalLayout textFieldLayout = new HorizontalLayout();
 		textFieldLayout.setWidth("100%");
@@ -85,7 +100,10 @@ public class ZoneViewFragment extends CustomComponent {
 		textFieldLayout.addComponent(saveButton);
 		textFieldLayout.setComponentAlignment(saveButton, Alignment.MIDDLE_RIGHT);
 		
-		mainLayout.addComponent(textFieldLayout);
+		mainPanel.addComponent(textFieldLayout);
+		
+		mainLayout.addComponent(mainPanel);
+		mainLayout.setComponentAlignment(mainPanel, Alignment.TOP_CENTER);
 	}
 	
 	protected void setMap(GoogleMap map) {

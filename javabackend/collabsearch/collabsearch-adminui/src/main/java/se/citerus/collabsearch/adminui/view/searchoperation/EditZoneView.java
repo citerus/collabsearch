@@ -31,6 +31,7 @@ import com.google.gwt.requestfactory.shared.Service;
 import com.vaadin.Application;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickListener;
+import com.vaadin.ui.Alignment;
 import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
@@ -61,7 +62,7 @@ public class EditZoneView extends CustomComponent {
 	}
 
 	public void init() {
-		mainLayout.setWidth("50%");
+		mainLayout.setWidth("100%");
 		mainLayout.setHeight("100%");
 		mainLayout.setMargin(false, true, false, true);
 		
@@ -69,6 +70,7 @@ public class EditZoneView extends CustomComponent {
 		fragment.init("Redigera zon");
 		fragment.setHeight("10%");
 		mainLayout.addComponent(fragment);
+		mainLayout.setComponentAlignment(fragment, Alignment.TOP_CENTER);
 		
 		markerPoints = new ArrayList<Marker>();
 		
@@ -110,7 +112,9 @@ public class EditZoneView extends CustomComponent {
 					map.removeMarker(marker);
 				}
 				markerPoints.clear();
-				for (PolyOverlay overlay : map.getOverlays()) {
+				Collection<PolyOverlay> overlays = map.getOverlays();
+				while (overlays.iterator().hasNext()) {
+					PolyOverlay overlay = overlays.iterator().next();
 					map.removeOverlay(overlay);
 				}
 			}
@@ -119,6 +123,11 @@ public class EditZoneView extends CustomComponent {
 		fragment.createZoneButton.addListener(new ClickListener() {
 			@Override
 			public void buttonClick(ClickEvent event) {
+				if (markerPoints.size() < 3) {
+					listener.displayError("Fel", "Zoner måste ha minst 3 punkter");
+					return;
+				}
+				
 				//Make points array one slot bigger to allow for polygon-closing point.
 				Double[] points = new Double[markerPoints.size()+1];
 				for (int i = 0; i < markerPoints.size(); i++) {
@@ -277,7 +286,7 @@ public class EditZoneView extends CustomComponent {
 		Point2D.Double mapCenterMarker = new Point2D.Double(lat, lon);
 		GoogleMap googleMap = new GoogleMap(application, mapCenterMarker, 9);
 		googleMap.setWidth("100%");
-		googleMap.setHeight("600px");
+		googleMap.setHeight("500px");
 		
 		return googleMap;
 	}

@@ -183,7 +183,7 @@ public class NewZoneView extends CustomComponent {
 		Point2D.Double mapCenterMarker = new Point2D.Double(lat, lon);
 		GoogleMap googleMap = new GoogleMap(application, mapCenterMarker, DEFAULT_ZOOM);
 		googleMap.setWidth("100%");
-		googleMap.setHeight("600px");
+		googleMap.setHeight("500px");
 		
 		return googleMap;
 	}

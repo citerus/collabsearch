@@ -118,21 +118,21 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 	private void addMockMissions(Random r) {
 		SearchMission sm1 = new SearchMission(
 				"" + r.nextLong(),
-				"Försvunnen: Åke, 62",
+				"Sökuppdrag: Åke, 62",
 				"Skallgång efter 62-årige Åke som varit försvunnen i två veckor.",
 				1, statusList.get(0));
 		sm1.setFileList(addMockFiles(r));
 		sm1.setOpsList(addMockOps(r));
 		SearchMission sm2 = new SearchMission(
 				"" + r.nextLong(),
-				"Försvunnen: Ingemar Andersson, 83",
+				"Sökuppdrag: Ingemar Andersson, 83",
 				"Ingemar Andersson som försvann onsdagen den 19 september 2012 från Hålsbo, Långbjörken, Skinnskatteberg. Ingemars bil hittades vid Hålsbo vid Sjön Långbjörken i Skinnskatteberg. Det fanns hinkar mm i bilen vilket tyder på att han åkt dit för att plocka bär.",
 				5, statusList.get(1));
 		sm2.setFileList(addMockFiles(r));
 		sm2.setOpsList(addMockOps(r));
 		SearchMission sm3 = new SearchMission(
 				"" + r.nextLong(),
-				"Försvunnen: Ingela, 52",
+				"Sökuppdrag: Ingela, 52",
 				"Ingela försvann 27/9 från Landskrona. Hon skulle till ett läkarbesök den 27/9 i Ängelholm, men var aldrig där.Hon har lämnat telefon och plånbok hemma och har nog inga kontanter på sig.",
 				10, statusList.get(2));
 		sm3.setFileList(addMockFiles(r));
@@ -159,20 +159,21 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 		searchers.add(new SearcherInfo("" + r.nextLong(), "Peder Schillerstedt", "pc@mail.se", "34567"));
 		
 		List<SearchGroup> groups = new ArrayList<SearchGroup>();
-		groups.add(new SearchGroup("" + r.nextLong(), "Sökgrupp A", addMockGroupTree(searchers)));
-		groups.add(new SearchGroup("" + r.nextLong(), "Sökgrupp B", addMockGroupTree(searchers)));
-		groups.add(new SearchGroup("" + r.nextLong(), "Sökgrupp C", addMockGroupTree(searchers)));
+		groups.add(new SearchGroup("" + r.nextLong(), "Sökgrupp Adam", addMockGroupTree(searchers)));
+		groups.add(new SearchGroup("" + r.nextLong(), "Sökgrupp Bertil", addMockGroupTree(searchers)));
+		groups.add(new SearchGroup("" + r.nextLong(), "Sökgrupp Carl", addMockGroupTree(searchers)));
 		
 		List<SearchZone> zones = new ArrayList<SearchZone>();
 		Point2D.Double[] points = new Point2D.Double[]{
-			new Point2D.Double(22.376060485839844,60.45886826784022),
-			new Point2D.Double(22.405071258544922,60.46001085184192),
-			new Point2D.Double(22.396144866943360,60.44672053773407),
-			new Point2D.Double(22.376060485839844,60.45886826784022)
+			new Point2D.Double(18.533248901367188,59.477609837736246),
+			new Point2D.Double(18.547410964965820,59.475212233145640),
+			new Point2D.Double(18.527841567993164,59.467800379411620),
+			new Point2D.Double(18.525953292846680,59.474732691807280),
+			new Point2D.Double(18.533248901367188,59.477609837736246)
 		};
 		SearchFinding[] findings = new SearchFinding[] {
-				new SearchFinding("" + r.nextLong(), 20.3, 60.4522, "Fynd 1", "Fotspår"),
-				new SearchFinding("" + r.nextLong(), 21.3, 60.4522, "Fynd 2", "Upphittat klädesplagg")
+				new SearchFinding("" + r.nextLong(), 18.530502319335938, 59.472640068126864, "Fynd", "Fotspår"),
+				new SearchFinding("" + r.nextLong(), 18.536081314086914, 59.474514716221430, "Fynd", "Upphittat klädesplagg")
 		};
 		SearchZone zone = new SearchZone("Norra sökområdet", 3, 22.3, 60.4522, points, findings);
 		zone.setId("" + r.nextLong());
@@ -186,7 +187,7 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 		
 		SearchOperation searchOp = new SearchOperation(
 				"" + r.nextLong() ,"Skallgång, norra skogen", "Skallgång i skogens norra delar", 
-				new Date(System.currentTimeMillis()), "Plats X", 
+				new Date(System.currentTimeMillis()), "Ljusterö", 
 				new Status(0, "Ej påbörjad", "Operationen har ej påbörjats"));
 		searchOp.setSearchers(searchers);
 		searchOp.setGroups(groups);
@@ -195,7 +196,7 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 		
 		searchOp = new SearchOperation(
 				"" + r.nextLong(), "Skallgång, södra skogen", "Skallgång i skogens södra delar", 
-				new Date(System.currentTimeMillis()+86400000L), "Plats Y", 
+				new Date(System.currentTimeMillis()+86400000L), "Ljusterö", 
 				new Status(1, "Sökning inledd", "Sökning har inletts i de bestämda områdena"));
 		searchOp.setSearchers(searchers);
 		searchOp.setGroups(groups);
@@ -204,7 +205,7 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 		
 		searchOp = new SearchOperation(
 				"" + r.nextLong(), "Dykoperation, storsjön", "Genomsökning av sjön mha dykteam", 
-				new Date(System.currentTimeMillis()+(2*86400000L)), "Plats Z", 
+				new Date(System.currentTimeMillis()+(2*86400000L)), "Ljusterö", 
 				new Status(2, "Sökning avslutad", "Sökningen har avslutats"));
 		searchOp.setSearchers(searchers);
 		searchOp.setGroups(groups);

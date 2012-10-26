@@ -37,6 +37,7 @@ import com.vaadin.event.dd.DropHandler;
 import com.vaadin.event.dd.TargetDetails;
 import com.vaadin.event.dd.acceptcriteria.AcceptAll;
 import com.vaadin.event.dd.acceptcriteria.AcceptCriterion;
+import com.vaadin.terminal.ThemeResource;
 import com.vaadin.terminal.gwt.client.ui.dd.VerticalDropLocation;
 import com.vaadin.ui.AbstractSelect.AbstractSelectTargetDetails;
 import com.vaadin.ui.Alignment;
@@ -46,6 +47,7 @@ import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.CustomComponent;
+import com.vaadin.ui.Embedded;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Panel;
@@ -95,28 +97,30 @@ public class GroupEditView extends CustomComponent {
 	}
 
 	private void buildMainLayout() {
-		mainLayout.setWidth("50%");
-		mainLayout.setHeight("");
-		mainLayout.setMargin(false, false, false, true);
+//		mainLayout.setWidth("50%");
+//		mainLayout.setHeight("");
+		mainLayout.setSizeFull();
+		mainLayout.setMargin(true);
 		mainLayout.setSpacing(true);
 		
-		HorizontalLayout topLayout = new HorizontalLayout();
-		topLayout.setSpacing(true);
+		Panel mainPanel = new Panel();
+		mainPanel.setStyleName("group-panel");
+		mainPanel.setWidth("50%");
 		
-		Button backButton = new Button("Tillbaka");
-		backButton.addListener(new ClickListener() {
-			public void buttonClick(ClickEvent event) {
-				listener.switchToSearchMissionListView();
-			}
-		});
-		topLayout.addComponent(backButton);
-		topLayout.setComponentAlignment(backButton, Alignment.MIDDLE_LEFT);
+		HorizontalLayout headerLayout = new HorizontalLayout();
+		headerLayout.setSpacing(true);
+		
+		Embedded logo = new Embedded(null, 
+			new ThemeResource("../mytheme/dual_color_extended_trans.png"));
+		logo.setStyleName("small-logo");
+		headerLayout.addComponent(logo);
 		
 		headerLabel = new Label("<h1><b>" + "Redigera grupp" + "</b></h1>");
 		headerLabel.setContentMode(Label.CONTENT_XHTML);
-		topLayout.addComponent(headerLabel);
+		headerLayout.setStyleName("logo-header");
+		headerLayout.addComponent(headerLabel);
 		
-		mainLayout.addComponent(topLayout);
+		mainPanel.addComponent(headerLayout);
 		
 		HorizontalLayout nameLayout = new HorizontalLayout();
 		nameLayout.setWidth("50%");
@@ -136,7 +140,7 @@ public class GroupEditView extends CustomComponent {
 		nameLayout.setComponentAlignment(nameField, Alignment.MIDDLE_LEFT);
 		nameLayout.setExpandRatio(nameField, 2f);
 		
-		mainLayout.addComponent(nameLayout);
+		mainPanel.addComponent(nameLayout);
 		
 		searcherTable = new Table();
 		searcherTable.setWidth("100%");
@@ -171,9 +175,9 @@ public class GroupEditView extends CustomComponent {
 		outerTreeLayout.setHeight("200px");
 		outerTreeLayout.addComponent(treePanel);
 		
-		mainLayout.addComponent(outerTreeLayout);
+		mainPanel.addComponent(outerTreeLayout);
 		
-		mainLayout.addComponent(searcherTable);
+		mainPanel.addComponent(searcherTable);
 		
 		groupTree.addListener(new Tree.ExpandListener() {
 			@Override
@@ -184,9 +188,17 @@ public class GroupEditView extends CustomComponent {
 		});
 		
 		HorizontalLayout buttonLayout = new HorizontalLayout();
+		buttonLayout.setWidth("100%");
 		buttonLayout.setSpacing(true);
-		mainLayout.addComponent(buttonLayout);
-		mainLayout.setComponentAlignment(buttonLayout, Alignment.BOTTOM_RIGHT);
+		
+		Button backButton = new Button("Tillbaka");
+		backButton.addListener(new ClickListener() {
+			public void buttonClick(ClickEvent event) {
+				listener.switchToSearchMissionListView();
+			}
+		});
+		buttonLayout.addComponent(backButton);
+		buttonLayout.setComponentAlignment(backButton, Alignment.TOP_LEFT);
 		
 		Button cancelButton = new Button("Avbryta");
 		cancelButton.addListener(new ClickListener() {
@@ -196,6 +208,7 @@ public class GroupEditView extends CustomComponent {
 			}
 		});
 		buttonLayout.addComponent(cancelButton);
+		buttonLayout.setComponentAlignment(cancelButton, Alignment.TOP_LEFT);
 		
 		Button confirmButton = new Button("Spara");
 		confirmButton.addListener(new ClickListener() {
@@ -205,6 +218,12 @@ public class GroupEditView extends CustomComponent {
 			}
 		});
 		buttonLayout.addComponent(confirmButton);
+		buttonLayout.setComponentAlignment(confirmButton, Alignment.TOP_LEFT);
+		
+		mainPanel.addComponent(buttonLayout);
+		
+		mainLayout.addComponent(mainPanel);
+		mainLayout.setComponentAlignment(mainPanel, Alignment.TOP_CENTER);
 		
 		successDialog = new SuccessDialog();
 		successDialog.init();
@@ -696,13 +715,30 @@ public class GroupEditView extends CustomComponent {
 		//XXX insert dummy data into searcherTable for debug purposes
 		Random r = new Random();
 		Container dataSource = searcherTable.getContainerDataSource();
-		for (int i = 0; i < 20; i++) {
-			Item item = dataSource.getItem(dataSource.addItem());
-			String searcherId = "" + r.nextLong();
-			searcherMap.put(searcherId, "Sökare " + r.nextInt());
-			GroupNode node = new GroupNode(searcherId, null, null);
-			setupItemProperties(node, item, searcherMap);
+//		for (int i = 0; i < 20; i++) {
+//			Item item = dataSource.getItem(dataSource.addItem());
+//			String searcherId = "" + r.nextLong();
+//			searcherMap.put(searcherId, "Sökare " + r.nextInt());
+//			GroupNode node = new GroupNode(searcherId, null, null);
+//			setupItemProperties(node, item, searcherMap);
+//		}
+		
+		try {
+			SearchOperationService service = new SearchOperationService();
+			Map<String, String> volunteersByOp = service.getVolunteersByOp("");
+			Iterator<String> it = volunteersByOp.keySet().iterator();
+			while (it.hasNext()) {
+				String key = it.next();
+				String value = volunteersByOp.get(key);
+				Item item = dataSource.getItem(dataSource.addItem());
+				searcherMap.put(key, value);
+				GroupNode node = new GroupNode(key, null, null);
+				setupItemProperties(node, item, searcherMap);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
+		//searchers.keySet().iterator();
 	}
 
 	/**

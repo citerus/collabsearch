@@ -125,7 +125,6 @@ public class UserEditView extends CustomComponent {
 		
 		HorizontalLayout headerLayout = new HorizontalLayout();
 		headerLayout.setSpacing(true);
-//		headerLayout.setWidth("100%");
 		
 		Embedded logo = new Embedded("", 
 			new ThemeResource("../mytheme/dual_color_extended_trans.png"));
@@ -135,6 +134,7 @@ public class UserEditView extends CustomComponent {
 		
 		headerLabel = new Label("<h1><b>Användare</b></h1>");
 		headerLabel.setContentMode(Label.CONTENT_XHTML);
+		headerLabel.setStyleName("logo-header");
 		headerLayout.addComponent(headerLabel);
 		headerLayout.setComponentAlignment(headerLabel, Alignment.TOP_LEFT);
 		

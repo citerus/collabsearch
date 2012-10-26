@@ -4,8 +4,10 @@ import static org.apache.commons.lang.Validate.notEmpty;
 import static org.apache.commons.lang.Validate.notNull;
 
 import java.awt.geom.Point2D.Double;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import se.citerus.collabsearch.model.SearchGroup;
 import se.citerus.collabsearch.model.SearchOperation;
@@ -38,11 +40,6 @@ public class SearchOperationService { // TODO refactor into spring service
 	}
 
 	public void cleanUp() {
-		// try {
-		// searchOperationDAO.disconnect();
-		// } catch (IOException e) {
-		// e.printStackTrace();
-		// }
 	}
 
 	public String endOperation(String opId) throws Exception {
@@ -171,6 +168,37 @@ public class SearchOperationService { // TODO refactor into spring service
 			searchOperationDAO.addSearchGroup(group, opId);
 		} else {
 			searchOperationDAO.editSearchGroup(group, opId);
+		}
+	}
+
+	//TODO rewrite after demo
+	public Map<String, String> getVolunteersByOp(String opId) {
+		Map<String, String> map = new HashMap<String, String>();
+		Random r = new Random();
+		for (int i = 0; i < 20; i++) {
+			String name = generateName();
+			map.put("" + r.nextLong(), name );
+		}
+		return map;
+	}
+
+	//TODO remove after demo
+	private String[] lastNames = new String[] { "Johansson", "Andersson",
+			"Karlsson", "Nilsson", "Eriksson", "Larsson", "Olsson",
+			"Persson", "Svensson", "Gustafsson" };
+	private String[] femaleFirstNames = new String[] { "Maria", "Anna",
+			"Margareta", "Elisabeth", "Eva", "Birgitta", "Kristina",
+			"Karin", "Elisabet", "Marie" };
+	private String[] maleFirstNames = new String[] { "Erik", "Lars", "Karl",
+			"Anders", "Per", "Johan", "Nils", "Lennart", "Jan", "Hans" };
+	private String generateName() {
+		Random r = new Random();
+		if (r.nextBoolean()) {
+			return maleFirstNames[r.nextInt(maleFirstNames.length)] 
+					+ " " + lastNames[r.nextInt(lastNames.length)];
+		} else {
+			return femaleFirstNames[r.nextInt(femaleFirstNames.length)] 
+					+ " " + lastNames[r.nextInt(lastNames.length)];
 		}
 	}
 }

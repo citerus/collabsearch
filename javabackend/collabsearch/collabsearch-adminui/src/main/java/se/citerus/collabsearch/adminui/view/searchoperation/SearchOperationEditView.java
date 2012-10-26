@@ -29,6 +29,7 @@ import com.vaadin.ui.Embedded;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.InlineDateField;
 import com.vaadin.ui.Label;
+import com.vaadin.ui.Panel;
 import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
@@ -152,27 +153,30 @@ public class SearchOperationEditView extends CustomComponent {
 
 	private void buildMainLayout() {
 		mainLayout.setSizeFull();
-		mainLayout.setMargin(false, false, false, true);
+		mainLayout.setMargin(true);
 		mainLayout.setSpacing(true);
 		
-		//TODO envelop everything in panel, round corners, top margin
+		Panel mainPanel = new Panel();
+		mainPanel.setWidth("33%");
 		
 		VerticalLayout subLayout = new VerticalLayout();
-		subLayout.setWidth("33%");
+		subLayout.setWidth("100%");
 		subLayout.setSpacing(true);
 		
 		HorizontalLayout headerLayout = new HorizontalLayout();
+		headerLayout.setSpacing(true);
 		
-		Embedded logo = new Embedded("", 
+		Embedded logo = new Embedded(null, 
 			new ThemeResource("../mytheme/dual_color_extended_trans.png"));
 		logo.setStyleName("small-logo");
 		headerLayout.addComponent(logo);
 		
 		headerLabel = new Label();
+		headerLabel.setStyleName("logo-header");
 		headerLabel.setContentMode(Label.CONTENT_XHTML);
 		headerLayout.addComponent(headerLabel);
 		
-		mainLayout.addComponent(headerLayout);
+		mainPanel.addComponent(headerLayout);
 		
 		Label titleLabel = new Label("Titel");
 		titleField = new TextField();
@@ -222,17 +226,21 @@ public class SearchOperationEditView extends CustomComponent {
 		HorizontalLayout lowerButtonLayout = new HorizontalLayout();
 		lowerButtonLayout.setSpacing(true);
 		
-		saveButton = new Button("Spara");
-		lowerButtonLayout.addComponent(saveButton);
-		lowerButtonLayout.setComponentAlignment(saveButton, Alignment.TOP_RIGHT);
-		
 		cancelButton = new Button("Avbryt");
 		lowerButtonLayout.addComponent(cancelButton);
 		lowerButtonLayout.setComponentAlignment(cancelButton, Alignment.TOP_RIGHT);
 		
-		subLayout.addComponent(lowerButtonLayout);
+		saveButton = new Button("Spara");
+		lowerButtonLayout.addComponent(saveButton);
+		lowerButtonLayout.setComponentAlignment(saveButton, Alignment.TOP_RIGHT);
 		
-		mainLayout.addComponent(subLayout);
+		subLayout.addComponent(lowerButtonLayout);
+		subLayout.setComponentAlignment(lowerButtonLayout, Alignment.TOP_RIGHT);
+		
+		mainPanel.addComponent(subLayout);
+		
+		mainLayout.addComponent(mainPanel);
+		mainLayout.setComponentAlignment(mainPanel, Alignment.TOP_CENTER);
 	}
 	
 	private void makeFormItem(VerticalLayout formLayout, Label label, AbstractField field, Alignment labelAlignment) {

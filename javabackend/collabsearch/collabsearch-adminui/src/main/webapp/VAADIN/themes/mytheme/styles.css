@@ -23,14 +23,27 @@
 	color: #FFDD35; /*dark yellow*/
 }
 
+.v-disabled .v-button-caption:hover {
+	color: #222222;
+	cursor: default;
+}
+
 .v-button, 
 .v-button-caption:hover {
 	cursor: pointer;
 }
 
+.v-disabled * {
+	cursor: default;
+}
+
 .small-logo img {
 	width: 80px;
     height: 60px;
+}
+
+.logo-header {
+	padding-top: 16px;
 }
 
 h1 {
@@ -82,11 +95,25 @@ h1 {
 	background: none;
 }
 
-/* .v-panel-deco, .white .v-panel-deco { */
-/* 	background: none; */
-/*     border-top: 1px transparent; */
-/*     height: 0px; */
-/* } */
+.v-panel-content {
+	-webkit-border-radius: 10px;
+	-moz-border-radius: 10px;
+	border-radius: 10px;
+	-webkit-box-shadow: 1px 1px 1px 0px rgba(0, 0, 0, 0.5);
+	box-shadow: 1px 1px 1px 0px rgba(0, 0, 0, 0.5);
+}
+
+.welcome-panel {
+	-webkit-border-radius: 10px;
+	-moz-border-radius: 10px;
+	border-radius: 10px;
+	-webkit-box-shadow: 1px 1px 1px 0px rgba(0, 0, 0, 0.5);
+	box-shadow: 1px 1px 1px 0px rgba(0, 0, 0, 0.5);
+}
+
+.v-panel-deco, .white .v-panel-deco {
+	border-top: none;
+}
 
 #loginf input {
 	opacity: 1;
@@ -99,14 +126,14 @@ h1 {
 	font-weight: bold;
 }
 
-.v-table-header-wrap {
-	-webkit-border-top-left-radius: 5px;
-	-webkit-border-top-right-radius: 5px;
-	-moz-border-radius-topleft: 5px;
-	-moz-border-radius-topright: 5px;
-	border-top-left-radius: 5px;
-	border-top-right-radius: 5px;
-}
+/* .v-table-header-wrap { */
+/* 	-webkit-border-top-left-radius: 5px; */
+/* 	-webkit-border-top-right-radius: 5px; */
+/* 	-moz-border-radius-topleft: 5px; */
+/* 	-moz-border-radius-topright: 5px; */
+/* 	border-top-left-radius: 5px; */
+/* 	border-top-right-radius: 5px; */
+/* } */
 
 .searcher-table .v-table-row td:hover, 
 .searcher-table .v-table-row-odd td:hover {

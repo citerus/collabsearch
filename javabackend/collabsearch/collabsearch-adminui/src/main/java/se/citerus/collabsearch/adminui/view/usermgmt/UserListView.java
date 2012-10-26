@@ -137,7 +137,7 @@ public class UserListView extends CustomComponent {
 		
 		headerLabel = new Label("<h1><b>Användare</b></h1>");
 		headerLabel.setContentMode(Label.CONTENT_XHTML);
-		headerLabel.setStyleName("user-header");
+		headerLabel.setStyleName("logo-header");
 		upperLayout.addComponent(headerLabel);
 		upperLayout.setComponentAlignment(headerLabel, Alignment.MIDDLE_LEFT);
 		

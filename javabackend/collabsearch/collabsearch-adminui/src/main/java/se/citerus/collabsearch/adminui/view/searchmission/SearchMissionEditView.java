@@ -126,17 +126,19 @@ public class SearchMissionEditView extends CustomComponent {
 		mainLayout.addComponent(mainPanel);
 		
 		HorizontalLayout headerLayout = new HorizontalLayout();
+		headerLayout.setSpacing(true);
 		
-		Embedded logo = new Embedded("", 
+		Embedded logo = new Embedded(null, 
 			new ThemeResource("../mytheme/dual_color_extended_trans.png"));
 		logo.setStyleName("small-logo");
 		headerLayout.addComponent(logo);
 		headerLayout.setComponentAlignment(logo, Alignment.TOP_LEFT);
 		
-		Label headlineLabel = new Label("<h1><b>Redigera sökuppdrag</b></h1>");
-		headlineLabel.setContentMode(Label.CONTENT_XHTML);
-		headerLayout.addComponent(headlineLabel);
-		headerLayout.setComponentAlignment(headlineLabel, Alignment.TOP_LEFT);
+		Label headerLabel = new Label("<h1><b>Redigera sökuppdrag</b></h1>");
+		headerLabel.setContentMode(Label.CONTENT_XHTML);
+		headerLabel.setStyleName("logo-header");
+		headerLayout.addComponent(headerLabel);
+		headerLayout.setComponentAlignment(headerLabel, Alignment.TOP_LEFT);
 		
 		mainPanel.addComponent(headerLayout);
 		

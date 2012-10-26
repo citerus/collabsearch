@@ -116,13 +116,25 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 	}
 
 	private void addMockMissions(Random r) {
-		SearchMission sm1 = new SearchMission("" + r.nextLong(), "Sökuppdrag 1", "text...", 1, statusList.get(0));
+		SearchMission sm1 = new SearchMission(
+				"" + r.nextLong(),
+				"Försvunnen: Åke, 62",
+				"Skallgång efter 62-årige Åke som varit försvunnen i två veckor.",
+				1, statusList.get(0));
 		sm1.setFileList(addMockFiles(r));
 		sm1.setOpsList(addMockOps(r));
-		SearchMission sm2 = new SearchMission("" + r.nextLong(), "Sökuppdrag 2", "text...", 5, statusList.get(1));
+		SearchMission sm2 = new SearchMission(
+				"" + r.nextLong(),
+				"Försvunnen: Ingemar Andersson, 83",
+				"Ingemar Andersson som försvann onsdagen den 19 september 2012 från Hålsbo, Långbjörken, Skinnskatteberg. Ingemars bil hittades vid Hålsbo vid Sjön Långbjörken i Skinnskatteberg. Det fanns hinkar mm i bilen vilket tyder på att han åkt dit för att plocka bär.",
+				5, statusList.get(1));
 		sm2.setFileList(addMockFiles(r));
 		sm2.setOpsList(addMockOps(r));
-		SearchMission sm3 = new SearchMission("" + r.nextLong(), "Sökuppdrag 3", "text...", 10, statusList.get(2));
+		SearchMission sm3 = new SearchMission(
+				"" + r.nextLong(),
+				"Försvunnen: Ingela, 52",
+				"Ingela försvann 27/9 från Landskrona. Hon skulle till ett läkarbesök den 27/9 i Ängelholm, men var aldrig där.Hon har lämnat telefon och plånbok hemma och har nog inga kontanter på sig.",
+				10, statusList.get(2));
 		sm3.setFileList(addMockFiles(r));
 		sm3.setOpsList(addMockOps(r));
 		
@@ -133,8 +145,8 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 	
 	private List<FileMetadata> addMockFiles(Random r) {
 		List<FileMetadata> list = new ArrayList<FileMetadata>();
-		list.add(new FileMetadata("" + r.nextLong(), "fil1.pdf", "application/pdf", "/tmp/uploads/")); 
-		list.add(new FileMetadata("" + r.nextLong(), "fil2.png", "image/png", "/tmp/uploads/"));
+		list.add(new FileMetadata("" + r.nextLong(), "efterlysning.pdf", "application/pdf", "/tmp/uploads/")); 
+		list.add(new FileMetadata("" + r.nextLong(), "personbild.png", "image/png", "/tmp/uploads/"));
 		return list;
 	}
 	
@@ -142,14 +154,14 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 		List<SearchOperation> opsList = new ArrayList<SearchOperation>();
 		
 		List<SearcherInfo> searchers = new ArrayList<SearcherInfo>();
-		searchers.add(new SearcherInfo("" + r.nextLong(), "Person A", "pa@mail.se", "12345"));
-		searchers.add(new SearcherInfo("" + r.nextLong(), "Person B", "pb@mail.se", "23456"));
-		searchers.add(new SearcherInfo("" + r.nextLong(), "Person C", "pc@mail.se", "34567"));
+		searchers.add(new SearcherInfo("" + r.nextLong(), "Jessicka Kangasniemi", "pa@mail.se", "12345"));
+		searchers.add(new SearcherInfo("" + r.nextLong(), "Jerri Kangasniemi", "pb@mail.se", "23456"));
+		searchers.add(new SearcherInfo("" + r.nextLong(), "Peder Schillerstedt", "pc@mail.se", "34567"));
 		
 		List<SearchGroup> groups = new ArrayList<SearchGroup>();
-		groups.add(new SearchGroup("" + r.nextLong(), "Grupp A", addMockGroupTree(searchers)));
-		groups.add(new SearchGroup("" + r.nextLong(), "Grupp B", addMockGroupTree(searchers)));
-		groups.add(new SearchGroup("" + r.nextLong(), "Grupp C", addMockGroupTree(searchers)));
+		groups.add(new SearchGroup("" + r.nextLong(), "Sökgrupp A", addMockGroupTree(searchers)));
+		groups.add(new SearchGroup("" + r.nextLong(), "Sökgrupp B", addMockGroupTree(searchers)));
+		groups.add(new SearchGroup("" + r.nextLong(), "Sökgrupp C", addMockGroupTree(searchers)));
 		
 		List<SearchZone> zones = new ArrayList<SearchZone>();
 		Point2D.Double[] points = new Point2D.Double[]{
@@ -162,38 +174,38 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 				new SearchFinding("" + r.nextLong(), 20.3, 60.4522, "Fynd 1", "Fotspår"),
 				new SearchFinding("" + r.nextLong(), 21.3, 60.4522, "Fynd 2", "Upphittat klädesplagg")
 		};
-		SearchZone zone = new SearchZone("Zon Alfa", 3, 22.3, 60.4522, points, findings);
+		SearchZone zone = new SearchZone("Norra sökområdet", 3, 22.3, 60.4522, points, findings);
 		zone.setId("" + r.nextLong());
 		zones.add(zone);
-		zone = new SearchZone("Zon Beta", 2, 23.3, 60.4522, points, findings);
+		zone = new SearchZone("Södra sökområdet", 2, 23.3, 60.4522, points, findings);
 		zone.setId("" + r.nextLong());
 		zones.add(zone);
-		zone = new SearchZone("Zon Gamma", 1, 24.3, 60.4522, points, findings);
+		zone = new SearchZone("Storsjön (sökområde för dykare)", 1, 24.3, 60.4522, points, findings);
 		zone.setId("" + r.nextLong());
 		zones.add(zone);
 		
 		SearchOperation searchOp = new SearchOperation(
-				"" + r.nextLong() ,"Operation 1", "beskrivn...", 
+				"" + r.nextLong() ,"Skallgång, norra skogen", "Skallgång i skogens norra delar", 
 				new Date(System.currentTimeMillis()), "Plats X", 
-				new Status(0, "Ej påbörjad", "beskrivn..."));
+				new Status(0, "Ej påbörjad", "Operationen har ej påbörjats"));
 		searchOp.setSearchers(searchers);
 		searchOp.setGroups(groups);
 		searchOp.setZones(zones);
 		opsList.add(searchOp);
 		
 		searchOp = new SearchOperation(
-				"" + r.nextLong(), "Operation 2", "beskrivn...", 
+				"" + r.nextLong(), "Skallgång, södra skogen", "Skallgång i skogens södra delar", 
 				new Date(System.currentTimeMillis()+86400000L), "Plats Y", 
-				new Status(1, "Sökning inledd", "beskrivn..."));
+				new Status(1, "Sökning inledd", "Sökning har inletts i de bestämda områdena"));
 		searchOp.setSearchers(searchers);
 		searchOp.setGroups(groups);
 		searchOp.setZones(zones);
 		opsList.add(searchOp);
 		
 		searchOp = new SearchOperation(
-				"" + r.nextLong(), "Operation 3", "beskrivn...", 
+				"" + r.nextLong(), "Dykoperation, storsjön", "Genomsökning av sjön mha dykteam", 
 				new Date(System.currentTimeMillis()+(2*86400000L)), "Plats Z", 
-				new Status(2, "Sökning avslutad", "beskrivn..."));
+				new Status(2, "Sökning avslutad", "Sökningen har avslutats"));
 		searchOp.setSearchers(searchers);
 		searchOp.setGroups(groups);
 		searchOp.setZones(zones);

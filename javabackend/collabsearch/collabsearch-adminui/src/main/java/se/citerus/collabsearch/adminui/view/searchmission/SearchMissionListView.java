@@ -268,9 +268,10 @@ public class SearchMissionListView extends CustomComponent {
 			new ThemeResource("../mytheme/dual_color_extended_trans.png"));
 		embImg.setStyleName("small-logo");
 		headerLayout.addComponent(embImg);
-				
+		
 		Label headerLabel = new Label("<h1><b>Sökuppdrag</b></h1>");
 		headerLabel.setContentMode(Label.CONTENT_XHTML);
+		headerLabel.setStyleName("logo-header");
 		headerLayout.addComponent(headerLabel);
 		
 		innerLayout.addComponent(headerLayout);
@@ -287,6 +288,7 @@ public class SearchMissionListView extends CustomComponent {
 		treeTable.setVisibleColumns(new Object[]{NAME, DESCR, PRIO, STATUS});
 		treeTable.setColumnHeaders(new String[]{"Namn", "Beskrivning", "Prioritet", "Status"});
 		treeTable.setImmediate(true);
+		treeTable.setColumnWidth(DESCR, 145);
 		innerLayout.addComponent(treeTable);
 		
 		treeTable.addGeneratedColumn(DESCR, new ColumnGenerator() {
@@ -318,12 +320,15 @@ public class SearchMissionListView extends CustomComponent {
 		
 		HorizontalLayout buttonLayout = new HorizontalLayout();
 		buttonLayout.setSpacing(true);
+		buttonLayout.setWidth("100%");
 		
 		homeButton = new Button("Tillbaka");
 		buttonLayout.addComponent(homeButton);
+		buttonLayout.setComponentAlignment(homeButton, Alignment.MIDDLE_LEFT);
 		
 		HorizontalLayout rightButtonLayout = new HorizontalLayout();
 		rightButtonLayout.setSpacing(true);
+//		rightButtonLayout.setWidth("100%");
 		
 		endButton = new Button("Avsluta");
 		endButton.setEnabled(false);

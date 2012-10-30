@@ -1,10 +1,7 @@
 package se.citerus.collabsearch.publicwebsite.logic;
 
-import java.util.Date;
-
 import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.SearchOperationWrapper;
-import se.citerus.collabsearch.model.Status;
 import se.citerus.collabsearch.model.StringArrayWrapper;
 import se.citerus.collabsearch.publicwebsite.ControllerListener;
 

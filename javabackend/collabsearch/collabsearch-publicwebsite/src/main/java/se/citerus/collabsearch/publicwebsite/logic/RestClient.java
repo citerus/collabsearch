@@ -8,10 +8,10 @@ import javax.ws.rs.core.UriBuilder;
 import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.SearchOperationWrapper;
 import se.citerus.collabsearch.model.StringArrayWrapper;
-import se.citerus.collabsearch.model.interfaces.RestService;
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientHandlerException;
+import com.sun.jersey.api.client.ClientRequest;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.WebResource;
@@ -19,7 +19,7 @@ import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 
-public class RestClient implements RestService {
+public class RestClient {
 	
 	private WebResource basicPath;
 

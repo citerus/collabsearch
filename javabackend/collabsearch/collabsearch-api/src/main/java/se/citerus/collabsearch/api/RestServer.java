@@ -16,20 +16,32 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.stereotype.Service;
+
 import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.SearchOperationWrapper;
 import se.citerus.collabsearch.model.StringArrayWrapper;
+import se.citerus.collabsearch.model.exceptions.SearchOperationNotFoundException;
 import se.citerus.collabsearch.model.interfaces.RestService;
 import se.citerus.collabsearch.store.facades.SearchOperationDAO;
 import se.citerus.collabsearch.store.mongodb.SearchMissionDAOMongoDB;
 
+@Service
 @Path("/ws")
 public class RestServer implements RestService {
+	
 	private SearchOperationDAO dao;
 	
 	public RestServer() {
 		try {
-			dao = new SearchMissionDAOMongoDB();
+//			dao = new SearchMissionDAOMongoDB();
+			ApplicationContext context = 
+				new AnnotationConfigApplicationContext("se.citerus.collabsearch.store");
+//			context = new AnnotationConfigApplicationContext(SearchMissionDAOMongoDB.class);
+		    dao = context.getBean(SearchMissionDAOMongoDB.class);
+		    assert(dao != null);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -50,10 +62,10 @@ public class RestServer implements RestService {
 	}
 
 	@GET
-	@Path("/getSearchOp/{name}")
+	@Path("/getSearchOp/{id}")
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	@Consumes(MediaType.TEXT_PLAIN)
-	public SearchOperation getSearchOperationById(@PathParam("name") String id) {
+	public SearchOperation getSearchOperationById(@PathParam("id") String id) {
 		if (id == null) {
 			throw new WebApplicationException(404);
 		}
@@ -84,9 +96,11 @@ public class RestServer implements RestService {
 			response = Response.ok()
 				.lastModified(new Date(System.currentTimeMillis()))
 				.build();
+		} catch (SearchOperationNotFoundException e) {
+			throw new WebApplicationException(404);
 		} catch (IOException e) {
 			e.printStackTrace();
-			response = Response.serverError().build();
+			throw new WebApplicationException(500);
 		}
 		return response;
 	}

@@ -1,18 +1,12 @@
 package se.citerus.collabsearch.adminui.logic;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.lang.Validate;
 
 import se.citerus.collabsearch.model.FileMetadata;
-import se.citerus.collabsearch.model.SearchGroup;
 import se.citerus.collabsearch.model.SearchMission;
-import se.citerus.collabsearch.model.SearchOperation;
-import se.citerus.collabsearch.model.SearcherInfo;
 import se.citerus.collabsearch.model.Status;
 import se.citerus.collabsearch.store.facades.SearchMissionDAO;
 import se.citerus.collabsearch.store.inmemory.SearchMissionDAOInMemory;

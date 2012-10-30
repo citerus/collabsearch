@@ -10,6 +10,7 @@ import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.SearchOperationWrapper;
 import se.citerus.collabsearch.model.SearchZone;
 import se.citerus.collabsearch.model.Status;
+import se.citerus.collabsearch.model.exceptions.SearchOperationNotFoundException;
 
 public interface SearchOperationDAO {
 
@@ -28,7 +29,7 @@ public interface SearchOperationDAO {
 	public SearchOperation getSearchOpById(String name) throws IOException;
 
 	public void assignUserToSearchOp(String opName, String name, String email,
-			String tele) throws IOException;
+			String tele) throws IOException, SearchOperationNotFoundException;
 
 	public SearchOperationWrapper[] getSearchOpsByFilter(String title,
 			String location, String startDate, String endDate)

@@ -43,14 +43,6 @@ public class SearchMissionTest {
 //		missionColl.remove(new BasicDBObject("name", regex));
 	}
 
-	@Before
-	public void setUp() throws Exception {
-	}
-
-	@After
-	public void tearDown() throws Exception {
-	}
-
 	@Test
 	public void testCreateNewSearchMission() throws Exception {
 		//create search mission

@@ -10,6 +10,8 @@ import java.util.ListIterator;
 import java.util.Map;
 
 import org.bson.types.ObjectId;
+import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
 
 import se.citerus.collabsearch.model.FileMetadata;
 import se.citerus.collabsearch.model.SearchGroup;
@@ -19,6 +21,7 @@ import se.citerus.collabsearch.model.SearchOperationWrapper;
 import se.citerus.collabsearch.model.SearchZone;
 import se.citerus.collabsearch.model.Status;
 import se.citerus.collabsearch.model.exceptions.SearchMissionNotFoundException;
+import se.citerus.collabsearch.model.exceptions.SearchOperationNotFoundException;
 import se.citerus.collabsearch.store.facades.SearchMissionDAO;
 import se.citerus.collabsearch.store.facades.SearchOperationDAO;
 
@@ -33,6 +36,9 @@ import com.mongodb.Mongo;
 import com.mongodb.MongoOptions;
 import com.mongodb.WriteResult;
 
+import javax.annotation.PreDestroy;
+
+@Repository
 public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperationDAO {
 
 	private Mongo mongo;
@@ -54,6 +60,11 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 		missionStatusColl = db.getCollection("missionstatuses");
 		operationsColl = db.getCollection("searchops");
 		opStatusColl = db.getCollection("opstatuses");
+	}
+	
+	@PreDestroy
+	public void cleanUp() {
+		mongo.close();
 	}
 	
 	@Override
@@ -356,9 +367,6 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 	@Override
 	public SearchOperation getSearchOpById(String id) throws IOException {
 		SearchOperation op = null;
-		if (id == null) {
-			throw new IOException("Ingen sökterm angiven");
-		}
 		try {
 			DBObject query = makeObjectIdQuery(id);
 			DBObject limit = new BasicDBObject("zones", 0).append("groups", 0);
@@ -393,7 +401,7 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 
 	@Override
 	public void assignUserToSearchOp(String opId, String name, String email,
-			String tele) throws IOException {
+			String tele) throws SearchOperationNotFoundException,IOException {
 		try {
 			DBObject queryObj = makeObjectIdQuery(opId);
 			BasicDBObject userData = new BasicDBObject("name", name)
@@ -402,9 +410,9 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 			DBObject updateObj = new BasicDBObject("$addToSet", 
 					new BasicDBObject("searchers", userData));
 			WriteResult result = operationsColl.update(queryObj, updateObj);
-			if (!result.getLastError().ok()) {
-				throw new IOException("Updatering misslyckades");
-			}
+			checkResult(result, OPTYPE.UPDATE);
+		} catch (IOException e) {
+			throw new SearchOperationNotFoundException("Den valda sökoperationen kunde ej hittas");
 		} catch (Exception e) {
 			throw new IOException("Kontakt med databasen kunde ej upprättas", e);
 		}
@@ -414,9 +422,6 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 	public SearchOperationWrapper[] getSearchOpsByFilter(String title, String location, 
 			String startDate, String endDate) throws IOException {
 		SearchOperationWrapper[] array = null;
-		if (title == null && location == null && startDate == null && endDate == null) {
-			throw new IOException("Inga söktermer angivna");
-		}
 		try {
 			BasicDBObject query = new BasicDBObject();
 			BasicDBObject limit = new BasicDBObject("_id", 1)

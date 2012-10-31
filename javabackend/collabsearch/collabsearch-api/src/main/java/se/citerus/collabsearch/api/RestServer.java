@@ -31,15 +31,15 @@ import se.citerus.collabsearch.store.mongodb.SearchMissionDAOMongoDB;
 @Service
 @Path("/ws")
 public class RestServer implements RestService {
+	private static final int NOT_FOUND = 404;
+	private static final int INTERNAL_SERVER_ERROR = 500;
 	
 	private SearchOperationDAO dao;
 	
 	public RestServer() {
 		try {
-//			dao = new SearchMissionDAOMongoDB();
 			ApplicationContext context = 
 				new AnnotationConfigApplicationContext("se.citerus.collabsearch.store");
-//			context = new AnnotationConfigApplicationContext(SearchMissionDAOMongoDB.class);
 		    dao = context.getBean(SearchMissionDAOMongoDB.class);
 		    assert(dao != null);
 		} catch (Exception e) {
@@ -56,7 +56,7 @@ public class RestServer implements RestService {
 			array = dao.getAllSearchOps();
 		} catch (IOException e) {
 			e.printStackTrace();
-			throw new WebApplicationException(500);
+			throw new WebApplicationException(INTERNAL_SERVER_ERROR);
 		}
 		return array;
 	}
@@ -67,17 +67,17 @@ public class RestServer implements RestService {
 	@Consumes(MediaType.TEXT_PLAIN)
 	public SearchOperation getSearchOperationById(@PathParam("id") String id) {
 		if (id == null) {
-			throw new WebApplicationException(404);
+			throw new WebApplicationException(NOT_FOUND);
 		}
 		SearchOperation searchOperation = null;
 		try {
 			searchOperation = dao.getSearchOpById(id);
 		} catch (IOException e) {
 			e.printStackTrace();
-			throw new WebApplicationException(500);
+			throw new WebApplicationException(INTERNAL_SERVER_ERROR);
 		}
 		if (searchOperation == null) {
-			throw new WebApplicationException(404);
+			throw new WebApplicationException(NOT_FOUND);
 		}
 		return searchOperation;
 	}
@@ -97,10 +97,10 @@ public class RestServer implements RestService {
 				.lastModified(new Date(System.currentTimeMillis()))
 				.build();
 		} catch (SearchOperationNotFoundException e) {
-			throw new WebApplicationException(404);
+			throw new WebApplicationException(NOT_FOUND);
 		} catch (IOException e) {
 			e.printStackTrace();
-			throw new WebApplicationException(500);
+			throw new WebApplicationException(INTERNAL_SERVER_ERROR);
 		}
 		return response;
 	}
@@ -118,10 +118,10 @@ public class RestServer implements RestService {
 			array = dao.getSearchOpsByFilter(title, location, startDate, endDate);
 		} catch (IOException e) {
 			e.printStackTrace();
-			throw new WebApplicationException(500);
+			throw new WebApplicationException(INTERNAL_SERVER_ERROR);
 		}
 		if (array == null || array.length == 0) {
-			throw new WebApplicationException(404);
+			throw new WebApplicationException(NOT_FOUND);
 		}
  		return array;
 	}
@@ -140,7 +140,7 @@ public class RestServer implements RestService {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new WebApplicationException(500);
+			throw new WebApplicationException(INTERNAL_SERVER_ERROR);
 		}
 		return array;
 	}
@@ -159,7 +159,7 @@ public class RestServer implements RestService {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new WebApplicationException(500);
+			throw new WebApplicationException(INTERNAL_SERVER_ERROR);
 		}
 		return array;
 	}

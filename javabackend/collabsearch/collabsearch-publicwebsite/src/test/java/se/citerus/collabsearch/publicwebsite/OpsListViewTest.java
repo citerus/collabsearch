@@ -121,7 +121,7 @@ public class OpsListViewTest {
 				"Skallgång, norra skogen", 
 				"Linanäs", 
 				1221724799999L, 
-				1221724800001L); //TODO why doesnt this work?
+				1221724800001L);
 		assertTrue(list.length >= 1);
 		for (SearchOperationWrapper intro : list) {
 			assertNotNull(intro);

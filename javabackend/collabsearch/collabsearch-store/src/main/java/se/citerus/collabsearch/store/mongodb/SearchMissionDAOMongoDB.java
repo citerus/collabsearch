@@ -434,10 +434,15 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 			if (location != null && !location.equals("")) {
 				query.append("location", location);
 			}
-			if (startDate != null && !startDate.equals("") 
-					&& endDate != null && !endDate.equals("")) {
-				query.append("date", new BasicDBObject("$gte", startDate));
-				query.append("date", new BasicDBObject("$lte", endDate));
+			BasicDBObject dateQuery = new BasicDBObject();
+			if (startDate != null && !startDate.equals("")) {
+				dateQuery.append("$gte", Long.parseLong(startDate));
+			}
+			if (endDate != null && !endDate.equals("")) {
+				dateQuery.append("$lte", Long.parseLong(endDate));
+			}
+			if (!dateQuery.isEmpty()) {
+				query.append("date", dateQuery);
 			}
 			
 			DBCursor cursor = operationsColl.find(query, limit);
@@ -447,7 +452,7 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 		} catch (Exception e) {
 			throw new IOException("Kontakt med databasen kunde ej upprättas", e);
 		}
-		return array;
+		return array; 
 	}
 	
 	@Override

@@ -155,29 +155,4 @@ public class SearchMissionDAOMongoDBTests {
 		assertEquals(newMissionData.getPrio(), editedMission.getPrio());
 		assertEquals(newMissionData.getStatus().getId(), editedMission.getStatus().getId());
 	}
-	
-//	@Test
-//	public void testGetSearchMissionStatusById() throws Exception {
-//		
-//	}
-//	
-//	@Test
-//	public void testAddFileMetadata() throws Exception {
-//		
-//	}
-//	
-//	@Test
-//	public void testGetFileMetadata() throws Exception {
-//		
-//	}
-//	
-//	@Test
-//	public void testDeleteFileMetadata() throws Exception {
-//		
-//	}
-//	
-//	@Test
-//	public void testFindMissionStatusByName() throws Exception {
-//		
-//	}
 }

@@ -24,10 +24,16 @@ public class WelcomeView extends CustomComponent {
 	private Button userButton;
 	private Button logoutButton;
 	private Button searchMissionButton;
+	private final ViewSwitchController listener;
 
 	public WelcomeView(final ViewSwitchController listener) {
-		buildMainLayout();
+		this.listener = listener;
+		mainLayout = new VerticalLayout();
 		setCompositionRoot(mainLayout);
+	}
+	
+	public void init() {
+		buildMainLayout();
 		listener.setMainWindowCaption("Välkommen");
 		
 		userButton.addListener(new ClickListener() {
@@ -48,7 +54,6 @@ public class WelcomeView extends CustomComponent {
 	}
 
 	private void buildMainLayout() {
-		mainLayout = new VerticalLayout();
 //		mainLayout.setWidth("300px");
 //		mainLayout.setHeight("300px");
 		mainLayout.setSizeFull();
@@ -106,5 +111,8 @@ public class WelcomeView extends CustomComponent {
 		mainLayout.setExpandRatio(sizer1, 0.5f);
 		mainLayout.setExpandRatio(outerLayout, 2f);
 		mainLayout.setExpandRatio(sizer2, 0.5f);
+	}
+
+	public void resetView() {
 	}
 }

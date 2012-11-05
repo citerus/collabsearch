@@ -16,8 +16,10 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.stereotype.Service;
 
 import se.citerus.collabsearch.model.SearchOperation;
@@ -34,6 +36,7 @@ public class RestServer implements RestService {
 	private static final int NOT_FOUND = 404;
 	private static final int INTERNAL_SERVER_ERROR = 500;
 	
+//	@Autowired
 	private SearchOperationDAO dao;
 	
 	public RestServer() {
@@ -42,6 +45,8 @@ public class RestServer implements RestService {
 				new AnnotationConfigApplicationContext("se.citerus.collabsearch.store");
 		    dao = context.getBean(SearchMissionDAOMongoDB.class);
 		    assert(dao != null);
+		    
+//		    context = new ClassPathXmlApplicationContext(new String[]{"applicationContext.xml"});
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

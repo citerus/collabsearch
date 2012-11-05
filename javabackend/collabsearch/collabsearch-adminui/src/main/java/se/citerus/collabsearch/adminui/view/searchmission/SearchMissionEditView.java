@@ -97,7 +97,7 @@ public class SearchMissionEditView extends CustomComponent {
 		SearchMissionService handler = null;
 		try {
 			handler = new SearchMissionService();
-			mission = handler.getSearchMissionData(missionId);
+			mission = handler.getSearchMissionById(missionId);
 			if (mission == null) {
 				listener.displayError("Fel", "Uppdraget " + missionId + " kunde ej hittas");
 				return;
@@ -250,10 +250,12 @@ public class SearchMissionEditView extends CustomComponent {
 				handler = new SearchMissionService();
 				int prio = Integer.parseInt(prioField.getValue().toString());
 				Status status = handler.getStatusByName(statusField.getValue().toString());
+				String title = (String) titleField.getValue();
+				String description = (String) descrField.getValue();
 				SearchMission mission = new SearchMission(
 						missionId, 
-						(String) titleField.getValue(), 
-						(String) descrField.getValue(), 
+						title, 
+						description, 
 						prio, 
 						status
 				);

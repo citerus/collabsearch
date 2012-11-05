@@ -45,9 +45,9 @@ public interface SearchOperationDAO {
 
 	public String createZone(String opId, SearchZone zone) throws IOException;
 
-	public SearchOperation findOperation(String opId) throws IOException;
+	public SearchOperation findOperation(String opId) throws IOException, SearchOperationNotFoundException;
 
-	public void deleteSearchOperation(String searchOpId) throws IOException;
+	public void deleteSearchOperation(String searchOpId) throws IOException, SearchOperationNotFoundException;
 
 	public void editSearchOperation(SearchOperation operation, String missionId)
 			throws IOException;

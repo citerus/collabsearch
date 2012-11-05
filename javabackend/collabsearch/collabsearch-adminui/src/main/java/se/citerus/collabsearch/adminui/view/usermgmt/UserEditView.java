@@ -47,8 +47,12 @@ public class UserEditView extends CustomComponent {
 
 	public UserEditView(final ViewSwitchController listener) {
 		this.listener = listener;
-		buildMainLayout();
+		mainLayout = new VerticalLayout();
 		setCompositionRoot(mainLayout);
+	}
+	
+	public void init() {
+		buildMainLayout();
 		listener.setMainWindowCaption("Collaborative Search - Användarredigering");
 		
 		saveButton.addListener(new ClickListener() {
@@ -116,7 +120,6 @@ public class UserEditView extends CustomComponent {
 	}
 
 	private void buildMainLayout() {
-		mainLayout = new VerticalLayout();
 		mainLayout.setSizeFull();
 		mainLayout.setMargin(true);
 

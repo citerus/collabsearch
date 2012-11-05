@@ -13,6 +13,12 @@ public class FileMetadata {
 		this.filePath = filePath;
 	}
 
+	public FileMetadata(String fileName, String mimeType, String filePath) {
+		this.fileName = fileName;
+		this.mimeType = mimeType;
+		this.filePath = filePath;
+	}
+
 	public String getFileName() {
 		return fileName;
 	}

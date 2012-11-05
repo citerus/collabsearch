@@ -20,7 +20,7 @@ import se.citerus.collabsearch.model.SearchMission;
 import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.Status;
 
-public class SearchOperationTest {
+public class SearchOperationTests {
 
 	private static SearchOperationService opsService;
 	private static Queue<String> opsToRemove;
@@ -43,8 +43,8 @@ public class SearchOperationTest {
 	public static void tearDownAfterClass() {
 		//remove test data
 		while (opsToRemove.peek() != null) {
-			String id = opsToRemove.remove();
 			try {
+				String id = opsToRemove.remove();
 				opsService.deleteSearchOperation(id);
 			} catch (Exception e) {
 				e.printStackTrace();

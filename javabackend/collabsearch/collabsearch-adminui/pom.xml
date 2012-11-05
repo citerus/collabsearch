@@ -19,6 +19,14 @@
 		<gwt.version>2.3.0</gwt.version>
 		<gwt.plugin.version>2.2.0</gwt.plugin.version>
 		<port>8081</port>
+		
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	    <maven.compiler.source>1.6</maven.compiler.source>
+	    <maven.compiler.target>1.6</maven.compiler.target>
+		
+	    <spring.version>3.1.0.RELEASE</spring.version>
+	    <aspectj.version>1.6.12</aspectj.version>
+	    <aspectj-maven-plugin.version>1.4</aspectj-maven-plugin.version>
 	</properties>
 
 	<build>
@@ -27,8 +35,8 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
+					<source>${maven.compiler.source}</source>
+					<target>${maven.compiler.target}</target>
 <!-- 					<extraJvmArgs>-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=4000</extraJvmArgs> -->
 				</configuration>
 			</plugin>
@@ -52,7 +60,7 @@
 					<runTarget>widgettest</runTarget>
 					<hostedWebapp>${project.build.directory}/${project.build.finalName}</hostedWebapp>
 					<noServer>true</noServer>
-					<port>8081</port> <!-- default: 8080 -->
+					<port>${port}</port> <!-- default: 8080 -->
 					<compileReport>false</compileReport>
 				</configuration>
 				<executions>
@@ -146,6 +154,32 @@
 					</webAppConfig>
 				</configuration>
 			</plugin>
+			
+			<!-- spring aspects compiler -->
+			<plugin>
+		        <groupId>org.codehaus.mojo</groupId>
+		        <artifactId>aspectj-maven-plugin</artifactId>
+		        <version>${aspectj-maven-plugin.version}</version>
+		        <configuration>
+		          <!-- Required as the plugin does not resolve this by default -->
+		          <source>${maven.compiler.source}</source>
+		          <target>${maven.compiler.target}</target>
+		          <aspectLibraries>
+		            <aspectLibrary>
+		              <groupId>org.springframework</groupId>
+		              <artifactId>spring-aspects</artifactId>
+		            </aspectLibrary>
+		          </aspectLibraries>
+		        </configuration>
+		        <executions>
+		          <execution>
+		            <goals>
+		              <goal>compile</goal>
+		              <goal>test-compile</goal>
+		            </goals>
+		          </execution>
+		        </executions>
+	     	</plugin>
 			
 		</plugins>
 		<pluginManagement>
@@ -265,17 +299,10 @@
 			<version>5.5.23</version>
 		</dependency>
 		<dependency>
-			<groupId>org.mongodb</groupId>
-			<artifactId>mongo-java-driver</artifactId>
-			<version>2.7.3</version>
-		</dependency>
-
-		<dependency>
 			<groupId>net.sourceforge.collections</groupId>
 			<artifactId>collections-generic</artifactId>
 			<version>4.01</version>
 		</dependency>
-
 		<dependency>
 			<groupId>se.citerus</groupId>
 			<artifactId>collabsearch-model</artifactId>
@@ -295,6 +322,51 @@
 			<groupId>com.google.gwt</groupId>
 			<artifactId>maps</artifactId>
 			<version>1.1.1</version>
+		</dependency>
+		
+		<!-- Spring -->
+	    <dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-beans</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-aspects</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-tx</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<!-- Required due to a bug in Spring, see https://jira.springsource.org/browse/SPR-6819 -->
+		<dependency>
+			<groupId>javax.persistence</groupId>
+			<artifactId>persistence-api</artifactId>
+			<version>1.0</version>
+			<optional>true</optional>
+		</dependency>
+		<!-- AspectJ dependencies -->
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjrt</artifactId>
+			<version>${aspectj.version}</version>
 		</dependency>
 	</dependencies>
 

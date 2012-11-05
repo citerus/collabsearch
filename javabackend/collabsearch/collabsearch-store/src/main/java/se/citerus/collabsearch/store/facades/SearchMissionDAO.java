@@ -15,24 +15,24 @@ public interface SearchMissionDAO {
 
 	public void disconnect() throws Exception;
 
-	public void endMission(String missionId) throws IOException;
+	public void endMission(String missionId) throws IOException, SearchMissionNotFoundException;
 
 	public List<Status> getAllSearchMissionStatuses() throws IOException;
 
 	public SearchMission findMission(String missionId) throws IOException, SearchMissionNotFoundException, Exception;
 
-	public void addFileMetadata(String missionId, FileMetadata metadata)
-			throws IOException;
+	public String addFileMetadata(String missionId, FileMetadata metadata)
+			throws IOException, SearchMissionNotFoundException;
 
-	public FileMetadata getFileMetadata(String filename, String missionId) throws IOException;
+	public FileMetadata getFileMetadata(String filename, String missionId) throws IOException, SearchMissionNotFoundException;
 	
-	public void deleteFileMetadata(String filename, String missionId)
-			throws IOException;
+	public String deleteFileMetadata(String filename, String missionId)
+			throws IOException, SearchMissionNotFoundException;
 
 	public String createSearchMission(SearchMission mission) throws IOException;
 
 	public void editSearchMission(SearchMission mission, String missionId)
-			throws IOException;
+			throws IOException, SearchMissionNotFoundException;
 
 	public Status findMissionStatusByName(String statusName) throws IOException;
 

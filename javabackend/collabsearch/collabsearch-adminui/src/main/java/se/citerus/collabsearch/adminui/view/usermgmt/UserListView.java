@@ -27,7 +27,7 @@ import com.vaadin.ui.VerticalLayout;
 @SuppressWarnings("serial")
 public class UserListView extends CustomComponent {
 	
-	private Layout mainLayout;
+	private VerticalLayout mainLayout;
 	private Button homeButton;
 	private Button addButton;
 	private Button editButton;
@@ -36,10 +36,16 @@ public class UserListView extends CustomComponent {
 	private Label headerLabel;
 
 	private BeanContainer<String, User> beans;
+	private final ViewSwitchController listener;
 	
 	public UserListView(final ViewSwitchController listener) {
-		mainLayout = buildMainLayout();
+		this.listener = listener;
+		mainLayout = new VerticalLayout();
 		setCompositionRoot(mainLayout);
+	}
+	
+	public void init() {
+		buildMainLayout();
 		listener.setMainWindowCaption("Collaborative Search - Användare");
 		
 		homeButton.addListener(new ClickListener() {
@@ -111,16 +117,15 @@ public class UserListView extends CustomComponent {
 		table.setColumnHeaders(new String[]{"Användarnamn","Roll"});
 	}
 	
-	private Layout buildMainLayout() {
-		VerticalLayout mainLayout2 = new VerticalLayout();
-		mainLayout2.setSizeFull();
-		mainLayout2.setMargin(true, false, false, true);
+	private void buildMainLayout() {
+		mainLayout.setSizeFull();
+		mainLayout.setMargin(true, false, false, true);
 		
 		Panel outerPanel = new Panel();
 		outerPanel.setWidth("36%");
 		outerPanel.setStyleName("user-panel");
-		mainLayout2.addComponent(outerPanel);
-		mainLayout2.setComponentAlignment(outerPanel, Alignment.TOP_CENTER);
+		mainLayout.addComponent(outerPanel);
+		mainLayout.setComponentAlignment(outerPanel, Alignment.TOP_CENTER);
 		
 		VerticalLayout outerLayout = new VerticalLayout();
 		outerLayout.setWidth("100%");
@@ -176,8 +181,6 @@ public class UserListView extends CustomComponent {
 		
 		outerLayout.addComponent(buttonLayout);
 		outerLayout.setComponentAlignment(buttonLayout, Alignment.TOP_RIGHT);
-		
-		return mainLayout2;
 	}
 
 	public void resetView() {

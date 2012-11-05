@@ -35,7 +35,6 @@ public class MainWindow extends Window implements LoginListener, ViewSwitchContr
 	private EditZoneView editZoneView;
 	private NewZoneView newZoneView;
 
-
 	public MainWindow() {
 		setCaption("Collaborative Search - Inloggning");
 		
@@ -111,7 +110,9 @@ public class MainWindow extends Window implements LoginListener, ViewSwitchContr
 	public void switchToWelcomeView() {
 		if (welcomeView == null) {
 			welcomeView = new WelcomeView(this);
+			welcomeView.init();
 		}
+		welcomeView.resetView();
 		setContent(welcomeView);
 	}
 
@@ -119,6 +120,7 @@ public class MainWindow extends Window implements LoginListener, ViewSwitchContr
 	public void switchToUserListView() {
 		if (userListView == null) {
 			userListView = new UserListView(this);
+			userListView.init();
 		}
 		userListView.resetView();
 		setContent(userListView);
@@ -128,6 +130,7 @@ public class MainWindow extends Window implements LoginListener, ViewSwitchContr
 	public void switchToUserEditView(String selectedUsername) {
 		if (userEditView == null) {
 			userEditView = new UserEditView(this);
+			userEditView.init();
 		}
 		userEditView.resetView(selectedUsername);
 		setContent(userEditView);

@@ -16,8 +16,6 @@
 	
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	    <maven.compiler.source>1.6</maven.compiler.source>
 	    <maven.compiler.target>1.6</maven.compiler.target>
 	
@@ -27,7 +25,6 @@
 	    
 	    <!-- Plugin versions -->
 	    <aspectj-maven-plugin.version>1.4</aspectj-maven-plugin.version>
-	    <jetty-maven-plugin.version>8.0.4.v20111024</jetty-maven-plugin.version>
 	</properties>
 	
 	<dependencies>
@@ -39,7 +36,7 @@
 		<dependency>
 			<groupId>org.mongodb</groupId>
 			<artifactId>mongo-java-driver</artifactId>
-			<version>2.7.3</version>
+			<version>2.9.1</version>
 		</dependency>
 		<!-- Spring -->
 	    <dependency>

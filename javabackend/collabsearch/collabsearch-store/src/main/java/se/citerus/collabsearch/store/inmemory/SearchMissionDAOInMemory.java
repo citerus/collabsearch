@@ -1,6 +1,7 @@
 package se.citerus.collabsearch.store.inmemory;
 
 import java.awt.geom.Point2D;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.Date;
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ import java.util.Random;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
+import org.springframework.stereotype.Repository;
 
 import se.citerus.collabsearch.model.FileMetadata;
 import se.citerus.collabsearch.model.GroupNode;
@@ -25,9 +27,12 @@ import se.citerus.collabsearch.model.SearchOperationWrapper;
 import se.citerus.collabsearch.model.SearchZone;
 import se.citerus.collabsearch.model.SearcherInfo;
 import se.citerus.collabsearch.model.Status;
+import se.citerus.collabsearch.model.exceptions.SearchMissionNotFoundException;
+import se.citerus.collabsearch.model.exceptions.SearchOperationNotFoundException;
 import se.citerus.collabsearch.store.facades.SearchMissionDAO;
 import se.citerus.collabsearch.store.facades.SearchOperationDAO;
 
+@Repository
 public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperationDAO {
 	private static List<SearchMission> missionsList;
 	private static List<Status> statusList;
@@ -62,10 +67,10 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 		//need not be implemented for in-memory storage
 	}
 
-	public void endMission(String missionId) throws IOException {
+	public void endMission(String missionId) throws IOException, SearchMissionNotFoundException {
 		SearchMission mission = findMission(missionId);
 		if (mission == null) {
-			throw new IOException("Sökuppdraget " + missionId + " ej funnet");
+			throw new SearchMissionNotFoundException(missionId);
 		}
 		
 		final String endStatusName = "Avslutat uppdrag";
@@ -81,13 +86,13 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 		return null;
 	}
 
-	public SearchMission findMission(String missionId) {
+	public SearchMission findMission(String missionId) throws SearchMissionNotFoundException {
 		for (SearchMission listedMission : missionsList) {
 			if (missionId.equals(listedMission.getId())) {
 				return listedMission;
 			}
 		}
-		return null;
+		throw new SearchMissionNotFoundException(missionId);
 	}
 
 	public List<Status> getAllSearchMissionStatuses() throws IOException {
@@ -172,16 +177,16 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 			new Point2D.Double(18.533248901367188,59.477609837736246)
 		};
 		SearchFinding[] findings = new SearchFinding[] {
-				new SearchFinding("" + r.nextLong(), 18.530502319335938, 59.472640068126864, "Fynd", "Fotspår"),
-				new SearchFinding("" + r.nextLong(), 18.536081314086914, 59.474514716221430, "Fynd", "Upphittat klädesplagg")
+				new SearchFinding(18.530502319335938, 59.472640068126864, "Fynd", "Fotspår"),
+				new SearchFinding(18.536081314086914, 59.474514716221430, "Fynd", "Upphittat klädesplagg")
 		};
-		SearchZone zone = new SearchZone("Norra sökområdet", 3, 22.3, 60.4522, points, findings);
+		SearchZone zone = new SearchZone("Norra sökområdet", 3, points, findings);
 		zone.setId("" + r.nextLong());
 		zones.add(zone);
-		zone = new SearchZone("Södra sökområdet", 2, 23.3, 60.4522, points, findings);
+		zone = new SearchZone("Södra sökområdet", 2, points, findings);
 		zone.setId("" + r.nextLong());
 		zones.add(zone);
-		zone = new SearchZone("Storsjön (sökområde för dykare)", 1, 24.3, 60.4522, points, findings);
+		zone = new SearchZone("Storsjön (sökområde för dykare)", 1, points, findings);
 		zone.setId("" + r.nextLong());
 		zones.add(zone);
 		
@@ -265,7 +270,7 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 	
 	@Override
 	public void editSearchMission(SearchMission mission, String missionId)
-			throws IOException {
+			throws IOException, SearchMissionNotFoundException {
 		for (SearchMission listedMission : missionsList) {
 			if (missionId.equals(listedMission.getId())) {
 				listedMission.setName(mission.getName());
@@ -275,14 +280,15 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 				return;
 			}
 		}
+		throw new SearchMissionNotFoundException(missionId);
 	}
 
-	public List<SearchOperation> getAllSearchOpsForMission(String missionId) {
+	public List<SearchOperation> getAllSearchOpsForMission(String missionId) throws SearchMissionNotFoundException {
 		SearchMission mission = findMission(missionId);
 		return mission.getOpsList();
 	}
 
-	public SearchOperation findOperation(String opId) {
+	public SearchOperation findOperation(String opId) throws SearchOperationNotFoundException {
 		for (SearchMission mission : missionsList) {
 			List<SearchOperation> opsList = mission.getOpsList();
 			for (SearchOperation operation : opsList) {
@@ -291,10 +297,10 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 				}
 			}
 		}
-		return null;
+		throw new SearchOperationNotFoundException(opId);
 	}
 
-	public void deleteSearchOperation(String opId) throws IOException {
+	public void deleteSearchOperation(String opId) throws IOException, SearchOperationNotFoundException {
 		for (SearchMission mission : missionsList) {
 			List<SearchOperation> opsList = mission.getOpsList();
 			for (SearchOperation op : opsList) {
@@ -304,34 +310,34 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 				}
 			}
 		}
+		throw new SearchOperationNotFoundException(opId);
 	}
 
-	public void addFileMetadata(String missionId, FileMetadata fileMetaData) throws IOException {
+	public String addFileMetadata(String missionId, FileMetadata fileMetaData) throws IOException, SearchMissionNotFoundException {
 		SearchMission mission = findMission(missionId);
 		if (mission == null) {
-			throw new IOException("Sökuppdraget ej funnet");
+			throw new SearchMissionNotFoundException(missionId);
 		}
 		
 		mission.getFileList().add(fileMetaData);
+		return fileMetaData.getId();
 	}
 	
-	public void deleteFileMetadata(String filename, String missionName) throws IOException {
-		SearchMission mission = findMission(missionName);
-		if (mission == null) {
-			throw new IOException("Sökuppdraget " + missionName + " ej funnet");
-		}
+	public String deleteFileMetadata(String filename, String missionId) throws IOException, FileNotFoundException, SearchMissionNotFoundException {
+		SearchMission mission = findMission(missionId);
 		
 		List<FileMetadata> fileList = mission.getFileList();
 		for (int i = 0; i < fileList.size(); i++) {
 			if (fileList.get(i).getFileName().equals(filename)) {
 				fileList.remove(i);
-				break;
+				return filename;
 			}
 		}
+		throw new FileNotFoundException(filename);
 	}
 
 	@Override
-	public FileMetadata getFileMetadata(String filename, String missionId) {
+	public FileMetadata getFileMetadata(String filename, String missionId) throws SearchMissionNotFoundException, FileNotFoundException {
 		SearchMission mission = findMission(missionId);
 		if (mission != null) {
 			for (FileMetadata metadata : mission.getFileList()) {
@@ -340,7 +346,7 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 				}
 			}
 		}
-		return null;
+		throw new FileNotFoundException(filename);
 	}
 
 	@Override

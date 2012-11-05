@@ -4,41 +4,29 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Point2D.Double;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.Queue;
 import java.util.Random;
 
 import org.apache.commons.lang.Validate;
 import org.vaadin.hezamu.googlemapwidget.GoogleMap;
 import org.vaadin.hezamu.googlemapwidget.GoogleMap.MapClickListener;
-import org.vaadin.hezamu.googlemapwidget.GoogleMap.MapControl;
 import org.vaadin.hezamu.googlemapwidget.overlay.BasicMarker;
-import org.vaadin.hezamu.googlemapwidget.overlay.BasicMarkerSource;
-import org.vaadin.hezamu.googlemapwidget.overlay.InfoWindowTab;
 import org.vaadin.hezamu.googlemapwidget.overlay.Marker;
-import org.vaadin.hezamu.googlemapwidget.overlay.MarkerSource;
 import org.vaadin.hezamu.googlemapwidget.overlay.PolyOverlay;
 import org.vaadin.hezamu.googlemapwidget.overlay.Polygon;
 
 import se.citerus.collabsearch.adminui.ViewSwitchController;
-import se.citerus.collabsearch.adminui.logic.SearchMissionService;
 import se.citerus.collabsearch.adminui.logic.SearchOperationService;
 import se.citerus.collabsearch.model.SearchFinding;
 import se.citerus.collabsearch.model.SearchZone;
 
-import com.google.gwt.requestfactory.shared.Service;
 import com.vaadin.Application;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.Alignment;
-import com.vaadin.ui.CustomComponent;
-import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.Label;
-import com.vaadin.ui.TextField;
-import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Component.Event;
+import com.vaadin.ui.Button.ClickListener;
+import com.vaadin.ui.CustomComponent;
+import com.vaadin.ui.Label;
+import com.vaadin.ui.VerticalLayout;
 
 @SuppressWarnings("serial")
 public class EditZoneView extends CustomComponent {
@@ -192,7 +180,6 @@ public class EditZoneView extends CustomComponent {
 			}
 			
 			//center map on center of zone
-//			centerMapOnZone(points);
 			map.setCenter(points[0]);
 			
 			if (zone.getZoomLevel() > 0) {
@@ -220,33 +207,6 @@ public class EditZoneView extends CustomComponent {
 			listener.displayError("Fel vid hämtning av data", 
 				"Ett fel uppstod vid hämtningen av data från servern: " + e.getMessage());
 		}
-	}
-
-	private void centerMapOnZone(Double[] points) {
-		//TODO error in calculation
-		double minX = java.lang.Double.MAX_VALUE;
-		double maxX = java.lang.Double.MIN_VALUE;
-		double minY = java.lang.Double.MAX_VALUE;
-		double maxY = java.lang.Double.MIN_VALUE;
-		for (int i = 0; i < points.length; i++) {
-			Double point = points[i];
-			if (point.x < minX) {
-				minX = point.x;
-			}
-			if (point.x > maxX) {
-				maxX = point.x;
-			}
-			if (point.y < minY) {
-				minX = point.y;
-			}
-			if (point.y > maxY) {
-				maxX = point.y;
-			}
-		}
-		Double center = new Double();
-		center.x = minX + ((maxX - minX) / 2);
-		center.y = minY + ((maxY - minY) / 2);
-		map.setCenter(new Double(center.x, center.y));
 	}
 
 	private void initMap() {

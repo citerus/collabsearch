@@ -1,24 +1,62 @@
 package se.citerus.collabsearch.adminui.logic;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
+import java.util.Properties;
+
+import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang.Validate;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.stereotype.Service;
 
 import se.citerus.collabsearch.model.FileMetadata;
 import se.citerus.collabsearch.model.SearchMission;
 import se.citerus.collabsearch.model.Status;
 import se.citerus.collabsearch.store.facades.SearchMissionDAO;
 import se.citerus.collabsearch.store.inmemory.SearchMissionDAOInMemory;
+import se.citerus.collabsearch.store.mongodb.SearchMissionDAOMongoDB;
 
-public class SearchMissionService { //TODO refactor into spring service
-	
+@Service
+public class SearchMissionService {
+
 	private SearchMissionDAO searchMissionDAO;
 
 	public SearchMissionService() {
 		//TODO choose type of DAO by config file
-		//searchMissionDAL = new SearchMissionDALMongoDB();
-		searchMissionDAO = new SearchMissionDAOInMemory();
+//		try {
+//			ApplicationContext context = 
+//					new AnnotationConfigApplicationContext("se.citerus.collabsearch.store");
+//			searchMissionDAO = context.getBean(SearchMissionDAOMongoDB.class);
+////			searchMissionDAO = context.getBean(SearchMissionDAOInMemory.class);
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+	}
+
+	@PostConstruct
+	public void init() {
+		Properties prop = new Properties();
+		try {
+			ApplicationContext context = 
+				new AnnotationConfigApplicationContext("se.citerus.collabsearch.store");
+			InputStream stream = SearchMissionService.class.getResourceAsStream(
+				"/server-config.properties");
+			String dbImpl = "searchMissionDAOInMemory";
+			if (stream != null) {
+				prop.load(stream);
+				dbImpl = prop.getProperty("DBIMPL");
+			}
+			System.out.println("Configured database implementation: " + dbImpl);
+//			searchMissionDAO = (SearchMissionDAO) context.getBean(dbImpl);
+			searchMissionDAO = context.getBean(dbImpl, SearchMissionDAO.class);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	public List<SearchMission> getListOfSearchMissions() throws Exception {
@@ -34,7 +72,7 @@ public class SearchMissionService { //TODO refactor into spring service
 	}
 
 	public void endMission(String missionId) throws Exception {
-		Validate.notNull(missionId);
+		Validate.notEmpty(missionId);
 		searchMissionDAO.endMission(missionId);
 	}
 	
@@ -45,8 +83,8 @@ public class SearchMissionService { //TODO refactor into spring service
 		return list;
 	}
 
-	public SearchMission getSearchMissionData(String missionId) throws Exception {
-		Validate.notNull(missionId);
+	public SearchMission getSearchMissionById(String missionId) throws Exception {
+		Validate.notEmpty(missionId);
 		SearchMission searchMission = searchMissionDAO.findMission(missionId);
 		Validate.notNull(searchMission);
 		return searchMission;
@@ -60,6 +98,7 @@ public class SearchMissionService { //TODO refactor into spring service
 			return searchMissionDAO.createSearchMission(mission);
 		} else {
 			//TODO create mission obj here instead
+			Validate.notEmpty(missionId);
 			searchMissionDAO.editSearchMission(mission, missionId);
 			return null;
 		}
@@ -67,22 +106,33 @@ public class SearchMissionService { //TODO refactor into spring service
 	
 	public void addFileToMission(String missionId, FileMetadata metadata) throws Exception {
 		//TODO create filemetadata here instead
-		Validate.notNull(missionId);
+		Validate.notEmpty(missionId);
 		Validate.notNull(metadata);
-		searchMissionDAO.addFileMetadata(missionId, metadata);
+		String fileName = searchMissionDAO.addFileMetadata(missionId, metadata);
+		Validate.notEmpty(fileName);
 	}
 	
 	public void deleteFile(String filename, String missionId) throws Exception {		
-		Validate.notNull(filename);
-		Validate.notNull(missionId);
+		Validate.notEmpty(filename);
+		Validate.notEmpty(missionId);
 		FileMetadata metadata = searchMissionDAO.getFileMetadata(filename, missionId);
-		File file = new File(metadata.getFilePath());
-		file.delete();
-		searchMissionDAO.deleteFileMetadata(filename, missionId);
+		Validate.notNull(metadata);
+		Validate.notEmpty(metadata.getFilePath());
+		try {
+			File file = new File(metadata.getFilePath() + File.pathSeparator + metadata.getFileName());
+			if (file.exists()) {
+				//TODO log file not found on deletion
+				file.delete();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		String fileName = searchMissionDAO.deleteFileMetadata(filename, missionId);
+		Validate.notEmpty(fileName);
 	}
-
+	
 	public Status getStatusByName(String statusName) throws Exception {
-		Validate.notNull(statusName);
+		Validate.notEmpty(statusName);
 		Status status = searchMissionDAO.findMissionStatusByName(statusName);
 		Validate.notNull(status);
 		return status;

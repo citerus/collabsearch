@@ -23,6 +23,9 @@ import org.bson.types.ObjectId;
 import org.springframework.stereotype.Repository;
 
 import se.citerus.collabsearch.model.FileMetadata;
+import se.citerus.collabsearch.model.GroupNode;
+import se.citerus.collabsearch.model.Rank;
+import se.citerus.collabsearch.model.Rank.Title;
 import se.citerus.collabsearch.model.SearchFinding;
 import se.citerus.collabsearch.model.SearchGroup;
 import se.citerus.collabsearch.model.SearchMission;
@@ -30,8 +33,10 @@ import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.SearchOperationWrapper;
 import se.citerus.collabsearch.model.SearchZone;
 import se.citerus.collabsearch.model.Status;
+import se.citerus.collabsearch.model.exceptions.SearchGroupNotFoundException;
 import se.citerus.collabsearch.model.exceptions.SearchMissionNotFoundException;
 import se.citerus.collabsearch.model.exceptions.SearchOperationNotFoundException;
+import se.citerus.collabsearch.model.exceptions.SearchZoneNotFoundException;
 import se.citerus.collabsearch.store.facades.SearchMissionDAO;
 import se.citerus.collabsearch.store.facades.SearchOperationDAO;
 
@@ -102,6 +107,21 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 			zonesColl = db.getCollection("zones");
 			groupsColl = db.getCollection("groups");
 		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void setDebugDB(String dbName) {
+		try {
+			DB db = mongo.getDB(dbName);
+			missionColl = db.getCollection("searchmissions");
+			missionStatusColl = db.getCollection("missionstatuses");
+			operationsColl = db.getCollection("searchops");
+			opStatusColl = db.getCollection("opstatuses");
+			searcherColl = db.getCollection("searchers");
+			zonesColl = db.getCollection("zones");
+			groupsColl = db.getCollection("groups");
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -336,9 +356,12 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 	}
 
 	@Override
-	public SearchOperation findOperation(String opId) throws IOException {
+	public SearchOperation findOperation(String opId) throws IOException, SearchOperationNotFoundException {
 		BasicDBObject query = makeObjectIdQuery(opId);
 		BasicDBObject dbo = (BasicDBObject) operationsColl.findOne(query);
+		if (dbo == null) {
+			throw new SearchOperationNotFoundException(opId);
+		}
 		SearchOperation op = new SearchOperation();
 		op.setId(dbo.getString("_id"));
 		op.setTitle(dbo.getString("title"));
@@ -373,8 +396,8 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 
 	@Override
 	public void editSearchOperation(SearchOperation op,
-			String missionId) throws IOException {
-		BasicDBObject query = new BasicDBObject("_id", op.getId());
+			String opId) throws IOException {
+		BasicDBObject query = makeObjectIdQuery(opId);
 		BasicDBObject updateObj = new BasicDBObject(5);
 		updateObj.append("title", op.getTitle());
 		updateObj.append("descr", op.getDescr());
@@ -386,15 +409,72 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 	}
 	
 	@Override
-	public SearchGroup getSearchGroup(String groupId) throws IOException {
+	public SearchGroup getSearchGroup(String groupId) throws IOException, SearchGroupNotFoundException {
 		BasicDBObject query = makeObjectIdQuery(groupId);
-		BasicDBObject dbo = (BasicDBObject) operationsColl.findOne(query);
+		BasicDBObject dbo = (BasicDBObject) groupsColl.findOne(query);
+		if (dbo == null) {
+			throw new SearchGroupNotFoundException();
+		}
 		SearchGroup group = new SearchGroup();
 		group.setId(dbo.getObjectId("_id").toString());
 		group.setName(dbo.getString("name"));
-		//TODO traverse and convert tree
-		//group.setTreeRoot(treeRoot);
+		BasicDBObject treeObj = (BasicDBObject) dbo.get("tree");
+		if (treeObj != null) {
+			group.setTreeRoot(makeGroupTreePOJO(treeObj, null));
+		}
 		return group;
+	}
+	
+	private GroupNode makeGroupTreePOJO(BasicDBObject nodeObj, GroupNode parent) {
+		ObjectId oid = nodeObj.getObjectId("searcherid");
+		String rankStr = nodeObj.getString("rank");
+		Rank.Title rank = Rank.getRankByName(rankStr);
+		GroupNode node = new GroupNode(oid.toString(), rank, parent);
+		BasicDBList children = (BasicDBList) nodeObj.get("children");
+		if (children != null && children.size() > 0) {
+			for (Object childObj : children) {
+				GroupNode childNode = makeGroupTreePOJO((BasicDBObject)childObj, node);
+				node.addChild(childNode);
+			}
+		}
+		return node;
+	}
+
+	@Override
+	public String addSearchGroup(SearchGroup group, String opId) throws IOException {
+		BasicDBObject dbo = new BasicDBObject();
+		dbo.append("name", group.getName());
+		if (group.getTreeRoot() != null) {
+			dbo.append("tree", makeGroupTreeObj(group.getTreeRoot()));
+		}
+		WriteResult result = groupsColl.insert(dbo);
+		checkResult(result, OpType.INSERT);
+		return dbo.getString("_id");
+	}
+	
+	private BasicDBObject makeGroupTreeObj(GroupNode node) {
+		BasicDBObject dbo = new BasicDBObject();
+		dbo.append("searcherid", new ObjectId(node.getSearcherId()));
+		dbo.append("rank", node.getRank().name());
+		if (node.getChildCount() > 0) {
+			BasicDBList childList = new BasicDBList();
+			for (GroupNode child : node.getChildren()) {
+				childList.add(makeGroupTreeObj(child));
+			}
+			dbo.append("children", childList);
+		}
+		return dbo;
+	}
+
+	@Override
+	public void editSearchGroup(SearchGroup group, String groupId) throws IOException {
+		BasicDBObject query = makeObjectIdQuery(groupId);
+		BasicDBObject dbo = new BasicDBObject();
+		dbo.append("name", group.getName());
+		dbo.append("tree", makeGroupTreeObj(group.getTreeRoot()));
+		BasicDBObject update = new BasicDBObject("$set", dbo);
+		WriteResult result = groupsColl.update(query, update);
+		checkResult(result, OpType.UPDATE);
 	}
 
 	@Override
@@ -415,15 +495,6 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 		}
 		return map;
 	}
-	
-	@Override
-	public void addSearchGroup(SearchGroup group, String opId) {
-	}
-	
-	@Override
-	public void editSearchGroup(SearchGroup group, String opId) {
-	}
-	
 	@Override
 	public SearchOperationWrapper[] getAllSearchOps() throws IOException {
 		SearchOperationWrapper[] array = null;
@@ -513,7 +584,7 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 			if (resultDbo == null) {
 				throw new IOException("Could not add searcher to searchop with id " + opId);
 			}
-			String searcherId = resultDbo.getObjectId("_id").toString();
+			ObjectId searcherId = resultDbo.getObjectId("_id");
 
 			BasicDBObject opQuery = makeObjectIdQuery(opId);
 			BasicDBObject opUpdate = new BasicDBObject("$push",
@@ -643,18 +714,21 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 	@Override
 	public String endOperation(String opId) {
 		DBObject query = makeObjectIdQuery(opId);
-		BasicDBObject statusObj = new BasicDBObject();
+		BasicDBObject statusObj = new BasicDBObject("status", 0);
 		DBObject update = new BasicDBObject("$set", statusObj);
 		operationsColl.update(query, update);
 		return "Avslutad";
 	}
 
 	@Override
-	public SearchZone getZoneById(String zoneId) {
+	public SearchZone getZoneById(String zoneId) throws SearchZoneNotFoundException {
 		BasicDBObject query = makeObjectIdQuery(zoneId);
 		BasicDBObject zoneDBO = (BasicDBObject) zonesColl.findOne(query);
+		if (zoneDBO == null) {
+			throw new SearchZoneNotFoundException(zoneId);
+		}
 		SearchZone zone = new SearchZone();
-		zone.setId(zoneDBO.getString("_id"));
+		zone.setId(zoneDBO.getObjectId("_id").toString());
 		zone.setTitle(zoneDBO.getString("title"));
 		zone.setPriority(zoneDBO.getInt("prio"));
 		zone.setZoneCoords(getFormattedZoneCoords(zoneDBO));
@@ -681,7 +755,6 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 	}
 
 	private SearchFinding[] getFormattedZoneFindings(BasicDBObject dbo) {
-		//TODO convert findings' coords from json to java
 		BasicDBList list = (BasicDBList) dbo.get("findings");
 		if (list == null) {
 			return new SearchFinding[0];

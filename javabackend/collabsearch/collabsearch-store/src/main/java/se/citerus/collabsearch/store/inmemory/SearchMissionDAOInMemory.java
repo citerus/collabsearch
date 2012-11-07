@@ -228,28 +228,6 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 		return root;
 	}
 	
-	private void addMockRanks(Random r) { //should be set in config file?
-		ranksList.add(new Rank(0, "Operativ chef", new int[]{1,2,3}, Rank.ALLOW_CHILDREN, Rank.NO_PARENT));
-		ranksList.add(new Rank(1, "Operativ chefsassistent", null, Rank.NO_CHILDREN, Rank.ALLOW_PARENT));
-		ranksList.add(new Rank(2, "Administrativ chef", new int[]{3}, Rank.ALLOW_CHILDREN, Rank.ALLOW_PARENT));
-		ranksList.add(new Rank(3, "Administrativ chefsassistent", null, Rank.NO_CHILDREN, Rank.ALLOW_PARENT));
-		ranksList.add(new Rank(4, "Gruppchef", new int[]{5,6}, Rank.ALLOW_CHILDREN, Rank.ALLOW_PARENT));
-		ranksList.add(new Rank(5, "Gruppchefsassistent", null, Rank.NO_CHILDREN, Rank.ALLOW_PARENT));
-		ranksList.add(new Rank(6, "Gruppledare", new int[]{7}, Rank.ALLOW_CHILDREN, Rank.ALLOW_PARENT));
-		ranksList.add(new Rank(7, "Patrulledare", new int[]{8}, Rank.ALLOW_CHILDREN, Rank.ALLOW_PARENT));
-		ranksList.add(new Rank(8, "Patrulledarassistent", new int[]{9}, Rank.ALLOW_CHILDREN, Rank.ALLOW_PARENT));
-		ranksList.add(new Rank(9, "Sökare", null, Rank.NO_CHILDREN, Rank.ALLOW_PARENT));
-	}
-	
-	public Rank findRank(int rankValue) {
-		for (Rank rank : ranksList) {
-			if (rank.getRankId() == rankValue) {
-				return rank;
-			}
-		}
-		return null;
-	}
-	
 	public Status findMissionStatusByName(String statusName) throws IOException {
 		for (Status status : statusList) {
 			if (status.getName().equals(statusName)) {
@@ -412,12 +390,12 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 	}
 
 	@Override
-	public void addSearchGroup(SearchGroup group, String opId) throws IOException {
+	public String addSearchGroup(SearchGroup group, String opId) throws IOException {
 		for (SearchMission mission : missionsList) {
 			for (SearchOperation op : mission.getOpsList()) {
 				if (op.getId().equals(opId)) {
 					op.getGroups().add(group);
-					return;
+					return group.getId();
 				}
 			}
 		}
@@ -624,5 +602,10 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 			}
 		}
 		return null;
+	}
+
+	@Override
+	public void setDebugDB(String dbName) {
+		//no op
 	}
 }

@@ -27,21 +27,12 @@ public class SearchMissionService {
 	private SearchMissionDAO searchMissionDAO;
 
 	public SearchMissionService() {
-		//TODO choose type of DAO by config file
-//		try {
-//			ApplicationContext context = 
-//					new AnnotationConfigApplicationContext("se.citerus.collabsearch.store");
-//			searchMissionDAO = context.getBean(SearchMissionDAOMongoDB.class);
-////			searchMissionDAO = context.getBean(SearchMissionDAOInMemory.class);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
 	}
 
 	@PostConstruct
 	public void init() {
-		Properties prop = new Properties();
 		try {
+			Properties prop = new Properties();
 			ApplicationContext context = 
 				new AnnotationConfigApplicationContext("se.citerus.collabsearch.store");
 			InputStream stream = SearchMissionService.class.getResourceAsStream(
@@ -52,7 +43,6 @@ public class SearchMissionService {
 				dbImpl = prop.getProperty("DBIMPL");
 			}
 			System.out.println("Configured database implementation: " + dbImpl);
-//			searchMissionDAO = (SearchMissionDAO) context.getBean(dbImpl);
 			searchMissionDAO = context.getBean(dbImpl, SearchMissionDAO.class);
 		} catch (Exception e) {
 			e.printStackTrace();

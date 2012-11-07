@@ -4,26 +4,55 @@ import static org.apache.commons.lang.Validate.notEmpty;
 import static org.apache.commons.lang.Validate.notNull;
 
 import java.awt.geom.Point2D.Double;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Random;
+
+import javax.annotation.PostConstruct;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.stereotype.Service;
 
 import se.citerus.collabsearch.model.SearchGroup;
 import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.SearchZone;
 import se.citerus.collabsearch.model.Status;
+import se.citerus.collabsearch.model.exceptions.SearchGroupNotFoundException;
+import se.citerus.collabsearch.model.exceptions.SearchOperationNotFoundException;
+import se.citerus.collabsearch.model.exceptions.SearchZoneNotFoundException;
+import se.citerus.collabsearch.store.facades.SearchMissionDAO;
 import se.citerus.collabsearch.store.facades.SearchOperationDAO;
 import se.citerus.collabsearch.store.inmemory.SearchMissionDAOInMemory;
 
-public class SearchOperationService { // TODO refactor into spring service
+@Service
+public class SearchOperationService {
 
 	private SearchOperationDAO searchOperationDAO;
 
 	public SearchOperationService() {
-		// TODO choose type of DAO by config file
-		// searchOperationDAO = new SearchOperationDAOMongoDB();
-		searchOperationDAO = new SearchMissionDAOInMemory();
+	}
+	
+	@PostConstruct
+	public void init() {
+		try {
+			Properties prop = new Properties();
+			ApplicationContext context = 
+				new AnnotationConfigApplicationContext("se.citerus.collabsearch.store");
+			InputStream stream = SearchMissionService.class.getResourceAsStream(
+				"/server-config.properties");
+			String dbImpl = "searchMissionDAOInMemory";
+			if (stream != null) {
+				prop.load(stream);
+				dbImpl = prop.getProperty("DBIMPL");
+			}
+			searchOperationDAO = context.getBean(dbImpl, SearchOperationDAO.class);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	public List<Status> getAllSearchOpStatuses() throws Exception {
@@ -32,9 +61,9 @@ public class SearchOperationService { // TODO refactor into spring service
 		return statuses;
 	}
 
-	public Status getSearchOpStatusByName(String opName) throws Exception {
-		notEmpty(opName);
-		Status status = searchOperationDAO.getSearchOpStatus(opName);
+	public Status getSearchOpStatusByName(String statusName) throws Exception {
+		notEmpty(statusName);
+		Status status = searchOperationDAO.getSearchOpStatus(statusName);
 		notNull(status);
 		return status;
 	}
@@ -59,32 +88,14 @@ public class SearchOperationService { // TODO refactor into spring service
 		searchOperationDAO.deleteGroup(groupId);
 	}
 
-	public SearchZone getZone(String zoneId) throws Exception {
+	public SearchZone getZone(String zoneId) throws SearchZoneNotFoundException, Exception {
 		notEmpty(zoneId);
 		SearchZone zone = searchOperationDAO.getZoneById(zoneId);
 		notNull(zone);
 		return zone;
 	}
 
-	public String createZone(String opId, SearchZone zone) throws Exception {
-		notEmpty(opId);
-		notNull(zone);
-		String zoneId = searchOperationDAO.createZone(opId, zone);
-		notEmpty(zoneId);
-		return zoneId;
-	}
-
-	public void editZone(String zoneId, String title, String prioStr, 
-			Double[] points, int zoomLevel) throws Exception {
-		validateZoneInput(zoneId, title, prioStr, points, zoomLevel);
-		
-		int priority = Integer.parseInt(prioStr);
-		
-		SearchZone zone = new SearchZone(title, priority, points, zoomLevel);
-		searchOperationDAO.editZone(zoneId, zone);
-	}
-
-	public void createZone(String opId, String title, String prioStr,
+	public String createZone(String opId, String title, String prioStr,
 			Double[] points, int zoomLevel) throws Exception {
 		validateZoneInput(opId, title, prioStr, points, zoomLevel);
 		
@@ -93,6 +104,17 @@ public class SearchOperationService { // TODO refactor into spring service
 		SearchZone zone = new SearchZone(title, priority, points, zoomLevel);
 		String createdZoneId = searchOperationDAO.createZone(opId, zone);
 		notEmpty(createdZoneId);
+		return createdZoneId;
+	}
+	
+	public void editZone(String zoneId, String title, String prioStr, 
+			Double[] points, int zoomLevel) throws Exception {
+		validateZoneInput(zoneId, title, prioStr, points, zoomLevel);
+		
+		int priority = Integer.parseInt(prioStr);
+		
+		SearchZone zone = new SearchZone(title, priority, points, zoomLevel);
+		searchOperationDAO.editZone(zoneId, zone);
 	}
 	
 	private void validateZoneInput(String id, String title, String prioStr,
@@ -107,7 +129,7 @@ public class SearchOperationService { // TODO refactor into spring service
 		}
 	}
 	
-	public SearchOperation getSearchOp(String searchOpId) throws Exception {
+	public SearchOperation getSearchOp(String searchOpId) throws SearchOperationNotFoundException, Exception {
 		notEmpty(searchOpId);
 		SearchOperation searchOperation = searchOperationDAO.findOperation(searchOpId);
 		notNull(searchOperation);
@@ -119,7 +141,7 @@ public class SearchOperationService { // TODO refactor into spring service
 	 * @param searchOpId
 	 * @throws Exception
 	 */
-	public void deleteSearchOperation(String searchOpId) throws Exception {
+	public void deleteSearchOp(String searchOpId) throws Exception {
 		notEmpty(searchOpId);
 		searchOperationDAO.deleteSearchOperation(searchOpId);
 	}
@@ -138,7 +160,7 @@ public class SearchOperationService { // TODO refactor into spring service
 		return null;
 	}
 
-	public SearchGroup getSearchGroup(String groupId) throws Exception {
+	public SearchGroup getSearchGroup(String groupId) throws SearchGroupNotFoundException, Exception {
 		notEmpty(groupId);
 		SearchGroup group = searchOperationDAO.getSearchGroup(groupId);
 		notNull(group);
@@ -158,17 +180,14 @@ public class SearchOperationService { // TODO refactor into spring service
 		return map;
 	}
 
-	public void addorModifySearchGroup(SearchGroup group, String groupId, String opId) throws Exception {
-		if (opId == null || group == null) {
-			throw new Exception("Ingen sökgrupp eller sökoperationsid specifierat");
-		} else if (group.getId() == null || group.getName() == null) {
-			throw new Exception("Gruppen har ett ogiltigt namn eller id");
-		}
+	public String addOrModifySearchGroup(SearchGroup group, String groupId, String opId) throws Exception {
+		notNull(group);
 		if (groupId == null) {
-			searchOperationDAO.addSearchGroup(group, opId);
+			return searchOperationDAO.addSearchGroup(group, opId);
 		} else {
-			searchOperationDAO.editSearchGroup(group, opId);
+			searchOperationDAO.editSearchGroup(group, groupId);
 		}
+		return null;
 	}
 
 	//TODO rewrite after demo
@@ -200,5 +219,9 @@ public class SearchOperationService { // TODO refactor into spring service
 			return femaleFirstNames[r.nextInt(femaleFirstNames.length)] 
 					+ " " + lastNames[r.nextInt(lastNames.length)];
 		}
+	}
+
+	public void setDebugMode() {
+		searchOperationDAO.setDebugDB("test");
 	}
 }

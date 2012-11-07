@@ -259,7 +259,7 @@ public class GroupEditView extends CustomComponent {
         for (Title title : values) {
 			Item item = container.getItem(container.addItem());
 			if (item != null) {
-				item.getItemProperty(NAME_PROPERTY_ID).setValue(Rank.getRankName(title));
+				item.getItemProperty(NAME_PROPERTY_ID).setValue(Rank.getNameByRank(title));
 				item.getItemProperty(RANK_PROPERTY_ID).setValue(title);
 			} else {
 				System.err.println("Error: item is null");
@@ -281,7 +281,7 @@ public class GroupEditView extends CustomComponent {
 					Rank.Title rankValue = (Title) rankBoxItem.getItemProperty(RANK_PROPERTY_ID).getValue();
 					treeItem.getItemProperty(RANK_PROPERTY_ID).setValue(rankValue);
 					String newName = treeItem.getItemProperty(REALNAME_PROPERTY_ID).getValue().toString();
-					newName = newName + " (" + Rank.getRankName(rankValue) + ")";
+					newName = newName + " (" + Rank.getNameByRank(rankValue) + ")";
 					treeItem.getItemProperty(NAME_PROPERTY_ID).setValue(newName);
 				} else {
 					System.err.println("Error: " + (treeItem == null ? "treeItem is null" : "") + 
@@ -380,7 +380,7 @@ public class GroupEditView extends CustomComponent {
 	                item.getItemProperty(SID_PROPERTY_ID).setValue(id);
 	                item.getItemProperty(REALNAME_PROPERTY_ID).setValue(name);
 	                item.getItemProperty(NAME_PROPERTY_ID).setValue(name + 
-	                		" (" + Rank.getRankName(Rank.Title.SEARCHER) + ")");
+	                		" (" + Rank.getNameByRank(Rank.Title.SEARCHER) + ")");
 	                item.getItemProperty(RANK_PROPERTY_ID).setValue(Rank.Title.SEARCHER);
                 } else {
                 	listener.displayError("Fel", "Sökaren kunde ej läggas till i gruppen");
@@ -490,7 +490,7 @@ public class GroupEditView extends CustomComponent {
 				group = convertTreeToGroup();
 				group.setName(nameField.getValue().toString());
 				group.setId(groupId);
-				service.addorModifySearchGroup(group, groupId, opId);
+				service.addOrModifySearchGroup(group, groupId, opId);
 				
 				successDialog.setMessage("Sökgrupp \"" + 
 						nameField.getValue().toString() + "\" sparad.");
@@ -808,7 +808,7 @@ public class GroupEditView extends CustomComponent {
 			if (NAME_PROPERTY_ID.equals(idString)) {
 				String rankString = "";
 				if (node.getRank() != null) {
-					rankString = " (" + Rank.getRankName(node.getRank()) + ")";
+					rankString = " (" + Rank.getNameByRank(node.getRank()) + ")";
 				}
 				item.getItemProperty(NAME_PROPERTY_ID).setValue(searcherName + rankString);
 			} else if (RANK_PROPERTY_ID.equals(idString)) {

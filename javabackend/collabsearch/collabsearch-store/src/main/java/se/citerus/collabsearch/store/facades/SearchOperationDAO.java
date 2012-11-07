@@ -5,12 +5,15 @@ import java.util.List;
 import java.util.Map;
 
 import se.citerus.collabsearch.model.FileMetadata;
+import se.citerus.collabsearch.model.SearchFinding;
 import se.citerus.collabsearch.model.SearchGroup;
 import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.SearchOperationWrapper;
 import se.citerus.collabsearch.model.SearchZone;
 import se.citerus.collabsearch.model.Status;
+import se.citerus.collabsearch.model.exceptions.SearchGroupNotFoundException;
 import se.citerus.collabsearch.model.exceptions.SearchOperationNotFoundException;
+import se.citerus.collabsearch.model.exceptions.SearchZoneNotFoundException;
 
 public interface SearchOperationDAO {
 
@@ -20,7 +23,7 @@ public interface SearchOperationDAO {
 
 	public Status getSearchOpStatus(String statusName) throws IOException;
 
-	public String endOperation(String opName);
+	public String endOperation(String opName) throws SearchOperationNotFoundException, IOException;
 
 	public void deleteZone(String zoneId) throws IOException;
 
@@ -39,7 +42,7 @@ public interface SearchOperationDAO {
 
 	public String[] getAllOpTitles() throws IOException;
 
-	public SearchZone getZoneById(String zoneId) throws IOException;
+	public SearchZone getZoneById(String zoneId) throws IOException, SearchZoneNotFoundException;
 
 	public void editZone(String zoneId, SearchZone zone) throws IOException;
 
@@ -55,14 +58,17 @@ public interface SearchOperationDAO {
 	public String createSearchOperation(SearchOperation operation, String missionId)
 			throws IOException;
 
-	public SearchGroup getSearchGroup(String groupId) throws IOException;
+	public SearchGroup getSearchGroup(String groupId) throws IOException, SearchGroupNotFoundException;
 
 	public Map<String, String> getUsersForSearchOp(String opId)
 			throws IOException;
 
-	public void addSearchGroup(SearchGroup group, String opId)
+	public String addSearchGroup(SearchGroup group, String opId)
 			throws IOException;
 
 	public void editSearchGroup(SearchGroup group, String opId)
 			throws IOException;
+
+	public void setDebugDB(String dbName);
+
 }

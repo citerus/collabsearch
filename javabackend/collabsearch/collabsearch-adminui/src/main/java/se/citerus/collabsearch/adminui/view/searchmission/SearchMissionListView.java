@@ -370,7 +370,7 @@ public class SearchMissionListView extends CustomComponent {
 		SearchMissionService service = null;
 		List<SearchMission> list = null;
 		try {
-			service = new SearchMissionService();
+			service = new SearchMissionService(); //TODO replace with injected bean
 			list = service.getListOfSearchMissions();
 			if (list == null) {
 				listener.displayError("Fel", "Inga sökuppdrag hittade");
@@ -536,7 +536,7 @@ public class SearchMissionListView extends CustomComponent {
 			String missionId = getParentProperty(2, itemId, ID);
 			SearchMissionService service = null;
 			try {
-				service = new SearchMissionService();
+				service = new SearchMissionService(); //TODO replace with injected bean
 				service.deleteFile(fileName, missionId);
 				treeTable.removeItem(itemId);
 			} catch (Exception e) {
@@ -552,7 +552,7 @@ public class SearchMissionListView extends CustomComponent {
 			String opId = item.getItemProperty(ID).getValue().toString();
 			try {
 				service = new SearchOperationService();
-				service.deleteSearchOperation(opId);
+				service.deleteSearchOp(opId);
 				removeItemsRecursively(itemId);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -600,7 +600,7 @@ public class SearchMissionListView extends CustomComponent {
 		if (type == NodeType.MISSION) {
 			SearchMissionService service = null;
 			try {
-				service = new SearchMissionService();
+				service = new SearchMissionService(); //TODO replace with injected bean
 				service.endMission(itemName);
 				item.getItemProperty(STATUS).setValue("Avslutat");
 				treeTable.requestRepaintAll();

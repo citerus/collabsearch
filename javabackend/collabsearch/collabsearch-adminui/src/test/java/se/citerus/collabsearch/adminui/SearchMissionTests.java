@@ -1,38 +1,22 @@
 package se.citerus.collabsearch.adminui;
 
 import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 
 import java.util.List;
-import java.util.regex.Pattern;
 
-import javax.validation.constraints.AssertTrue;
-
-import junit.framework.Assert;
-
-import org.apache.commons.lang.Validate;
-import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.stereotype.Component;
-
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.Mongo;
 
 import se.citerus.collabsearch.adminui.logic.SearchMissionService;
 import se.citerus.collabsearch.model.FileMetadata;
 import se.citerus.collabsearch.model.SearchMission;
 import se.citerus.collabsearch.model.Status;
-import se.citerus.collabsearch.model.exceptions.SearchMissionNotFoundException;
 
 public class SearchMissionTests {
 	

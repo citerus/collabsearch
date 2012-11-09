@@ -114,4 +114,9 @@ public class UserDAOInMemory implements UserDAO {
 		allUsers.add(user);
 	}
 
+	@Override
+	public void activateDebugMode() {
+		//no op
+	}
+
 }

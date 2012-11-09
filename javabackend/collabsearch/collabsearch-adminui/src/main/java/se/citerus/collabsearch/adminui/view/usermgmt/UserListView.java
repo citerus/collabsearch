@@ -3,6 +3,9 @@ package se.citerus.collabsearch.adminui.view.usermgmt;
 import java.io.IOException;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Configurable;
+
 import se.citerus.collabsearch.adminui.ViewSwitchController;
 import se.citerus.collabsearch.adminui.logic.UserService;
 import se.citerus.collabsearch.model.User;
@@ -25,6 +28,7 @@ import com.vaadin.ui.Table;
 import com.vaadin.ui.VerticalLayout;
 
 @SuppressWarnings("serial")
+@Configurable(preConstruction=true)
 public class UserListView extends CustomComponent {
 	
 	private VerticalLayout mainLayout;
@@ -34,7 +38,10 @@ public class UserListView extends CustomComponent {
 	private Button deleteButton;
 	private Table table;
 	private Label headerLabel;
-
+	
+	@Autowired
+	private UserService service;
+	
 	private BeanContainer<String, User> beans;
 	private final ViewSwitchController listener;
 	
@@ -76,18 +83,12 @@ public class UserListView extends CustomComponent {
 					listener.displayNotification("Ingen användare markerad", 
 							"Markera en användare för borttagning");
 				} else {
-					UserService service = null;
 					try {
-						service = new UserService();
 						service.removeUser(selectedUser);
 						table.removeItem(selectedUser);
 						listener.displayNotification("Användare borttagen", "Användare " + selectedUser + " borttagen");
 					} catch (Exception e) {
 						listener.displayError("Fel", "Användare " + selectedUser + " kunde ej tas bort");
-					} finally {
-						if (service != null) {
-							service.cleanUp();
-						}
 					}
 				}
 			}
@@ -98,14 +99,10 @@ public class UserListView extends CustomComponent {
 
 	private void populateTable() {
 		List<User> list = null;
-		UserService handler = null;
 		try {
-			handler = new UserService();
-			list = handler.getListOfUsers();
+			list = service.getListOfUsers();
 		} catch (IOException e) {
 			e.printStackTrace();
-		} finally {
-			handler.cleanUp();
 		}
 		
 		beans = new BeanContainer<String, User>(User.class);
@@ -186,17 +183,13 @@ public class UserListView extends CustomComponent {
 	public void resetView() {
 		beans.removeAllItems();
 		
-		UserService handler = null;
 		try {
-			handler = new UserService();
-			List<User> list = handler.getListOfUsers();
+			List<User> list = service.getListOfUsers();
 			if (list != null) {
 				beans.addAll(list);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
-		} finally {
-			handler.cleanUp();
 		}
 	}
 

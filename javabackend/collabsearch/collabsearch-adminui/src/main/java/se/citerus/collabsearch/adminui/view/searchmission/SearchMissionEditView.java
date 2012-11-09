@@ -3,6 +3,9 @@ package se.citerus.collabsearch.adminui.view.searchmission;
 import java.io.File;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Configurable;
+
 import se.citerus.collabsearch.adminui.ViewSwitchController;
 import se.citerus.collabsearch.adminui.logic.FileUploadHandler;
 import se.citerus.collabsearch.adminui.logic.SearchMissionService;
@@ -39,6 +42,7 @@ import com.vaadin.ui.Upload.StartedListener;
 import com.vaadin.ui.VerticalLayout;
 
 @SuppressWarnings("serial")
+@Configurable(preConstruction=true)
 public class SearchMissionEditView extends CustomComponent {
 	
 	private VerticalLayout mainLayout;
@@ -51,6 +55,9 @@ public class SearchMissionEditView extends CustomComponent {
 	private TextField prioField;
 	private ComboBox statusField;
 	private BeanContainer<String, Status> statusBeanContainer;
+	
+	@Autowired
+	private SearchMissionService service;
 	
 	private String missionId;
 
@@ -94,20 +101,14 @@ public class SearchMissionEditView extends CustomComponent {
 
 	private void populateForms(String missionId) {
 		SearchMission mission = null;
-		SearchMissionService handler = null;
 		try {
-			handler = new SearchMissionService();
-			mission = handler.getSearchMissionById(missionId);
+			mission = service.getSearchMissionById(missionId);
 			if (mission == null) {
 				listener.displayError("Fel", "Uppdraget " + missionId + " kunde ej hittas");
 				return;
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-		} finally {
-			if (handler != null) {
-				handler.cleanUp();
-			}
 		}
 		
 		titleField.setValue(mission.getName());
@@ -197,10 +198,9 @@ public class SearchMissionEditView extends CustomComponent {
 
 	private void populateStatusComboBox() {
 		statusBeanContainer.removeAllItems();
-		SearchMissionService handler = new SearchMissionService();
 		List<Status> listOfStatuses = null;
 		try {
-			listOfStatuses = handler.getListOfStatuses();
+			listOfStatuses = service.getListOfStatuses();
 			statusBeanContainer.addAll(listOfStatuses);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -245,11 +245,9 @@ public class SearchMissionEditView extends CustomComponent {
 	private void saveSearchMissionData() {
 		//popup dialogue here?
 		if (allFieldsValid()) {
-			SearchMissionService handler = null;
 			try {
-				handler = new SearchMissionService();
 				int prio = Integer.parseInt(prioField.getValue().toString());
-				Status status = handler.getStatusByName(statusField.getValue().toString());
+				Status status = service.getStatusByName(statusField.getValue().toString());
 				String title = (String) titleField.getValue();
 				String description = (String) descrField.getValue();
 				SearchMission mission = new SearchMission(
@@ -259,16 +257,12 @@ public class SearchMissionEditView extends CustomComponent {
 						prio, 
 						status
 				);
-				handler.addOrModifyMission(mission, missionId);
+				service.addOrModifyMission(mission, missionId);
 				missionId = null;
 				listener.switchToSearchMissionListView();
 			} catch (Exception e) {
 				listener.displayError("Fel", "Ett fel uppstod vid sparandet " +
 						"av sökuppdraget, datat har ej sparats.");
-			} finally {
-				if (handler != null) {
-					handler.cleanUp();
-				}
 			}
 		} else {
 			listener.displayError("Fel", "Ett eller flera fält är inte korrekt ifyllda");

@@ -2,6 +2,9 @@ package se.citerus.collabsearch.adminui.view.usermgmt;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Configurable;
+
 import se.citerus.collabsearch.adminui.ViewSwitchController;
 import se.citerus.collabsearch.adminui.logic.UserService;
 import se.citerus.collabsearch.model.User;
@@ -28,6 +31,7 @@ import com.vaadin.ui.Window;
 import com.vaadin.ui.Window.CloseEvent;
 
 @SuppressWarnings("serial")
+@Configurable(preConstruction=true)
 public class UserEditView extends CustomComponent {
 	
 	private VerticalLayout mainLayout;
@@ -44,6 +48,9 @@ public class UserEditView extends CustomComponent {
 	private Label popupMessage;
 	private Label headerLabel;
 	private boolean existingUser;
+	
+	@Autowired
+	private UserService service;
 
 	public UserEditView(final ViewSwitchController listener) {
 		this.listener = listener;
@@ -104,9 +111,9 @@ public class UserEditView extends CustomComponent {
 
 	private void populateForms(String selectedUser) {
 		try {
-			UserService userHandler = new UserService();
-			User userData = userHandler.getUserData(selectedUser);
-			userHandler.cleanUp();
+//			UserService service = new UserService();
+			User userData = service.getUserData(selectedUser);
+//			service.cleanUp();
 			
 			nameField.setValue(userData.getUsername());
 			passwordField.setValue(userData.getPassword());
@@ -203,9 +210,7 @@ public class UserEditView extends CustomComponent {
 	}
 
 	private List<String> getRolesDataSource() {
-		UserService handler = new UserService();
-		List<String> listOfRoles = handler.getListOfRoles();
-		handler.cleanUp();
+		List<String> listOfRoles = service.getListOfRoles();
 		return listOfRoles;
 	}
 
@@ -251,19 +256,15 @@ public class UserEditView extends CustomComponent {
 					(String)emailField.getValue(), 
 					(String)teleField.getValue(), 
 					(String)roleField.getValue());
-			UserService userHandler = new UserService();
+//			UserService service = new UserService();
 			try {
 				if (existingUser) {
-					userHandler.editUser(user);
+					service.editUser(user);
 				} else {
-					userHandler.addUser(user);
+					service.addUser(user);
 				}
 			} catch (Exception e) {
 				listener.displayError("Fel", e.getMessage());
-			} finally {
-				if (userHandler != null) {
-					userHandler.cleanUp();
-				}
 			}
 			
 			//display popup with button leading back to user list

@@ -4,6 +4,7 @@ import static org.apache.commons.lang.Validate.notEmpty;
 import static org.apache.commons.lang.Validate.notNull;
 
 import java.awt.geom.Point2D.Double;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
@@ -13,45 +14,50 @@ import java.util.Random;
 
 import javax.annotation.PostConstruct;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.stereotype.Service;
 
 import se.citerus.collabsearch.model.SearchGroup;
 import se.citerus.collabsearch.model.SearchOperation;
+import se.citerus.collabsearch.model.SearchOperationWrapper;
 import se.citerus.collabsearch.model.SearchZone;
 import se.citerus.collabsearch.model.Status;
 import se.citerus.collabsearch.model.exceptions.SearchGroupNotFoundException;
 import se.citerus.collabsearch.model.exceptions.SearchOperationNotFoundException;
 import se.citerus.collabsearch.model.exceptions.SearchZoneNotFoundException;
-import se.citerus.collabsearch.store.facades.SearchMissionDAO;
 import se.citerus.collabsearch.store.facades.SearchOperationDAO;
-import se.citerus.collabsearch.store.inmemory.SearchMissionDAOInMemory;
 
 @Service
 public class SearchOperationService {
 
+	@Autowired
+	@Qualifier("searchMissionDAOMongoDB")
 	private SearchOperationDAO searchOperationDAO;
 
 	public SearchOperationService() {
 	}
-	
+
 	@PostConstruct
 	public void init() {
-		try {
-			Properties prop = new Properties();
-			ApplicationContext context = 
-				new AnnotationConfigApplicationContext("se.citerus.collabsearch.store");
-			InputStream stream = SearchMissionService.class.getResourceAsStream(
-				"/server-config.properties");
-			String dbImpl = "searchMissionDAOInMemory";
-			if (stream != null) {
-				prop.load(stream);
-				dbImpl = prop.getProperty("DBIMPL");
+		if (searchOperationDAO == null) {
+			try {
+				Properties prop = new Properties();
+				ApplicationContext context = 
+					new AnnotationConfigApplicationContext("se.citerus.collabsearch.store");
+				InputStream stream = SearchMissionService.class.getResourceAsStream(
+					"/server-config.properties");
+				String dbImpl = "searchMissionDAOInMemory";
+				if (stream != null) {
+					prop.load(stream);
+					dbImpl = prop.getProperty("DBIMPL");
+				}
+				searchOperationDAO = context.getBean(dbImpl, SearchOperationDAO.class);
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-			searchOperationDAO = context.getBean(dbImpl, SearchOperationDAO.class);
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 	}
 
@@ -183,7 +189,7 @@ public class SearchOperationService {
 	public String addOrModifySearchGroup(SearchGroup group, String groupId, String opId) throws Exception {
 		notNull(group);
 		if (groupId == null) {
-			return searchOperationDAO.addSearchGroup(group, opId);
+			return searchOperationDAO.createSearchGroup(group, opId);
 		} else {
 			searchOperationDAO.editSearchGroup(group, groupId);
 		}
@@ -223,5 +229,9 @@ public class SearchOperationService {
 
 	public void setDebugMode() {
 		searchOperationDAO.setDebugDB("test");
+	}
+
+	public List<SearchOperation> getAllSearchOps() throws Exception {
+		return searchOperationDAO.getAllSearchOps();
 	}
 }

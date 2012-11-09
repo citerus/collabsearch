@@ -21,8 +21,6 @@ import com.vaadin.ui.Window;
 @SuppressWarnings("serial")
 public class MainWindow extends Window implements LoginListener, ViewSwitchController {
 
-	private static final boolean debugMode = false;
-	
 	private LoginView loginView;
 	private WelcomeView welcomeView;
 	private UserListView userListView;
@@ -41,12 +39,13 @@ public class MainWindow extends Window implements LoginListener, ViewSwitchContr
 		addListener(new ResizeListener() {
 			@Override
 			public void windowResized(ResizeEvent e) {
-				System.out.println("New height: " + e.getWindow().getBrowserWindowHeight() 
-						+ " New width: " + e.getWindow().getBrowserWindowWidth());
+				System.out.println(
+					"New height: " + e.getWindow().getBrowserWindowHeight() + " " + 
+					"New width: " + e.getWindow().getBrowserWindowWidth());
 			}
 		});
 	}
-	
+
 	public void initWindow() {
 		if (LookingForApp.getInstance().getUser() == null) {
 			switchToLoginView();

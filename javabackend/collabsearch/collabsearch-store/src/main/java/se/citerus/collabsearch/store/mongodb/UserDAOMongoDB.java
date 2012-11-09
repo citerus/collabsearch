@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Random;
 
 import se.citerus.collabsearch.model.User;
+import se.citerus.collabsearch.model.exceptions.DuplicateUserDataException;
 import se.citerus.collabsearch.model.exceptions.UserNotFoundException;
 import se.citerus.collabsearch.store.facades.UserDAO;
 
@@ -33,6 +34,10 @@ public class UserDAOMongoDB implements UserDAO {
 	private static final boolean DISABLEUPSERT = false;
 	private static final boolean ENABLEMULTIUPDATE = true;
 	private static final boolean DISABLEMULTIUPDATE = false;
+	
+	private enum OpType {
+		INSERT, UPDATE, REMOVE
+	}
 
 	public UserDAOMongoDB() {
 		try {
@@ -142,7 +147,7 @@ public class UserDAOMongoDB implements UserDAO {
 			BasicDBObject query = new BasicDBObject("username",username);
 			BasicDBObject result = (BasicDBObject) userColl.findOne(query);
 			if (result == null) {
-				throw new IOException("User not found");
+				throw new UserNotFoundException(username);
 			}
 			user = new User(
 				result.getString("username"), 
@@ -158,29 +163,23 @@ public class UserDAOMongoDB implements UserDAO {
 	}
 
 	public void deleteUserByUsername(String username) throws IOException, UserNotFoundException {
-		try {
-			BasicDBObject query = new BasicDBObject("username", username);
-			WriteResult result = userColl.remove(query);
-			CommandResult lastError = result.getLastError();
-			if (!lastError.ok()) {
-				throw new IOException("Error: Database write failure on User document deletion");
-			} else if (result.getN() == 0) {
-				throw new IOException("User " + username + " not found in user collection");
-			}
-			
-			//auth collection not yet implemented
-//			result = authColl.remove(query);
-//			lastError = result.getLastError();
-//			if (!lastError.ok()) {
-//				throw new IOException("Error: Database write failure on Salt document deletion", e);
-//			} else if (result.getN() == 0) {
-//				throw new IOException("User " + username + " not found in auth collection", e);
-//			}
-		} catch (MongoException e) {
-			throw new IOException("Kontakt med databasen kunde ej upprättas", e);
+		BasicDBObject query = new BasicDBObject("username", username);
+		WriteResult result = userColl.remove(query);
+		if (result.getN() == 0) {
+			throw new UserNotFoundException(username);
 		}
+//		checkResult(result, OpType.REMOVE);
+		
+		//auth collection not yet implemented
+//		result = authColl.remove(query);
+//		lastError = result.getLastError();
+//		if (!lastError.ok()) {
+//			throw new IOException("Error: Database write failure on Salt document deletion", e);
+//		} else if (result.getN() == 0) {
+//			throw new IOException("User " + username + " not found in auth collection", e);
+//		}
 	}
-
+	
 	public List<String> getAllRoles() throws IOException {
 		List<String> list = null;
 		try {
@@ -236,7 +235,7 @@ public class UserDAOMongoDB implements UserDAO {
 		}
 	}
 
-	public void addNewUser(User user) throws IOException {
+	public void addNewUser(User user) throws IOException, DuplicateUserDataException {
 		BasicDBObject userObject = makeUserDBO(user);
 		WriteResult result = userColl.insert(userObject);
 		if (result.getLastError().ok() == false) {
@@ -247,7 +246,7 @@ public class UserDAOMongoDB implements UserDAO {
 		} else if (result.getField("code") != null) {
 			int code = Integer.parseInt(result.getField("code").toString());
 			if (code == 11000 || code == 11001) {
-				throw new IOException("Duplicerat värde på användarnamn, epost eller telefonnummer");
+				throw new DuplicateUserDataException("Duplicerat värde på användarnamn, epost eller telefonnummer");
 			}
 		}
 	}
@@ -260,6 +259,33 @@ public class UserDAOMongoDB implements UserDAO {
 		userObject.put("tele", user.getTele());
 		userObject.put("role", user.getRole()); //TODO replace with dbref to roleColl
 		return userObject;
+	}
+
+	@Override
+	public void activateDebugMode() {
+		try {
+			DB db = mongo.getDB("test");
+			userColl = db.getCollection("users");
+			authColl = db.getCollection("auth");
+			roleColl = db.getCollection("roles");
+		} catch (MongoException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void checkResult(WriteResult result, OpType opType) throws IOException {
+		CommandResult lastError = result.getLastError();
+		if (!lastError.ok()) {
+			throw new IOException(lastError.getErrorMessage());
+		}
+		if (result.getError() != null) {
+			throw new IOException(result.getError());
+		}
+		if (opType == OpType.UPDATE || opType == OpType.REMOVE) {
+			if (result.getN() == 0) {
+				throw new IOException("No documents were affected by the op");
+			}
+		}
 	}
 
 }

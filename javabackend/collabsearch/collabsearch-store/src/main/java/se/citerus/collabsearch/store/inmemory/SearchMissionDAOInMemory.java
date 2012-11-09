@@ -390,7 +390,7 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 	}
 
 	@Override
-	public String addSearchGroup(SearchGroup group, String opId) throws IOException {
+	public String createSearchGroup(SearchGroup group, String opId) throws IOException {
 		for (SearchMission mission : missionsList) {
 			for (SearchOperation op : mission.getOpsList()) {
 				if (op.getId().equals(opId)) {
@@ -486,7 +486,7 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 	}
 
 	@Override
-	public SearchOperationWrapper[] getAllSearchOps() throws IOException {
+	public SearchOperationWrapper[] getAllSearchOpsInShortForm() throws IOException {
 		Random r = new Random();
 		SearchOperationWrapper[] array = new SearchOperationWrapper[3];
 		array[0] = new SearchOperationWrapper("" + r.nextLong(), "Sökoperation 1", "text...");
@@ -607,5 +607,10 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 	@Override
 	public void setDebugDB(String dbName) {
 		//no op
+	}
+
+	@Override
+	public List<SearchOperation> getAllSearchOps() throws IOException {
+		return null;
 	}
 }

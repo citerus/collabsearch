@@ -6,6 +6,7 @@
 
 	<!-- Inherit DefaultWidgetSet -->
 	<inherits name="com.vaadin.terminal.gwt.DefaultWidgetSet" />
+    <inherits name="org.vaadin.hezamu.googlemapwidget.widgetset.GooglemapwidgetWidgetset">
+    </inherits>
 <!-- 	<set-property name="user.agent" value="gecko1_8"/> -->
-    <inherits name="org.vaadin.hezamu.googlemapwidget.widgetset.GooglemapwidgetWidgetset" />
 </module>

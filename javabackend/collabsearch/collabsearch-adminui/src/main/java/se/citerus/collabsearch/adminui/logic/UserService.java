@@ -3,31 +3,47 @@ package se.citerus.collabsearch.adminui.logic;
 import java.io.IOException;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+
+import org.springframework.stereotype.Service;
+
 import se.citerus.collabsearch.model.User;
+import se.citerus.collabsearch.model.exceptions.DuplicateUserDataException;
 import se.citerus.collabsearch.model.exceptions.UserNotFoundException;
 import se.citerus.collabsearch.store.facades.UserDAO;
 import se.citerus.collabsearch.store.mongodb.UserDAOMongoDB;
 
+@Service
 public class UserService { //TODO refactor into spring service
 
-	private UserDAO userDAL;
+	private UserDAO userDAO;
 
 	public UserService() {
 		//TODO choose type of DAO by config file
 		//userDAL = new UserDALInMemory();
-		userDAL = new UserDAOMongoDB();
+	}
+	
+	@PostConstruct
+	public void init() {
+		userDAO = new UserDAOMongoDB();
+	}
+	
+	@PreDestroy
+	public void cleanUp() {
+		userDAO.disconnect();
 	}
 
 	public List<User> getListOfUsers() throws IOException {
-		return userDAL.getAllUsers();
+		return userDAO.getAllUsers();
 	}
 
 	public User getUserData(String selectedUser) throws IOException, UserNotFoundException {
-		return userDAL.getUserByUsername(selectedUser);
+		return userDAO.getUserByUsername(selectedUser);
 	}
 
 	public void removeUser(String username) throws IOException, UserNotFoundException {
-		userDAL.deleteUserByUsername(username);
+		userDAO.deleteUserByUsername(username);
 	}
 
 	/**
@@ -36,20 +52,16 @@ public class UserService { //TODO refactor into spring service
 	 * @throws IOException 
 	 */
 	public void editUser(User user) throws IOException, UserNotFoundException {
-		userDAL.editExistingUser(user);
+		userDAO.editExistingUser(user);
 	}
 
 	public List<String> getListOfRoles() {
 		try {
-			return userDAL.getAllRoles();
+			return userDAO.getAllRoles();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		return null;
-	}
-
-	public void cleanUp() {
-		userDAL.disconnect();
 	}
 
 	/**
@@ -58,11 +70,15 @@ public class UserService { //TODO refactor into spring service
 	 * @throws IOException 
 	 */
 	public boolean lookForDuplicates(String username, String tele, String email) throws IOException {
-		return userDAL.checkForDuplicateUserData(username, tele, email);
+		return userDAO.checkForDuplicateUserData(username, tele, email);
 	}
 
-	public void addUser(User user) throws IOException {
-		userDAL.addNewUser(user);
+	public void addUser(User user) throws IOException, DuplicateUserDataException {
+		userDAO.addNewUser(user);
+	}
+
+	public void setDebugMode() {
+		userDAO.activateDebugMode();
 	}
 
 }

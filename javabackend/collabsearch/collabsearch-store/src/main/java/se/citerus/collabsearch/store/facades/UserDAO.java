@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import se.citerus.collabsearch.model.User;
+import se.citerus.collabsearch.model.exceptions.DuplicateUserDataException;
 import se.citerus.collabsearch.model.exceptions.UserNotFoundException;
 
 /**
@@ -34,6 +35,8 @@ public interface UserDAO {
 
 	public void editExistingUser(User user) throws IOException, UserNotFoundException;
 
-	public void addNewUser(User user) throws IOException;
+	public void addNewUser(User user) throws IOException, DuplicateUserDataException;
+
+	public void activateDebugMode();
 	
 }

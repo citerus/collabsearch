@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Random;
 
 import org.apache.commons.lang.Validate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Configurable;
 import org.vaadin.hezamu.googlemapwidget.GoogleMap;
 import org.vaadin.hezamu.googlemapwidget.GoogleMap.MapClickListener;
 import org.vaadin.hezamu.googlemapwidget.overlay.BasicMarker;
@@ -30,6 +32,7 @@ import com.vaadin.ui.Label;
 import com.vaadin.ui.VerticalLayout;
 
 @SuppressWarnings("serial")
+@Configurable(preConstruction=true)
 public class NewZoneView extends CustomComponent {
 
 	private static final int DEFAULT_ZOOM = 5;
@@ -38,6 +41,9 @@ public class NewZoneView extends CustomComponent {
 	private GoogleMap map;
 	private String opId;
 	private ZoneViewFragment fragment;
+	
+	@Autowired
+	private SearchOperationService service;
 	
 	private List<Marker> markerPoints;
 	private Random random;
@@ -51,7 +57,7 @@ public class NewZoneView extends CustomComponent {
 	}
 
 	public void init() {
-		mainLayout.setWidth("50%");
+		mainLayout.setWidth("100%");
 		mainLayout.setHeight("100%");
 		mainLayout.setMargin(false, true, false, true);
 		
@@ -65,7 +71,7 @@ public class NewZoneView extends CustomComponent {
 			@Override
 			public void buttonClick(ClickEvent event) {
 				try {
-					SearchOperationService service = new SearchOperationService();
+//					SearchOperationService service = new SearchOperationService();
 					String title = fragment.nameField.getValue().toString();
 					String prioStr = fragment.prioField.getValue().toString();
 					Double[] points = null;

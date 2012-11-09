@@ -17,7 +17,7 @@ import se.citerus.collabsearch.model.exceptions.SearchZoneNotFoundException;
 
 public interface SearchOperationDAO {
 
-	public SearchOperationWrapper[] getAllSearchOps() throws IOException;
+	public SearchOperationWrapper[] getAllSearchOpsInShortForm() throws IOException;
 
 	public List<Status> getAllSearchOpStatuses() throws IOException;
 
@@ -63,12 +63,14 @@ public interface SearchOperationDAO {
 	public Map<String, String> getUsersForSearchOp(String opId)
 			throws IOException;
 
-	public String addSearchGroup(SearchGroup group, String opId)
+	public String createSearchGroup(SearchGroup group, String opId)
 			throws IOException;
 
 	public void editSearchGroup(SearchGroup group, String opId)
 			throws IOException;
 
 	public void setDebugDB(String dbName);
+
+	public List<SearchOperation> getAllSearchOps() throws IOException;
 
 }

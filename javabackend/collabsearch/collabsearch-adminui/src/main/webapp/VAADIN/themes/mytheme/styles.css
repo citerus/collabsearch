@@ -44,11 +44,18 @@
 
 .logo-header {
 	padding-top: 16px;
+	color: #0000AB;
 }
+
+.v-notification-system {
+	color: #DA252A;
+	background: #DA252A;
+} 
 
 h1 {
 	text-align: center;
-	color: #0000AB;
+/* 	color: #DA252A; */
+    color: #0000AB;
     font: Arial,Tahoma,Helvetica,FreeSans,sans-serif;
     font-family: Arial,Tahoma,Helvetica,FreeSans,sans-serif;
     text-shadow: -1px -1px 1px rgba(0, 0, 0, 0.2);
@@ -93,6 +100,11 @@ h1 {
 
 .login-outer-panel .v-panel-content > div {
 	background: none;
+}
+
+.login-label h1 {
+/* 	color: #DA252A; */
+/* 	color: #0000AB; */
 }
 
 .v-panel-content {

@@ -6,17 +6,14 @@ import se.citerus.collabsearch.model.exceptions.UserNotFoundException;
 import se.citerus.collabsearch.store.facades.UserDAO;
 import se.citerus.collabsearch.store.mongodb.UserDAOMongoDB;
 
-import com.mongodb.MongoException;
-import com.mongodb.util.Hash;
-
-public class Authenticator {
+public class Authenticator { //TODO refactor to use UserService with DI
 	
-	private UserDAO userDAL;
+	private UserDAO userDAO;
 
 	public Authenticator() {
 		try {
-			userDAL = new UserDAOMongoDB();
-		} catch (MongoException e) {
+			userDAO = new UserDAOMongoDB();
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -32,22 +29,21 @@ public class Authenticator {
 		}
 		boolean userFound;
 		try {
-			userFound = userDAL.findUser(username, password);
+			userFound = userDAO.findUser(username, password);
 		} catch (UserNotFoundException e) {
 			userFound = false;
 		}
-		userDAL.disconnect();
 		return userFound;
 	}
 	
 	public boolean isAuthorized(String username, String role) throws IOException, UserNotFoundException {
-		return userDAL.findUserWithRole(username, role);
+		return userDAO.findUserWithRole(username, role);
 	}
 	
 	private String hashPassword(String username, String password) {		
 		try {
-			Long hash = Hash.hashBackwardLong(password);
-			Long salt = userDAL.retrieveSaltForUser(username);
+			Long hash = /* Hash.hashBackwardLong(password) */ 1L;
+			Long salt = userDAO.retrieveSaltForUser(username);
 			return hash.toString() + salt.toString(); 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -57,7 +53,7 @@ public class Authenticator {
 
 	private void generateSaltForUser(String username) throws UserNotFoundException {
 		try {
-			userDAL.makeSaltForUser(username);
+			userDAO.makeSaltForUser(username);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

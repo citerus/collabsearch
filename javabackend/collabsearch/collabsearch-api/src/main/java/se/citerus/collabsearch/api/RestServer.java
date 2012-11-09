@@ -58,7 +58,7 @@ public class RestServer implements RestService {
 	public SearchOperationWrapper[] getAllOps() {
 		SearchOperationWrapper[] array = null;
 		try {
-			array = dao.getAllSearchOps();
+			array = dao.getAllSearchOpsInShortForm();
 		} catch (IOException e) {
 			e.printStackTrace();
 			throw new WebApplicationException(INTERNAL_SERVER_ERROR);

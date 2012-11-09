@@ -1,27 +1,26 @@
 package se.citerus.collabsearch.adminui.view.searchoperation;
 
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Configurable;
+
 import se.citerus.collabsearch.adminui.ViewSwitchController;
-import se.citerus.collabsearch.adminui.logic.SearchMissionService;
 import se.citerus.collabsearch.adminui.logic.SearchOperationService;
 import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.Status;
 import se.citerus.collabsearch.model.validator.DateValidator;
 
-import com.vaadin.data.Container;
-import com.vaadin.data.Validator;
-import com.vaadin.data.Validator.InvalidValueException;
 import com.vaadin.data.util.BeanContainer;
 import com.vaadin.data.validator.StringLengthValidator;
 import com.vaadin.terminal.ThemeResource;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.AbstractField;
 import com.vaadin.ui.Alignment;
+import com.vaadin.ui.Button;
+import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.DateField;
@@ -33,9 +32,9 @@ import com.vaadin.ui.Panel;
 import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.Button.ClickEvent;
 
 @SuppressWarnings("serial")
+@Configurable(preConstruction=true)
 public class SearchOperationEditView extends CustomComponent {
 	
 	private VerticalLayout mainLayout;
@@ -51,6 +50,9 @@ public class SearchOperationEditView extends CustomComponent {
 	private TextField locationField;
 	private ComboBox statusField;
 	private BeanContainer<String, Status> statusBeanContainer;
+	
+	@Autowired
+	private SearchOperationService service;
 
 	private String missionId;
 	private String opId;
@@ -68,10 +70,8 @@ public class SearchOperationEditView extends CustomComponent {
 		saveButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
 				if (allFieldsValid()) {
-					SearchOperationService opService = null;
 					try {
-						opService = new SearchOperationService();
-						Status status = opService.getSearchOpStatusByName((String)statusField.getValue());
+						Status status = service.getSearchOpStatusByName((String)statusField.getValue());
 						SearchOperation op = new SearchOperation(
 								null, 
 								(String) titleField.getValue(), 
@@ -79,14 +79,10 @@ public class SearchOperationEditView extends CustomComponent {
 								(Date) dateField.getValue(), 
 								(String) locationField.getValue(),
 								status);
-						opService.editSearchOp(op, opId, missionId);
+						service.editSearchOp(op, opId, missionId);
 						listener.switchToSearchMissionListView();
 					} catch (Exception e) {
 						listener.displayError("Sparningsfel", e.getMessage());
-					} finally {
-						if (opService != null) {
-							opService.cleanUp();
-						}
 					}
 				} else {
 					listener.displayError("Valideringsfel", "Ett eller flera fält är inte korrekt ifyllda");
@@ -116,9 +112,7 @@ public class SearchOperationEditView extends CustomComponent {
 		if (opId != null) { //existing operation	
 			this.missionId = null;
 			
-			SearchOperationService service = null;
 			try { //find operation
-				service = new SearchOperationService();
 				SearchOperation searchOp = service.getSearchOp(opId);
 				if (searchOp != null) {
 					//load data from operation into fields
@@ -130,10 +124,6 @@ public class SearchOperationEditView extends CustomComponent {
 				}
 			} catch (Exception e) {
 				listener.displayError("Fel vid skapandet av fönstret", e.getMessage());
-			} finally {
-				if (service != null) {
-					service.cleanUp();
-				}
 			}
 			
 			headerLabel.setValue("<h1><b>" + "Redigera sökoperation" + "</b></h1>");
@@ -259,10 +249,9 @@ public class SearchOperationEditView extends CustomComponent {
 	
 	private void populateStatusField() {
 		statusBeanContainer.removeAllItems();
-		SearchOperationService handler = new SearchOperationService();
 		List<Status> listOfStatuses = null;
 		try {
-			listOfStatuses = handler.getAllSearchOpStatuses();
+			listOfStatuses = service.getAllSearchOpStatuses();
 			statusBeanContainer.addAll(listOfStatuses);
 		} catch (Exception e) {
 			e.printStackTrace();

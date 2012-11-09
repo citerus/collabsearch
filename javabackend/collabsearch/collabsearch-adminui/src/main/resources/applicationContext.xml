@@ -6,6 +6,9 @@
                            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
     <context:spring-configured/>
-    <context:component-scan base-package="se.citerus.collabsearch.adminui"/>
+    <context:component-scan base-package="se.citerus.collabsearch.adminui,se.citerus.collabsearch.store"/>
+    
+<!--     <bean id="searchMissionDAOInMemory" class="SearchMissionDAOInMemory"> -->
+<!-- 	</bean> -->
     
 </beans>

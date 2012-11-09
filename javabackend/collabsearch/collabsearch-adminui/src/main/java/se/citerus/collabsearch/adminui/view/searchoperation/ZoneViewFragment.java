@@ -41,7 +41,7 @@ public class ZoneViewFragment extends CustomComponent {
 //		mainLayout.setSizeFull();
 		mainLayout.setMargin(true);
 		mainLayout.setSpacing(true);
-		mainLayout.setWidth("70%");
+		mainLayout.setWidth("100%");
 		
 		Panel mainPanel = new Panel();
 		mainPanel.setWidth("100%");

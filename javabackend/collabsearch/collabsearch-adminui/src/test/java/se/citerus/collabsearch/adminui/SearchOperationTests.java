@@ -375,6 +375,13 @@ public class SearchOperationTests {
 		}
 	}
 	
+	@Test
+	public void testGetAllSearchOps() throws Exception {
+		List<SearchOperation> list = service.getAllSearchOps();
+		assertNotNull(list);
+		assertTrue(!list.isEmpty());
+	}
+	
 	private void traverseTree(GroupNode node) throws Exception {
 		assertNotNull(node);
 		List<GroupNode> children = node.getChildren();

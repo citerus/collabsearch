@@ -3,19 +3,21 @@ package se.citerus.collabsearch.adminui.logic;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
-import java.nio.file.FileAlreadyExistsException;
 import java.util.Random;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Configurable;
 
 import se.citerus.collabsearch.adminui.ViewSwitchController;
 import se.citerus.collabsearch.model.FileMetadata;
 
-import com.vaadin.data.util.BeanContainer;
 import com.vaadin.ui.Upload;
 import com.vaadin.ui.Upload.FailedEvent;
 import com.vaadin.ui.Upload.StartedEvent;
 import com.vaadin.ui.Upload.SucceededEvent;
 
 @SuppressWarnings("serial")
+@Configurable(preConstruction=true)
 public class FileUploadHandler implements Upload.SucceededListener,
 		Upload.FailedListener, Upload.Receiver {
 
@@ -24,6 +26,9 @@ public class FileUploadHandler implements Upload.SucceededListener,
 	private String parentMissionId;
 	private FileMetadata metadata;
 	private ViewSwitchController listener;
+	
+	@Autowired
+	private SearchMissionService service;
 
 	public OutputStream receiveUpload(String filename, String mimeType) {
 		FileOutputStream fos = null;
@@ -56,9 +61,7 @@ public class FileUploadHandler implements Upload.SucceededListener,
 
 	public void uploadSucceeded(SucceededEvent event) {
 		//add filemetadata to db
-		SearchMissionService service = null;
 		try {
-			service = new SearchMissionService();
 			service.addFileToMission(parentMissionId, metadata);
 		} catch (RuntimeException e) {
 			e.printStackTrace();
@@ -67,9 +70,6 @@ public class FileUploadHandler implements Upload.SucceededListener,
 			e.printStackTrace();
 			listener.displayError("Fel", e.getMessage());
 		} finally {
-			if (service != null) {
-				service.cleanUp();
-			}
 			parentMissionId = null;
 			metadata = null;
 		}

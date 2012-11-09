@@ -4,6 +4,7 @@ import static org.apache.commons.collections15.CollectionUtils.collect;
 import static org.apache.commons.collections15.CollectionUtils.select;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -13,10 +14,11 @@ import java.util.Random;
 import org.apache.commons.collections15.CollectionUtils;
 import org.apache.commons.collections15.Predicate;
 import org.apache.commons.collections15.Transformer;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Configurable;
 
 import se.citerus.collabsearch.adminui.LookingForApp;
 import se.citerus.collabsearch.adminui.ViewSwitchController;
-import se.citerus.collabsearch.adminui.logic.SearchMissionService;
 import se.citerus.collabsearch.adminui.logic.SearchOperationService;
 import se.citerus.collabsearch.model.GroupNode;
 import se.citerus.collabsearch.model.Rank;
@@ -57,11 +59,12 @@ import com.vaadin.ui.Tree;
 import com.vaadin.ui.Tree.ExpandEvent;
 import com.vaadin.ui.Tree.TreeDragMode;
 import com.vaadin.ui.Tree.TreeTargetDetails;
-import com.vaadin.ui.Window.CloseEvent;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
+import com.vaadin.ui.Window.CloseEvent;
 
 @SuppressWarnings("serial")
+@Configurable(preConstruction = true)
 public class GroupEditView extends CustomComponent {
 
 	/** The real name of the searcher, in the form {firstname lastname}. This is used in the table. */
@@ -73,6 +76,9 @@ public class GroupEditView extends CustomComponent {
 	/** The rank of the searcher within this group. This is used in the tree. */
 	private static final String RANK_PROPERTY_ID = "rank";
 
+	@Autowired
+	private SearchOperationService service;
+	
 	private VerticalLayout mainLayout;
 	private final ViewSwitchController listener;
 	private Label headerLabel;
@@ -82,7 +88,7 @@ public class GroupEditView extends CustomComponent {
 	private String opId;
 	private Table searcherTable;
 	private TextField nameField;
-	private SuccessDialog successDialog;
+	private Window successDialog;
 
 	public GroupEditView(ViewSwitchController listener) {
 		mainLayout = new VerticalLayout();
@@ -97,8 +103,6 @@ public class GroupEditView extends CustomComponent {
 	}
 
 	private void buildMainLayout() {
-//		mainLayout.setWidth("50%");
-//		mainLayout.setHeight("");
 		mainLayout.setSizeFull();
 		mainLayout.setMargin(true);
 		mainLayout.setSpacing(true);
@@ -149,7 +153,7 @@ public class GroupEditView extends CustomComponent {
 		searcherTable.setDragMode(Table.TableDragMode.ROW);
 		searcherTable.setStyleName("searcher-table");
 		
-		groupTree = new Tree("Sökgrupp");
+		groupTree = new Tree("Sökgruppens struktur");
 		groupTree.setSizeUndefined();
 		groupTree.setSelectable(true);
 		
@@ -189,20 +193,10 @@ public class GroupEditView extends CustomComponent {
 		});
 		
 		HorizontalLayout buttonLayout = new HorizontalLayout();
-		buttonLayout.setWidth("100%");
 		buttonLayout.setSpacing(true);
 		buttonLayout.setMargin(true, false, false, false);
 		
-		Button backButton = new Button("Tillbaka");
-		backButton.addListener(new ClickListener() {
-			public void buttonClick(ClickEvent event) {
-				listener.switchToSearchMissionListView();
-			}
-		});
-		buttonLayout.addComponent(backButton);
-		buttonLayout.setComponentAlignment(backButton, Alignment.TOP_LEFT);
-		
-		Button cancelButton = new Button("Avbryta");
+		Button cancelButton = new Button("Avbryt");
 		cancelButton.addListener(new ClickListener() {
 			@Override
 			public void buttonClick(ClickEvent event) {
@@ -222,13 +216,14 @@ public class GroupEditView extends CustomComponent {
 		buttonLayout.addComponent(confirmButton);
 		buttonLayout.setComponentAlignment(confirmButton, Alignment.TOP_LEFT);
 		
-		mainPanel.addComponent(buttonLayout);
+		HorizontalLayout btnWrapperLayout = new HorizontalLayout();
+		btnWrapperLayout.setWidth("100%");
+		mainPanel.addComponent(btnWrapperLayout);
+		btnWrapperLayout.addComponent(buttonLayout);
+		btnWrapperLayout.setComponentAlignment(buttonLayout, Alignment.TOP_RIGHT);
 		
 		mainLayout.addComponent(mainPanel);
 		mainLayout.setComponentAlignment(mainPanel, Alignment.TOP_CENTER);
-		
-		successDialog = new SuccessDialog();
-		successDialog.init();
 		
 		//debug button, remove later
 //		Button newSearcherButton = new Button("(debug) Ny sökare");
@@ -249,6 +244,8 @@ public class GroupEditView extends CustomComponent {
 	}
 
 	private void setupPopupWindows() {
+		buildPopupWindow();
+		
 		//setup first window
 		rankChangePopupWindow = new PopupWindow("Välj ny rang");
 		
@@ -482,19 +479,15 @@ public class GroupEditView extends CustomComponent {
 	}
 	
 	private void saveGroup() {
-		SearchOperationService service = null;
 		try {
 			if (nameField.isValid() && validateGroupHierarchy()) {
-				service = new SearchOperationService();
 				SearchGroup group = null;
 				group = convertTreeToGroup();
 				group.setName(nameField.getValue().toString());
 				group.setId(groupId);
 				service.addOrModifySearchGroup(group, groupId, opId);
 				
-				successDialog.setMessage("Sökgrupp \"" + 
-						nameField.getValue().toString() + "\" sparad.");
-				successDialog.openPopup();
+				getWindow().addWindow(successDialog);
 			}
 		} catch (SearchGroupValidationException e) {
 			listener.displayError("Sökgruppsvalideringsfel", e.getMessage());
@@ -506,10 +499,6 @@ public class GroupEditView extends CustomComponent {
 			listener.displayError("Fel vid sparning", 
 				"Ett fel uppstod vid kommunikation med servern.");
 			e.printStackTrace();
-		} finally {
-			if (service != null) {
-				service.cleanUp();
-			}
 		}
 	}
 	
@@ -577,9 +566,8 @@ public class GroupEditView extends CustomComponent {
 
 	private SearchGroup convertTreeToGroup() {
 		//initialize group
-		String name = nameField.getValue().toString();
-		SearchGroup group = new SearchGroup(null, name, null);
-
+		SearchGroup group = new SearchGroup();
+		
 		//find id of the root
 		Collection<?> itemIds = groupTree.getItemIds();
 		Object rootItemId = CollectionUtils.find(itemIds, new Predicate<Object>() {
@@ -592,7 +580,8 @@ public class GroupEditView extends CustomComponent {
 			}
 		});
 		if (rootItemId == null) {
-			throw new IllegalStateException("Ingen rot funnen i trädet");
+			//throw new IllegalStateException("Ingen rot funnen i trädet");
+			return group;
 		}
 		
 		//traverse tree and convert to GroupNodes
@@ -638,13 +627,12 @@ public class GroupEditView extends CustomComponent {
 		
 		if (groupId == null) {
 			headerLabel.setValue("<h1><b>" + "Ny grupp" + "</b></h1>");
+			searcherMap = new HashMap<String, String>(0);
 		} else {
 			headerLabel.setValue("<h1><b>" + "Redigera grupp" + "</b></h1>");
 			
 			//get group data from db
-			SearchOperationService service = null;
 			try {
-				service = new SearchOperationService();
 				group = service.getSearchGroup(groupId);
 				searcherMap = service.getSearchersByOp(opId);
 				
@@ -653,10 +641,6 @@ public class GroupEditView extends CustomComponent {
 				e.printStackTrace();
 				listener.displayError("Fel", "Gruppdatat kunde ej hämtas från servern");
 				return;
-			} finally {
-				if (service != null) {
-					service.cleanUp();
-				}
 			}
 		}
 		
@@ -670,24 +654,24 @@ public class GroupEditView extends CustomComponent {
 		container.addContainerProperty(REALNAME_PROPERTY_ID, String.class, "");
 		
 		//This is a workaround to enlarge the dynamically sized empty tree component.
-		if (group != null) {
-			Object itemId = container.addItem();
-			Item rootItem = container.getItem(itemId);
-			GroupNode rootNode = (GroupNode) group.getTreeRoot();
-			
-			if (rootNode != null) {
-				setupItemProperties(rootNode, rootItem, searcherMap);
-				
-				if (!rootNode.isLeaf()) {
-					addChildrenToTree(itemId, rootNode.getChildren(), 
-							container, searcherMap);
-				}
-			} else { //group is empty, add placeholder
-				searcherMap.put("PLACEHOLDER", "Lägg till sökare här");
-				rootNode = new GroupNode("PLACEHOLDER", Rank.Title.SEARCHER, null);
-				setupItemProperties(rootNode, rootItem, searcherMap);
-			}
-		}
+//		if (group != null) {
+//			Object itemId = container.addItem();
+//			Item rootItem = container.getItem(itemId);
+//			GroupNode rootNode = (GroupNode) group.getTreeRoot();
+//			
+//			if (rootNode != null) {
+//				setupItemProperties(rootNode, rootItem, searcherMap);
+//				
+//				if (!rootNode.isLeaf()) {
+//					addChildrenToTree(itemId, rootNode.getChildren(), 
+//							container, searcherMap);
+//				}
+//			} else { //group is empty, add placeholder
+//				searcherMap.put("PLACEHOLDER", "Lägg till sökare här");
+//				rootNode = new GroupNode("PLACEHOLDER", Rank.Title.SEARCHER, null);
+//				setupItemProperties(rootNode, rootItem, searcherMap);
+//			}
+//		}
 		
 		//refresh tree data source
 		groupTree.setContainerDataSource(container);
@@ -697,16 +681,19 @@ public class GroupEditView extends CustomComponent {
 		container2.addContainerProperty(SID_PROPERTY_ID, String.class, "");
 		container2.addContainerProperty(NAME_PROPERTY_ID, String.class, "");
 		
-		for (Entry<String,String> entry : select(searcherMap.entrySet(), 
-				notIncluded(collect(groupTree.getItemIds(), asUserIds())))){
-			try {
-				Item item = container2.getItem(container2.addItem());
-				item.getItemProperty(SID_PROPERTY_ID).setValue(entry.getKey());
-				item.getItemProperty(NAME_PROPERTY_ID).setValue(entry.getValue());
-			} catch (Exception e) {
-				listener.displayError("Fel", 
+		if (select(searcherMap.entrySet(), 
+				notIncluded(collect(groupTree.getItemIds(), asUserIds()))) != null) {
+			for (Entry<String,String> entry : select(searcherMap.entrySet(), 
+					notIncluded(collect(groupTree.getItemIds(), asUserIds())))){
+				try {
+					Item item = container2.getItem(container2.addItem());
+					item.getItemProperty(SID_PROPERTY_ID).setValue(entry.getKey());
+					item.getItemProperty(NAME_PROPERTY_ID).setValue(entry.getValue());
+				} catch (Exception e) {
+					listener.displayError("Fel", 
 						"Ett fel uppstod vid skapandet av sökartabellen");
-				return;
+					break;
+				}
 			}
 		}
 		
@@ -714,8 +701,14 @@ public class GroupEditView extends CustomComponent {
 		searcherTable.setVisibleColumns(new Object[]{NAME_PROPERTY_ID});
 		searcherTable.setColumnHeaders(new String[]{"Lediga sökare"});
 		
-		//XXX insert dummy data into searcherTable for debug purposes
-		Random r = new Random();
+//		insertDemoData(searcherMap);
+	}
+
+	/**
+	 * Inserts dummy data into searcherTable for debug/demo purposes.
+	 * @param searcherMap
+	 */
+	private void insertDemoData(Map<String, String> searcherMap) {
 		Container dataSource = searcherTable.getContainerDataSource();
 //		for (int i = 0; i < 20; i++) {
 //			Item item = dataSource.getItem(dataSource.addItem());
@@ -726,7 +719,6 @@ public class GroupEditView extends CustomComponent {
 //		}
 		
 		try {
-			SearchOperationService service = new SearchOperationService();
 			Map<String, String> volunteersByOp = service.getVolunteersByOp("");
 			Iterator<String> it = volunteersByOp.keySet().iterator();
 			while (it.hasNext()) {
@@ -740,7 +732,6 @@ public class GroupEditView extends CustomComponent {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		//searchers.keySet().iterator();
 	}
 
 	/**
@@ -867,61 +858,37 @@ public class GroupEditView extends CustomComponent {
 		}
 	}
 	
-	private class SuccessDialog extends Window {
-		private Label msgLabel;
+	private void buildPopupWindow() {
+		successDialog = new Window("Meddelande");
+		successDialog.setModal(true);
+		successDialog.center();
 		
-		public SuccessDialog() {
-			setCaption("Meddelande");
-		}
-
-		public void init() {
-			setWidth("100px");
-			setHeight("100px");
-			
-			VerticalLayout mainLayout = new VerticalLayout();
-			mainLayout.setSizeFull();
-			mainLayout.setSpacing(true);
-			
-			msgLabel = new Label("");
-			mainLayout.addComponent(msgLabel);
-			mainLayout.setComponentAlignment(msgLabel, 
-					Alignment.MIDDLE_CENTER);
-			
-			Button okButton = new Button("OK");
-			okButton.addListener(new ClickListener() {
-				@Override
-				public void buttonClick(ClickEvent event) {
-					closePopup();
-				}
-			});
-			mainLayout.addComponent(okButton);
-			mainLayout.setComponentAlignment(okButton, 
-					Alignment.MIDDLE_CENTER);
-			
-			setContent(mainLayout);
-			
-			addListener(new CloseListener() {
-				@Override
-				public void windowClose(CloseEvent e) {
-					listener.switchToSearchMissionListView();
-				}
-			});
-			
-			center();
-		}
-		
-		public void openPopup() {
-			getParent().getWindow().addWindow(this);
-		}
-		
-		public void closePopup() {
-			getParent().getWindow().removeWindow(this);
-			listener.switchToSearchMissionListView();
-		}
-		
-		public void setMessage(String message) {
-			msgLabel.setValue(message);
-		}
+		VerticalLayout layout = (VerticalLayout) successDialog.getContent();
+        layout.setMargin(true);
+        layout.setSpacing(true);
+        
+        Label popupMessage = new Label("Sökgruppen sparad");
+        successDialog.addComponent(popupMessage);
+        
+        HorizontalLayout buttonLayout = new HorizontalLayout();
+        Button closePopupButton = new Button("Tillbaka");
+        buttonLayout.addComponent(closePopupButton);
+        buttonLayout.setWidth("100%");
+        buttonLayout.setComponentAlignment(closePopupButton, Alignment.BOTTOM_CENTER);
+        
+        closePopupButton.addListener(new Button.ClickListener() {
+			public void buttonClick(ClickEvent event) {
+				(successDialog.getParent()).removeWindow(successDialog);
+				listener.switchToSearchMissionListView();
+			}
+		});
+        
+		successDialog.addListener(new Window.CloseListener() {
+            public void windowClose(CloseEvent e) {
+            	listener.switchToSearchMissionListView();
+            }
+        });
+        
+        successDialog.addComponent(buttonLayout);
 	}
-	
 }

@@ -5,6 +5,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.beans.factory.annotation.Qualifier;
+
 import se.citerus.collabsearch.adminui.ViewSwitchController;
 import se.citerus.collabsearch.adminui.logic.SearchMissionService;
 import se.citerus.collabsearch.adminui.logic.SearchOperationService;
@@ -13,6 +17,7 @@ import se.citerus.collabsearch.model.SearchGroup;
 import se.citerus.collabsearch.model.SearchMission;
 import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.SearchZone;
+import se.citerus.collabsearch.model.exceptions.SearchMissionNotFoundException;
 
 import com.vaadin.data.Item;
 import com.vaadin.data.Property;
@@ -37,6 +42,7 @@ import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.BaseTheme;
 
 @SuppressWarnings("serial")
+@Configurable(preConstruction = true)
 public class SearchMissionListView extends CustomComponent {
 	
 	private static final String ID = "id";
@@ -45,6 +51,12 @@ public class SearchMissionListView extends CustomComponent {
 	private static final String PRIO = "prio";
 	private static final String STATUS = "status";
 	private static final String TYPE = "type";
+	
+	@Autowired
+	private SearchMissionService service;
+	
+	@Autowired
+	private SearchOperationService opService;
 	
 	private final ViewSwitchController listener;
 	private VerticalLayout mainLayout;
@@ -367,13 +379,11 @@ public class SearchMissionListView extends CustomComponent {
 	private void populateTreeTable() {
 		treeTable.removeAllItems();
 		
-		SearchMissionService service = null;
 		List<SearchMission> list = null;
 		try {
-			service = new SearchMissionService(); //TODO replace with injected bean
 			list = service.getListOfSearchMissions();
 			if (list == null) {
-				listener.displayError("Fel", "Inga sökuppdrag hittade");
+//				listener.displayError("Fel", "Inga sökuppdrag hittade");
 				return;
 			}
 			
@@ -395,39 +405,48 @@ public class SearchMissionListView extends CustomComponent {
 				treeTable.setParent(opsParentId, missionItemId);
 				
 				//add ops, set parent to above SearchMission itemid
-				for (SearchOperation op : mission.getOpsList()) {
-					itemId++;
-					int opItemId = itemId;
-					Item opItem = setupItemProperties(opItemId, op.getTitle(), NodeType.OPERATION, op.getId());
-					opItem.getItemProperty(DESCR).setValue(op.getDescr());
-					opItem.getItemProperty(STATUS).setValue(op.getStatus());
-					treeTable.setParent(itemId, opsParentId);
-					
-					//add zone parent label
-					itemId++;
-					int zoneParentId = itemId;
-					setupItemProperties(zoneParentId, "Zoner", NodeType.ZONEROOT, null);
-					treeTable.setParent(zoneParentId, opItemId);
-					//add zones
-					for (SearchZone zone : op.getZones()) {
+				final List<SearchOperation> opsList = mission.getOpsList();
+				if (opsList != null) {
+					for (SearchOperation op : opsList) {
 						itemId++;
-						Item item = setupItemProperties(itemId, zone.getTitle(), NodeType.ZONE, zone.getId());
-						item.getItemProperty(PRIO).setValue(zone.getPriority());
-						treeTable.setParent(itemId, zoneParentId);
-						treeTable.setChildrenAllowed(itemId, false);
-					}
-					
-					//add group parent label
-					itemId++;
-					int groupParentId = itemId;
-					setupItemProperties(groupParentId, "Grupper", NodeType.GROUPROOT, null);
-					treeTable.setParent(itemId, opItemId);
-					//add groups
-					for (SearchGroup group : op.getGroups()) {
+						int opItemId = itemId;
+						Item opItem = setupItemProperties(opItemId, op.getTitle(), NodeType.OPERATION, op.getId());
+						opItem.getItemProperty(DESCR).setValue(op.getDescr());
+						opItem.getItemProperty(STATUS).setValue(op.getStatus());
+						treeTable.setParent(itemId, opsParentId);
+						
+						//add zone parent label
 						itemId++;
-						setupItemProperties(itemId, group.getName(), NodeType.GROUP, group.getId());
-						treeTable.setParent(itemId, groupParentId);
-						treeTable.setChildrenAllowed(itemId, false);
+						int zoneParentId = itemId;
+						setupItemProperties(zoneParentId, "Zoner", NodeType.ZONEROOT, null);
+						treeTable.setParent(zoneParentId, opItemId);
+						//add zones
+						final List<SearchZone> zones = op.getZones();
+						if (zones != null) {
+							for (SearchZone zone : zones) {
+								itemId++;
+								Item item = setupItemProperties(itemId, zone.getTitle(), NodeType.ZONE, zone.getId());
+								item.getItemProperty(PRIO).setValue(zone.getPriority());
+								treeTable.setParent(itemId, zoneParentId);
+								treeTable.setChildrenAllowed(itemId, false);
+							}
+						}
+						
+						//add group parent label
+						itemId++;
+						int groupParentId = itemId;
+						setupItemProperties(groupParentId, "Grupper", NodeType.GROUPROOT, null);
+						treeTable.setParent(itemId, opItemId);
+						//add groups
+						final List<SearchGroup> groups = op.getGroups();
+						if (groups != null) {
+							for (SearchGroup group : groups) {
+								itemId++;
+								setupItemProperties(itemId, group.getName(), NodeType.GROUP, group.getId());
+								treeTable.setParent(itemId, groupParentId);
+								treeTable.setChildrenAllowed(itemId, false);
+							}
+						}
 					}
 				}
 				
@@ -437,11 +456,14 @@ public class SearchMissionListView extends CustomComponent {
 				treeTable.setParent(filesParentId, missionItemId);
 				
 				//add files, set parent to above file itemid
-				for (FileMetadata file : mission.getFileList()) {
-					itemId++;
-					setupItemProperties(itemId, file.getFileName(), NodeType.FILE, file.getId());
-					treeTable.setParent(itemId, filesParentId);
-					treeTable.setChildrenAllowed(itemId, false);
+				List<FileMetadata> fileList = mission.getFileList();
+				if (fileList != null) {
+					for (FileMetadata file : fileList) {
+						itemId++;
+						setupItemProperties(itemId, file.getFileName(), NodeType.FILE, file.getId());
+						treeTable.setParent(itemId, filesParentId);
+						treeTable.setChildrenAllowed(itemId, false);
+					}
 				}
 				
 				itemId++; //increment root id (for the next searchmission)
@@ -450,10 +472,6 @@ public class SearchMissionListView extends CustomComponent {
 			e.printStackTrace();
 			listener.displayError("Fel", 
 					"Skapandet av sökuppdragstabellen misslyckades.");
-		} finally {
-			if (service != null) {
-				service.cleanUp();
-			}
 		}
 	}
 	
@@ -534,25 +552,21 @@ public class SearchMissionListView extends CustomComponent {
 		if (type == NodeType.FILE) {
 			String fileName = item.getItemProperty(NAME).getValue().toString();
 			String missionId = getParentProperty(2, itemId, ID);
-			SearchMissionService service = null;
 			try {
-				service = new SearchMissionService(); //TODO replace with injected bean
 				service.deleteFile(fileName, missionId);
 				treeTable.removeItem(itemId);
+			} catch (SearchMissionNotFoundException e) {
+				listener.displayError("Fel", "Sökuppdraget ej funnet");
 			} catch (Exception e) {
 				e.printStackTrace();
 				listener.displayError("Filraderingen misslyckades", e.getMessage());
-			} finally {
-				if (service != null) {
-					service.cleanUp();
-				}
 			}
 		} else if (type == NodeType.OPERATION) {
-			SearchOperationService service = null;
+//			SearchOperationService service = null;
 			String opId = item.getItemProperty(ID).getValue().toString();
 			try {
-				service = new SearchOperationService();
-				service.deleteSearchOp(opId);
+//				service = new SearchOperationService();
+				opService.deleteSearchOp(opId);
 				removeItemsRecursively(itemId);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -564,10 +578,10 @@ public class SearchMissionListView extends CustomComponent {
 			}
 		} else if (type == NodeType.ZONE) {
 			String zoneId = item.getItemProperty(ID).getValue().toString();
-			SearchOperationService service = null;
+//			SearchOperationService service = null;
 			try {
-				service = new SearchOperationService();
-				service.deleteZone(zoneId);
+//				service = new SearchOperationService();
+				opService.deleteZone(zoneId);
 				treeTable.removeItem(itemId);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -579,10 +593,10 @@ public class SearchMissionListView extends CustomComponent {
 			}
 		} else if (type == NodeType.GROUP) {
 			String groupId = item.getItemProperty(ID).getValue().toString();
-			SearchOperationService service = null;
+//			SearchOperationService service = null;
 			try {
-				service = new SearchOperationService();
-				service.deleteGroup(groupId);
+//				service = new SearchOperationService();
+				opService.deleteGroup(groupId);
 				treeTable.removeItem(itemId);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -598,26 +612,22 @@ public class SearchMissionListView extends CustomComponent {
 	private void handleEndActions(int itemId, Item item, NodeType type) {
 		String itemName = item.getItemProperty(NAME).getValue().toString();
 		if (type == NodeType.MISSION) {
-			SearchMissionService service = null;
 			try {
-				service = new SearchMissionService(); //TODO replace with injected bean
 				service.endMission(itemName);
 				item.getItemProperty(STATUS).setValue("Avslutat");
 				treeTable.requestRepaintAll();
+			} catch (SearchMissionNotFoundException e) {
+				listener.displayError("Fel", "Sökuppgradet ej funnet");
 			} catch (Exception e) {
 				e.printStackTrace();
 				listener.displayError("Fel", e.getMessage());
-			} finally {
-				if (service != null) {
-					service.cleanUp();
-				}
 			}
 		} else if (type == NodeType.OPERATION) {
-			SearchOperationService service = null;
+//			SearchOperationService service = null;
 			try {
-				service = new SearchOperationService();
+//				service = new SearchOperationService();
 				String opId = item.getItemProperty(ID).getValue().toString();
-				String statusName = service.endOperation(opId);
+				String statusName = opService.endOperation(opId);
 				item.getItemProperty(STATUS).setValue(statusName);
 			} catch (Exception e) {
 				e.printStackTrace();

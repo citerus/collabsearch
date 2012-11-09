@@ -521,7 +521,9 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 		BasicDBObject query = makeObjectIdQuery(groupId);
 		BasicDBObject dbo = new BasicDBObject();
 		dbo.append("name", group.getName());
-		dbo.append("tree", makeGroupTreeObj(group.getTreeRoot()));
+		if (group.getTreeRoot() != null) {
+			dbo.append("tree", makeGroupTreeObj(group.getTreeRoot()));
+		}
 		BasicDBObject update = new BasicDBObject("$set", dbo);
 		WriteResult result = groupsColl.update(query, update);
 		checkResult(result, OpType.UPDATE);

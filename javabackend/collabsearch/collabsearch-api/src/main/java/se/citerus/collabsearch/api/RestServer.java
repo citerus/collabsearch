@@ -17,6 +17,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -32,24 +34,24 @@ import se.citerus.collabsearch.store.mongodb.SearchMissionDAOMongoDB;
 
 @Service
 @Path("/ws")
+@Configurable(preConstruction=true)
 public class RestServer implements RestService {
 	private static final int NOT_FOUND = 404;
 	private static final int INTERNAL_SERVER_ERROR = 500;
 	
-//	@Autowired
+	@Autowired
+	@Qualifier("searchMissionDAOMongoDB")
 	private SearchOperationDAO dao;
 	
 	public RestServer() {
-		try {
-			ApplicationContext context = 
-				new AnnotationConfigApplicationContext("se.citerus.collabsearch.store");
-		    dao = context.getBean(SearchMissionDAOMongoDB.class);
-		    assert(dao != null);
-		    
-//		    context = new ClassPathXmlApplicationContext(new String[]{"applicationContext.xml"});
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+//		try {
+//			ApplicationContext context = 
+//				new AnnotationConfigApplicationContext("se.citerus.collabsearch.store");
+//		    dao = context.getBean(SearchMissionDAOMongoDB.class);
+//		    assert(dao != null);
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
 	}
 
 	@GET

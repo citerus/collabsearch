@@ -23,7 +23,12 @@
 	margin: 6px 0px 0px !important;
 }
 
-.v-panel-content-op-list .v-verticallayout > div {
+/* .v-panel-content-op-list .v-verticallayout > div { */
+/* 	-webkit-box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.1); */
+/* 	box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.1); */
+/* } */
+
+.v-panel-content .v-verticallayout:nth-child(1) {
 	-webkit-box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.1);
 	box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.1);
 }
@@ -33,7 +38,7 @@
 }
 
 .op-panel .ops-bottom-layout > div:nth-child(1) {
-	margin: 30px 0px 0px !important;
+	margin: 30px 10px 0px !important;
 }
 
 .op-list {

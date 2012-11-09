@@ -334,6 +334,7 @@ public class OperationsListView extends CustomComponent {
 		
 		VerticalLayout layout = new VerticalLayout();
 		layout.setWidth("100%");
+//		layout.setMargin(false, false, false, true);
 		
 		HorizontalLayout topLayout = new HorizontalLayout();
 		topLayout.setWidth("100%");

@@ -6,6 +6,7 @@ import static org.apache.commons.lang.Validate.notNull;
 import java.awt.geom.Point2D.Double;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -102,27 +103,27 @@ public class SearchOperationService {
 	}
 
 	public String createZone(String opId, String title, String prioStr,
-			Double[] points, int zoomLevel) throws Exception {
+			Double[] points, int zoomLevel, Double center, String groupId) throws Exception {
 		validateZoneInput(opId, title, prioStr, points, zoomLevel);
 		
 		int priority = Integer.parseInt(prioStr);
 		
-		SearchZone zone = new SearchZone(title, priority, points, zoomLevel);
+		SearchZone zone = new SearchZone(title, priority, points, zoomLevel, center, groupId); 
 		String createdZoneId = searchOperationDAO.createZone(opId, zone);
 		notEmpty(createdZoneId);
 		return createdZoneId;
 	}
-	
+
 	public void editZone(String zoneId, String title, String prioStr, 
-			Double[] points, int zoomLevel) throws Exception {
+			Double[] points, int zoomLevel, Double center, String groupId) throws Exception {
 		validateZoneInput(zoneId, title, prioStr, points, zoomLevel);
 		
 		int priority = Integer.parseInt(prioStr);
 		
-		SearchZone zone = new SearchZone(title, priority, points, zoomLevel);
+		SearchZone zone = new SearchZone(title, priority, points, zoomLevel, center, groupId);
 		searchOperationDAO.editZone(zoneId, zone);
 	}
-	
+
 	private void validateZoneInput(String id, String title, String prioStr,
 			Double[] points, int zoomLevel) {
 		notEmpty(id);
@@ -179,7 +180,7 @@ public class SearchOperationService {
 	 * @return a list of SearcherInfo objects representing the searchers applied to the operation.
 	 * @throws Exception
 	 */
-	public Map<String, String> getSearchersByOp(String opId) throws Exception {
+	public Map<String, String> getSearchersByOp(String opId) throws Exception, SearchOperationNotFoundException {
 		notEmpty(opId);
 		Map<String, String> map = searchOperationDAO.getUsersForSearchOp(opId);
 		notNull(map);
@@ -232,6 +233,22 @@ public class SearchOperationService {
 	}
 
 	public List<SearchOperation> getAllSearchOps() throws Exception {
-		return searchOperationDAO.getAllSearchOps();
+		List<SearchOperation> list = searchOperationDAO.getAllSearchOps();
+		notNull(list);
+		return list;
+	}
+
+	public List<SearchGroup> getSearchGroupsByOp(String opId) throws IOException, SearchGroupNotFoundException {
+		notNull(opId);
+		List<SearchGroup> list = searchOperationDAO.getSearchGroupsByOp(opId);
+		notNull(list);
+		return list;
+	}
+
+	public String getZoneParent(String zoneId) throws IOException, SearchOperationNotFoundException {
+		notNull(zoneId);
+		String opId = searchOperationDAO.getOpIdByZone(zoneId);
+		notNull(opId);
+		return opId;
 	}
 }

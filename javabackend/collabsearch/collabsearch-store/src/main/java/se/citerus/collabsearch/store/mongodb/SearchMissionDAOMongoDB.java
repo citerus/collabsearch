@@ -1,7 +1,7 @@
 package se.citerus.collabsearch.store.mongodb;
 
+import java.awt.geom.Point2D;
 import java.awt.geom.Point2D.Double;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -25,7 +24,6 @@ import org.springframework.stereotype.Repository;
 import se.citerus.collabsearch.model.FileMetadata;
 import se.citerus.collabsearch.model.GroupNode;
 import se.citerus.collabsearch.model.Rank;
-import se.citerus.collabsearch.model.Rank.Title;
 import se.citerus.collabsearch.model.SearchFinding;
 import se.citerus.collabsearch.model.SearchGroup;
 import se.citerus.collabsearch.model.SearchMission;
@@ -237,6 +235,13 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 		zone.setZoneCoords(getFormattedZoneCoords(zoneDBO));
 		zone.setFindings(getFormattedZoneFindings(zoneDBO));
 		zone.setZoomLevel(zoneDBO.getInt("zoomlvl"));
+		BasicDBObject centerObj = (BasicDBObject) zoneDBO.get("center");
+		Point2D.Double center = new Double();
+		center.x = centerObj.getDouble("lat");
+		center.y = centerObj.getDouble("lon");
+		zone.setCenter(center);
+		ObjectId groupOID = zoneDBO.getObjectId("groupid");
+		zone.setGroupId(groupOID == null ? null : groupOID.toString());
 		return zone;
 	}
 
@@ -530,10 +535,13 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 	}
 
 	@Override
-	public Map<String, String> getUsersForSearchOp(String opId) throws IOException {
+	public Map<String, String> getUsersForSearchOp(String opId) throws IOException, SearchOperationNotFoundException {
 		BasicDBObject query = makeObjectIdQuery(opId);
 		BasicDBObject fields = new BasicDBObject("searchers", 1);
 		DBObject dbo = operationsColl.findOne(query, fields);
+		if (dbo == null) {
+			throw new SearchOperationNotFoundException(opId);
+		}
 		BasicDBList list = (BasicDBList) dbo.get("searchers");
 		DBCursor cursor = null;
 		if (list != null) {
@@ -852,26 +860,35 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 		dbo.append("title", zone.getTitle());
 		dbo.append("prio", zone.getPriority());
 		dbo.append("zoomlvl", zone.getZoomLevel());
+		BasicDBObject centerDBO = new BasicDBObject();
+		centerDBO.append("lat", zone.getCenter().x);
+		centerDBO.append("lon", zone.getCenter().y);
+		dbo.append("center", centerDBO);
+		dbo.append("groupid", zone.getGroupId() == null ? null : new ObjectId(zone.getGroupId()));
 		
 		Double[] zoneCoords = zone.getZoneCoords();
 		BasicDBList coords = new BasicDBList();
-		for (Double coord : zoneCoords) {
-			BasicDBObject coordObj = new BasicDBObject(2);
-			coordObj.append("lat", coord.getX());
-			coordObj.append("lon", coord.getY());
-			coords.add(coordObj);
+		if (zoneCoords != null) {
+			for (Double coord : zoneCoords) {
+				BasicDBObject coordObj = new BasicDBObject(2);
+				coordObj.append("lat", coord.getX());
+				coordObj.append("lon", coord.getY());
+				coords.add(coordObj);
+			}
 		}
 		dbo.append("coords", coords);
 		
 		SearchFinding[] zoneFindings = zone.getFindings();
 		BasicDBList findings = new BasicDBList();
-		for (SearchFinding find : zoneFindings) {
-			BasicDBObject findObj = new BasicDBObject();
-			findObj.append("title", find.getTitle());
-			findObj.append("descr", find.getDescr());
-			findObj.append("lat", find.getLat());
-			findObj.append("lon", find.getLon());
-			findings.add(findObj);
+		if (zoneFindings != null) {
+			for (SearchFinding find : zoneFindings) {
+				BasicDBObject findObj = new BasicDBObject();
+				findObj.append("title", find.getTitle());
+				findObj.append("descr", find.getDescr());
+				findObj.append("lat", find.getLat());
+				findObj.append("lon", find.getLon());
+				findings.add(findObj);
+			}
 		}
 		dbo.append("findings", findings);
 		
@@ -918,5 +935,40 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 			list.add(op);
 		}
 		return list;
+	}
+
+	/**
+	 * Returns a list of SearchGroups (searcher hierarchies excluded) with parent ops matching the supplied id.
+	 */
+	@Override
+	public List<SearchGroup> getSearchGroupsByOp(String opId) throws IOException, SearchGroupNotFoundException {
+		List<SearchGroup> list = new ArrayList<SearchGroup>();
+		BasicDBObject query = new BasicDBObject("parentop", 
+			new ObjectId(opId));
+		BasicDBObject fields = new BasicDBObject("name", 1);
+		DBCursor cursor = groupsColl.find(query, fields);
+		if (cursor == null) {
+			throw new SearchGroupNotFoundException("No groups for op with id: " + opId);
+		}
+		while (cursor.hasNext()) {
+			BasicDBObject dbo = (BasicDBObject) cursor.next();
+			String name = dbo.getString("name");
+			String id = dbo.getObjectId("_id").toString();
+			list.add(new SearchGroup(id, name, null));
+		}
+		return list;
+	}
+
+	@Override
+	public String getOpIdByZone(String zoneId) throws IOException, SearchOperationNotFoundException {
+		BasicDBObject query = makeObjectIdQuery(zoneId);
+		BasicDBObject fields = new BasicDBObject("parentop", 1).append("_id", 0);
+		BasicDBObject dbo = (BasicDBObject) zonesColl.findOne(query, fields);
+		if (dbo == null) {
+			throw new SearchOperationNotFoundException(
+				"The zone with the id " + zoneId + " does not have a parent op.");
+		}
+		String opId = dbo.getObjectId("parentop").toString();
+		return opId;
 	}
 }

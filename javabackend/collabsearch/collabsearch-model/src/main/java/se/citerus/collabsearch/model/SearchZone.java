@@ -9,22 +9,22 @@ public class SearchZone {
 	private Double[] zoneCoords;
 	private SearchFinding[] findings;
 	private int zoomLevel;
+	private Double center;
+	private String groupId;
 	
 	public SearchZone() {
 		zoneCoords = new Double[0];
 		findings = new SearchFinding[0];
 	}
-	
-	public SearchZone(String title, int priority, Double[] zoneCoords, SearchFinding[] findings) {
+
+	public SearchZone(String title, int priority, Double[] zoneCoords,
+			int zoomLevel, Double center, String groupId) {
 		this.title = title;
 		this.priority = priority;
 		this.zoneCoords = zoneCoords;
-		this.findings = findings;
-	}
-
-	public SearchZone(String title, int priority, Double[] points, int zoomLevel) {
-		this(title, priority, points, new SearchFinding[0]);
 		this.zoomLevel = zoomLevel;
+		this.center = center;
+		this.groupId = groupId;
 	}
 
 	public String getId() {
@@ -73,6 +73,22 @@ public class SearchZone {
 
 	public void setZoomLevel(int zoomLevel) {
 		this.zoomLevel = zoomLevel;
+	}
+
+	public Double getCenter() {
+		return center;
+	}
+
+	public void setCenter(Double center) {
+		this.center = center;
+	}
+
+	public String getGroupId() {
+		return groupId;
+	}
+
+	public void setGroupId(String groupId) {
+		this.groupId = groupId;
 	}
 	
 }

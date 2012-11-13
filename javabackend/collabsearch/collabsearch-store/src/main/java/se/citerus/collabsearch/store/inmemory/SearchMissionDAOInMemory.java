@@ -180,14 +180,19 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 				new SearchFinding(18.530502319335938, 59.472640068126864, "Fynd", "Fotspår"),
 				new SearchFinding(18.536081314086914, 59.474514716221430, "Fynd", "Upphittat klädesplagg")
 		};
-		SearchZone zone = new SearchZone("Norra sökområdet", 3, points, findings);
+		Point2D.Double center = new Point2D.Double(17, 59); 
+		
+		SearchZone zone = new SearchZone("Norra sökområdet", 3, points, 7, center, null);
 		zone.setId("" + r.nextLong());
+		zone.setFindings(findings);
 		zones.add(zone);
-		zone = new SearchZone("Södra sökområdet", 2, points, findings);
+		zone = new SearchZone("Södra sökområdet", 2, points, 7, center, null);
 		zone.setId("" + r.nextLong());
+		zone.setFindings(findings);
 		zones.add(zone);
-		zone = new SearchZone("Storsjön (sökområde för dykare)", 1, points, findings);
+		zone = new SearchZone("Storsjön (sökområde för dykare)", 1, points, 7, center, null);
 		zone.setId("" + r.nextLong());
+		zone.setFindings(findings);
 		zones.add(zone);
 		
 		SearchOperation searchOp = new SearchOperation(
@@ -611,6 +616,37 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 
 	@Override
 	public List<SearchOperation> getAllSearchOps() throws IOException {
+		ArrayList<SearchOperation> list = new ArrayList<SearchOperation>();
+		for (SearchMission mission : missionsList) {
+			list.addAll(mission.getOpsList());
+		}
+		return list;
+	}
+
+	@Override
+	public List<SearchGroup> getSearchGroupsByOp(String opId) {
+		ArrayList<SearchGroup> list = new ArrayList<SearchGroup>();
+		for (SearchMission mission : missionsList) {
+			for (SearchOperation op : mission.getOpsList()) {
+				if (opId.equals(op.getId())) {
+					list.addAll(op.getGroups());
+				}
+			}
+		}
+		return list;
+	}
+
+	@Override
+	public String getOpIdByZone(String zoneId) {
+		for (SearchMission mission : missionsList) {
+			for (SearchOperation op : mission.getOpsList()) {
+				for (SearchZone zone : op.getZones()) {
+					if (zone.getId().equals(zoneId)) {
+						return op.getId();
+					}
+				}
+			}
+		}
 		return null;
 	}
 }

@@ -61,7 +61,7 @@ public interface SearchOperationDAO {
 	public SearchGroup getSearchGroup(String groupId) throws IOException, SearchGroupNotFoundException;
 
 	public Map<String, String> getUsersForSearchOp(String opId)
-			throws IOException;
+			throws IOException, SearchOperationNotFoundException;
 
 	public String createSearchGroup(SearchGroup group, String opId)
 			throws IOException;
@@ -72,5 +72,9 @@ public interface SearchOperationDAO {
 	public void setDebugDB(String dbName);
 
 	public List<SearchOperation> getAllSearchOps() throws IOException;
+
+	public List<SearchGroup> getSearchGroupsByOp(String zoneId) throws IOException, SearchGroupNotFoundException;
+
+	public String getOpIdByZone(String zoneId) throws IOException, SearchOperationNotFoundException;
 
 }

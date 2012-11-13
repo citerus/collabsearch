@@ -41,6 +41,10 @@ public class SearchOperationTests {
 	private static SearchOperationService service;
 	private static SearchMission testMission;
 	private static ApplicationContext context;
+	
+	final int testZoomLvl = 7;
+	final String testPrio = "1";
+	final Double testCenter = new Double(0, 0);
 
 	@BeforeClass
 	public static void setUpBeforeClass() {
@@ -156,9 +160,6 @@ public class SearchOperationTests {
 	
 	@Test
 	public void testCreateZone() throws Exception {
-		final int testZoomLvl = 7;
-		final String testPrio = "1";
-		
 		SearchOperation op = new SearchOperation(null, "testOp5", 
 			"blab", new Date(), "plats x", DEFAULT_STATUS);
 		String opId = service.editSearchOp(op , null, testMission.getId());
@@ -166,26 +167,25 @@ public class SearchOperationTests {
 		points[0] = new Double(1, 2);
 		points[1] = new Double(3, 4);
 		points[2] = new Double(5, 6);
-		String zoneId = service.createZone(opId, "zone1", testPrio, 
-			points, testZoomLvl);
+		String zoneId = service.createZone(opId, "zone1", testPrio, points, testZoomLvl, testCenter, null);
 		assertNotNull(zoneId);
 	}
 	
 	@Test
 	public void testGetZone() throws Exception {
-		final int testZoomLvl = 7;
-		final String testPrio = "1";
 		final String testName = "zone1";
 		
 		SearchOperation op = new SearchOperation(null, "testOp6", "blab",
 				new Date(), "plats x", DEFAULT_STATUS);
 		String opId = service.editSearchOp(op, null, testMission.getId());
+		SearchGroup group = new SearchGroup(null, "Grupp A", null);
+		String groupId = service.addOrModifySearchGroup(group , null, opId);
 		Double[] points = new Double[3];
 		points[0] = new Double(1, 2);
 		points[1] = new Double(3, 4);
 		points[2] = new Double(5, 6);
-		String zoneId = service.createZone(opId, testName, testPrio, points,
-				testZoomLvl);
+		String zoneId = service.createZone(opId, testName, testPrio, 
+				points, testZoomLvl, testCenter, groupId);
 		SearchZone zone = service.getZone(zoneId);
 		assertNotNull(zone);
 		assertEquals(zoneId, zone.getId());
@@ -198,6 +198,7 @@ public class SearchOperationTests {
 			assertEquals(points[i].x, coords[i].x, 0d);
 			assertEquals(points[i].y, coords[i].y, 0d);
 		}
+		assertEquals(groupId, zone.getGroupId());
 	}
 	
 	@Test
@@ -209,14 +210,14 @@ public class SearchOperationTests {
 		points[0] = new Double(1, 2);
 		points[1] = new Double(3, 4);
 		points[2] = new Double(5, 6);
-		String zoneId = service.createZone(opId, "zone1", "1", points, 7);
+		String zoneId = service.createZone(opId, "zone1", "1", points, testZoomLvl, testCenter, null);
 		assertNotNull(zoneId);
 		
 		Double[] points2 = new Double[3];
 		points2[0] = new Double(2, 3);
 		points2[1] = new Double(4, 5);
 		points2[2] = new Double(6, 7);
-		service.editZone(zoneId, "zone1v2", "2", points2, 8);
+		service.editZone(zoneId, "zone1v2", "2", points2, 8, testCenter, null);
 		
 		SearchZone zone = service.getZone(zoneId);
 		assertEquals(zoneId, zone.getId());
@@ -240,7 +241,7 @@ public class SearchOperationTests {
 		points[0] = new Double(1, 2);
 		points[1] = new Double(3, 4);
 		points[2] = new Double(5, 6);
-		String zoneId = service.createZone(opId, "zone1", "1", points, 7);
+		String zoneId = service.createZone(opId, "zone1", "1", points, testZoomLvl, testCenter, null);
 		assertNotNull(zoneId);
 		service.deleteZone(zoneId);
 		service.getZone(zoneId);

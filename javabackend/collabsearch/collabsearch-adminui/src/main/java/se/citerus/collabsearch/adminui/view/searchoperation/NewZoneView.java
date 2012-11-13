@@ -19,23 +19,24 @@ import org.vaadin.hezamu.googlemapwidget.overlay.Polygon;
 
 import se.citerus.collabsearch.adminui.ViewSwitchController;
 import se.citerus.collabsearch.adminui.logic.SearchOperationService;
-import se.citerus.collabsearch.model.SearchZone;
+import se.citerus.collabsearch.model.SearchGroup;
+import se.citerus.collabsearch.model.exceptions.SearchGroupNotFoundException;
 
 import com.vaadin.Application;
-import com.vaadin.ui.Button;
+import com.vaadin.data.Item;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
-import com.vaadin.ui.UriFragmentUtility.FragmentChangedEvent;
 import com.vaadin.ui.CustomComponent;
-import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.Label;
 import com.vaadin.ui.VerticalLayout;
 
 @SuppressWarnings("serial")
 @Configurable(preConstruction=true)
 public class NewZoneView extends CustomComponent {
 
+	private static final double DEFAULT_LAT = 15.11718750000000;
+	private static final double DEFAULT_LON = 62.30879369102805;
 	private static final int DEFAULT_ZOOM = 5;
+	
 	private final ViewSwitchController listener;
 	private VerticalLayout mainLayout;
 	private GoogleMap map;
@@ -47,8 +48,6 @@ public class NewZoneView extends CustomComponent {
 	
 	private List<Marker> markerPoints;
 	private Random random;
-	private Double mapCenter;
-	private int mapZoom;
 
 	public NewZoneView(ViewSwitchController listener) {
 		this.listener = listener;
@@ -71,7 +70,6 @@ public class NewZoneView extends CustomComponent {
 			@Override
 			public void buttonClick(ClickEvent event) {
 				try {
-//					SearchOperationService service = new SearchOperationService();
 					String title = fragment.nameField.getValue().toString();
 					String prioStr = fragment.prioField.getValue().toString();
 					Double[] points = null;
@@ -80,7 +78,14 @@ public class NewZoneView extends CustomComponent {
 						PolyOverlay overlay = overlays.iterator().next();
 						points = overlay.getPoints();
 					}
-					service.createZone(opId, title, prioStr, points, map.getZoom());
+					Double center = (points == null || points.length == 0) ? map.getCenter() : points[0];
+					String groupId = null;
+					Object checkboxSelection = fragment.assignedGroupDropdown.getValue();
+					if (checkboxSelection != null) {
+						Item item = fragment.assignedGroupDropdown.getItem(checkboxSelection);
+						groupId = item.getItemProperty("id").getValue().toString();
+					}
+					service.createZone(opId, title, prioStr, points, map.getZoom(), center, groupId);
 					
 					listener.switchToSearchMissionListView();
 				} catch (Exception e) {
@@ -132,14 +137,6 @@ public class NewZoneView extends CustomComponent {
 				markerPoints.clear();
 			}
 		});
-		
-		fragment.setMapCenterButton.addListener(new ClickListener() {
-			@Override
-			public void buttonClick(ClickEvent event) {
-				mapCenter = map.getCenter();
-				mapZoom = map.getZoom();
-			}
-		});
 	}
 
 	public void resetView(String opId) {
@@ -152,6 +149,15 @@ public class NewZoneView extends CustomComponent {
 		Collection<PolyOverlay> overlays = map.getOverlays();
 		for (PolyOverlay overlay : overlays) {
 			map.removeOverlay(overlay);
+		}
+		
+		try {
+			List<SearchGroup> groupList = service.getSearchGroupsByOp(opId);
+			fragment.setupGroupComboBox(groupList);
+		} catch (SearchGroupNotFoundException e) {
+			//no groups created for this op, this is acceptable.
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -172,6 +178,7 @@ public class NewZoneView extends CustomComponent {
 	}
 	
 	private Long generateId() {
+		map.addMarker(null);
 		if (random == null) {
 			random = new Random();
 		}
@@ -179,15 +186,11 @@ public class NewZoneView extends CustomComponent {
 	}
 
 	private GoogleMap makeGoogleMap() {
-		Application application = getApplication();
-		Validate.notNull(application);
+		Application app = getApplication();
+		Validate.notNull(app);
 		
-		//example coords for middle of Sweden
-		final double lat = 15.11718750000000;
-		final double lon = 62.30879369102805;
-		
-		Point2D.Double mapCenterMarker = new Point2D.Double(lat, lon);
-		GoogleMap googleMap = new GoogleMap(application, mapCenterMarker, DEFAULT_ZOOM);
+		Double mapCenter = new Double(DEFAULT_LAT, DEFAULT_LON);
+		GoogleMap googleMap = new GoogleMap(app, mapCenter, DEFAULT_ZOOM);
 		googleMap.setWidth("100%");
 		googleMap.setHeight("500px");
 		

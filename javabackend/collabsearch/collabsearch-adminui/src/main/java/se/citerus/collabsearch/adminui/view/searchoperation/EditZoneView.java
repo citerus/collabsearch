@@ -2,6 +2,7 @@ package se.citerus.collabsearch.adminui.view.searchoperation;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Point2D.Double;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -20,9 +21,17 @@ import org.vaadin.hezamu.googlemapwidget.overlay.Polygon;
 import se.citerus.collabsearch.adminui.ViewSwitchController;
 import se.citerus.collabsearch.adminui.logic.SearchOperationService;
 import se.citerus.collabsearch.model.SearchFinding;
+import se.citerus.collabsearch.model.SearchGroup;
 import se.citerus.collabsearch.model.SearchZone;
+import se.citerus.collabsearch.model.exceptions.SearchGroupNotFoundException;
+import se.citerus.collabsearch.model.exceptions.SearchOperationNotFoundException;
+import se.citerus.collabsearch.model.exceptions.SearchZoneNotFoundException;
 
 import com.vaadin.Application;
+import com.vaadin.data.Container;
+import com.vaadin.data.Item;
+import com.vaadin.data.util.BeanContainer;
+import com.vaadin.data.util.IndexedContainer;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
@@ -34,7 +43,10 @@ import com.vaadin.ui.VerticalLayout;
 @Configurable(preConstruction=true)
 public class EditZoneView extends CustomComponent {
 	
-	private static final int DEFAULT_ZOOM = 9;
+	private static final double DEFAULT_LAT = 15.11718750000000;
+	private static final double DEFAULT_LON = 62.30879369102805;
+	private static final int DEFAULT_ZOOM = 5;
+	
 	private final ViewSwitchController listener;
 	private VerticalLayout mainLayout;
 	private GoogleMap map;
@@ -46,8 +58,6 @@ public class EditZoneView extends CustomComponent {
 	
 	private List<Marker> markerPoints;
 	private Random random;
-	private Double mapCenter;
-	private int mapZoom;
 
 	public EditZoneView(ViewSwitchController listener) {
 		this.listener = listener;
@@ -72,7 +82,6 @@ public class EditZoneView extends CustomComponent {
 			@Override
 			public void buttonClick(ClickEvent event) {
 				try {
-//					SearchOperationService service = new SearchOperationService();
 					String title = fragment.nameField.getValue().toString();
 					String prioStr = fragment.prioField.getValue().toString();
 					Double[] points = null;
@@ -81,7 +90,14 @@ public class EditZoneView extends CustomComponent {
 						PolyOverlay overlay = overlays.iterator().next();
 						points = overlay.getPoints();
 					}
-					service.editZone(zoneId, title, prioStr, points, map.getZoom());
+					Double center = (points == null || points.length == 0) ? map.getCenter() : points[0];
+					String groupId = null;
+					Object checkboxSelection = fragment.assignedGroupDropdown.getValue();
+					if (checkboxSelection != null) {
+						Item item = fragment.assignedGroupDropdown.getItem(checkboxSelection);
+						groupId = item.getItemProperty("id").getValue().toString();
+					}
+					service.editZone(zoneId, title, prioStr, points, map.getZoom(), center, groupId);
 					
 					listener.switchToSearchMissionListView();
 				} catch (Exception e) {
@@ -139,14 +155,6 @@ public class EditZoneView extends CustomComponent {
 				markerPoints.clear();
 			}
 		});
-		
-		fragment.setMapCenterButton.addListener(new ClickListener() {
-			@Override
-			public void buttonClick(ClickEvent event) {
-				mapCenter = map.getCenter();
-				mapZoom = map.getZoom();
-			}
-		});
 	}
 
 	private Long generateId() {
@@ -184,7 +192,7 @@ public class EditZoneView extends CustomComponent {
 			}
 			
 			//center map on center of zone
-			map.setCenter(points[0]);
+			map.setCenter(zone.getCenter());
 			
 			if (zone.getZoomLevel() > 0) {
 				map.setZoom(zone.getZoomLevel());
@@ -204,13 +212,39 @@ public class EditZoneView extends CustomComponent {
 				genId++;
 			}
 			
+			fragment.assignedGroupDropdown.select(null);
+			try {
+				List<SearchGroup> groupList = service.getSearchGroupsByOp(
+						service.getZoneParent(zoneId));
+				fragment.setupGroupComboBox(groupList);
+				String groupId = zone.getGroupId();
+				Container container = fragment.assignedGroupDropdown.getContainerDataSource();
+				for (Object itemId : container.getItemIds()) {
+					Item item = container.getItem(itemId);
+					String id = item.getItemProperty("id").toString();
+					if (id.equals(groupId)) {
+						fragment.assignedGroupDropdown.select(itemId);
+					}
+				}
+			} catch (SearchGroupNotFoundException e) {
+				//no groups created for this op, this is acceptable.
+			}
+			
 			fragment.nameField.setValue(zone.getTitle());
 			fragment.prioField.setValue(zone.getPriority());
+		} catch (SearchZoneNotFoundException e) {
+			listener.displayError("Fel", "Sökzonen ej funnen");
+			listener.switchToSearchMissionListView();
+		} catch (SearchOperationNotFoundException e) {
+			e.printStackTrace();
+			listener.displayError("Fel", 
+					"Zonen har ingen tillhörade sökoperation");
 		} catch (Exception e) {
 			e.printStackTrace();
 			listener.displayError("Fel vid hämtning av data", 
 				"Ett fel uppstod vid hämtningen av data från servern: " + e.getMessage());
 		}
+		
 	}
 
 	private void initMap() {
@@ -240,15 +274,11 @@ public class EditZoneView extends CustomComponent {
 	}
 
 	private GoogleMap makeGoogleMap() {
-		Application application = getApplication();
-		Validate.notNull(application);
+		Application app = getApplication();
+		Validate.notNull(app);
 		
-		//example coords for Gothenburg
-		final double lat = 11.977844238281250;
-		final double lon = 57.717352096870876;
-		
-		Point2D.Double mapCenterMarker = new Point2D.Double(lat, lon);
-		GoogleMap googleMap = new GoogleMap(application, mapCenterMarker, 9);
+		Double mapCenter = new Double(DEFAULT_LAT, DEFAULT_LON);
+		GoogleMap googleMap = new GoogleMap(app, mapCenter, DEFAULT_ZOOM);
 		googleMap.setWidth("100%");
 		googleMap.setHeight("500px");
 		

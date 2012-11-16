@@ -1,0 +1,13 @@
+
+target/
+
+# Eclipse
+.project
+.cache
+.classpath
+
+# GWT
+.gwt
+
+# No temp files
+*~

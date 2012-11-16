@@ -1,0 +1,176 @@
+<?xml version="1.0"?>
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<artifactId>collabsearch</artifactId>
+		<groupId>se.citerus</groupId>
+		<version>1.0</version>
+	</parent>
+	<groupId>se.citerus</groupId>
+	<artifactId>collabsearch-api</artifactId>
+	<version>1.0</version>
+	<packaging>war</packaging>
+	<name>collabsearch-api Maven Webapp</name>
+	<url>http://maven.apache.org</url>
+	
+	<properties>
+		<property>${project.artifactId}</property>
+		
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	    <maven.compiler.source>1.6</maven.compiler.source>
+	    <maven.compiler.target>1.6</maven.compiler.target>
+	
+	    <vaadin.version>6.7.4</vaadin.version>
+	    <spring.version>3.1.0.RELEASE</spring.version>
+	    <aspectj.version>1.6.12</aspectj.version>
+	    
+	    <!-- Plugin versions -->
+	    <aspectj-maven-plugin.version>1.4</aspectj-maven-plugin.version>
+	    <jetty-maven-plugin.version>8.0.4.v20111024</jetty-maven-plugin.version>
+	</properties>
+	
+	<build>
+		<finalName>collabsearch-api</finalName>
+		<plugins>
+			<!-- A simple Jetty test server at http://localhost:8080/collabsearch 
+				can be launched with the Maven goal jetty:run and stopped with jetty:stop -->
+			<plugin>
+				<groupId>org.mortbay.jetty</groupId>
+				<artifactId>maven-jetty-plugin</artifactId>
+				<version>6.1.24</version>
+				<configuration>
+					<connectors>
+						<connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
+							<port>9090</port>
+							<maxIdleTime>300000</maxIdleTime>
+						</connector>
+					</connectors>
+					<!-- <port>8081</port> -->
+					<stopPort>9966</stopPort>
+					<stopKey>${project.build.finalName}</stopKey>
+					<!-- Redeploy every x seconds if changes are detected, 0 for no automatic 
+						redeployment -->
+					<scanIntervalSeconds>0</scanIntervalSeconds>
+					<!-- make sure Jetty also finds the widgetset -->
+					<webAppConfig>
+						<contextPath>/${project.build.finalName}</contextPath>
+						<baseResource implementation="org.mortbay.resource.ResourceCollection">
+							<!-- Workaround for Maven/Jetty issue http://jira.codehaus.org/browse/JETTY-680 -->
+							<!-- <resources>src/main/webapp,${project.build.directory}/${project.build.finalName}</resources> -->
+							<resourcesAsCSV>src/main/webapp,${project.build.directory}/${project.build.finalName}</resourcesAsCSV>
+						</baseResource>
+					</webAppConfig>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.tomcat.maven</groupId>
+				<artifactId>tomcat7-maven-plugin</artifactId>
+				<version>2.0</version>
+				<configuration>
+					<port>8081</port>
+					<stopPort>9966</stopPort>
+					<stopKey>${project.build.finalName}</stopKey>
+					<!-- Redeploy every x seconds if changes are detected, 0 for no automatic 
+						redeployment -->
+					<scanIntervalSeconds>0</scanIntervalSeconds>
+					<webAppConfig>
+						<contextPath>/${project.build.finalName}</contextPath>
+					</webAppConfig>
+				</configuration>
+			</plugin>
+			
+			<!-- spring aspects compiler -->
+			<plugin>
+		        <groupId>org.codehaus.mojo</groupId>
+		        <artifactId>aspectj-maven-plugin</artifactId>
+		        <version>${aspectj-maven-plugin.version}</version>
+		        <configuration>
+		          <!-- Required as the plugin does not resolve this by default -->
+		          <source>${maven.compiler.source}</source>
+		          <target>${maven.compiler.target}</target>
+		          <aspectLibraries>
+		            <aspectLibrary>
+		              <groupId>org.springframework</groupId>
+		              <artifactId>spring-aspects</artifactId>
+		            </aspectLibrary>
+		          </aspectLibraries>
+		        </configuration>
+		        <executions>
+		          <execution>
+		            <goals>
+		              <goal>compile</goal>
+		              <goal>test-compile</goal>
+		            </goals>
+		          </execution>
+		        </executions>
+	     	</plugin>
+		</plugins>
+	</build>
+	
+	<dependencies>
+		<dependency>
+			<groupId>com.sun.jersey</groupId>
+			<artifactId>jersey-archive</artifactId>
+			<version>1.13</version>
+			<type>pom</type>
+		</dependency>
+		<dependency>
+			<groupId>se.citerus</groupId>
+			<artifactId>collabsearch-model</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>se.citerus</groupId>
+			<artifactId>collabsearch-store</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<!-- Spring -->
+	    <dependency>
+	      <groupId>org.springframework</groupId>
+	      <artifactId>spring-core</artifactId>
+	      <version>${spring.version}</version>
+	    </dependency>
+	    <dependency>
+	      <groupId>org.springframework</groupId>
+	      <artifactId>spring-beans</artifactId>
+	      <version>${spring.version}</version>
+	    </dependency>
+	    <dependency>
+	      <groupId>org.springframework</groupId>
+	      <artifactId>spring-context</artifactId>
+	      <version>${spring.version}</version>
+	    </dependency>
+	    <dependency>
+	      <groupId>org.springframework</groupId>
+	      <artifactId>spring-web</artifactId>
+	      <version>${spring.version}</version>
+	    </dependency>
+	    <dependency>
+	      <groupId>org.springframework</groupId>
+	      <artifactId>spring-aspects</artifactId>
+	      <version>${spring.version}</version>
+	    </dependency>
+	    <dependency>
+	      <groupId>org.springframework</groupId>
+	      <artifactId>spring-tx</artifactId>
+	      <version>${spring.version}</version>
+	    </dependency>
+	    <!-- Required due to a bug in Spring, see https://jira.springsource.org/browse/SPR-6819 -->
+	    <dependency>
+	      <groupId>javax.persistence</groupId>
+	      <artifactId>persistence-api</artifactId>
+	      <version>1.0</version>
+	      <optional>true</optional>
+	    </dependency>
+	    <!-- AspectJ dependencies -->
+	    <dependency>
+	      <groupId>org.aspectj</groupId>
+	      <artifactId>aspectjrt</artifactId>
+	      <version>${aspectj.version}</version>
+	    </dependency>
+	</dependencies>
+	
+</project>

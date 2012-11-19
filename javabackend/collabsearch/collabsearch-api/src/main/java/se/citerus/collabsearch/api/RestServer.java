@@ -38,21 +38,10 @@ import se.citerus.collabsearch.store.mongodb.SearchMissionDAOMongoDB;
 public class RestServer implements RestService {
 	private static final int NOT_FOUND = 404;
 	private static final int INTERNAL_SERVER_ERROR = 500;
-	
+
 	@Autowired
 	@Qualifier("searchMissionDAOMongoDB")
 	private SearchOperationDAO dao;
-	
-	public RestServer() {
-//		try {
-//			ApplicationContext context = 
-//				new AnnotationConfigApplicationContext("se.citerus.collabsearch.store");
-//		    dao = context.getBean(SearchMissionDAOMongoDB.class);
-//		    assert(dao != null);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-	}
 
 	@GET
 	@Path("/getAllOps")
@@ -92,7 +81,7 @@ public class RestServer implements RestService {
 	@POST
 	@Path("/apply")
 	@Consumes("application/x-www-form-urlencoded")
-	public Response applyForSearchOp(
+	public Response applyForSearchOp( //TODO ta emot data som objekt istf primitiver
 			@FormParam("opname") String opName, 
 			@FormParam("name") String name, 
 			@FormParam("email") String email, 

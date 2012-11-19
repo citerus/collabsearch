@@ -125,6 +125,7 @@ public class SearchMissionEditView extends CustomComponent {
 		Panel mainPanel = new Panel();
 		mainPanel.setWidth("40%");
 		mainLayout.addComponent(mainPanel);
+		mainLayout.setComponentAlignment(mainPanel, Alignment.TOP_CENTER);
 		
 		HorizontalLayout headerLayout = new HorizontalLayout();
 		headerLayout.setSpacing(true);

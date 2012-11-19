@@ -7,7 +7,7 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
-public class SearchOperation {
+public class SearchOperation { //göra klasser från XSD?
 	private String id;
 	private String title;
 	private String descr;

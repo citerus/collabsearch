@@ -132,4 +132,8 @@ public class SearchMissionService {
 		return status;
 	}
 
+	public void setDebugMode() {
+		searchMissionDAO.setDebugDB("test");
+	}
+
 }

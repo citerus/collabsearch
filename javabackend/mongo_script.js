@@ -7,28 +7,28 @@ db.users.update({username : "test"}, {username : "test", password : "test", emai
 db.users.update({username : "alfa"}, {username : "alfa", password : "beta", email : "alfa@beta.com", tele : "123", role : "user"}, true, true);
 
 //insert searchmissions
-db.searchmissions.update({name : "Sökuppdrag 1"},{ descr : "text...", name : "Sökuppdrag 1", prio : 0, status : 1 }, true, true);
+/*db.searchmissions.update({name : "Sökuppdrag 1"},{ descr : "text...", name : "Sökuppdrag 1", prio : 0, status : 1 }, true, true);
 db.searchmissions.update({name : "Sökuppdrag 2"},{ descr : "text...", name : "Sökuppdrag 2", prio : 0, status : 3 }, true, true);
-db.searchmissions.update({name : "Sökuppdrag 3"},{ descr : "text...", name : "Sökuppdrag 3", prio : 0, status : 7 }, true, true);
+db.searchmissions.update({name : "Sökuppdrag 3"},{ descr : "text...", name : "Sökuppdrag 3", pri*/o : 0, status : 7 }, true, true);
 
-db.searchmissions.find({},{"_id" : 1}).forEach(function(doc) {
-    path = "/tmp/uploads/" + doc._id;
-    db.searchmissions.update({"_id" : doc._id}, {"$set" : {files : [{filename : "fil1.pdf", mimetype : "application/pdf", filepath : path}, {filename : "fil2.png", mimetype : "image/png", filepath : path}]}});
-});
+// db.searchmissions.find({},{"_id" : 1}).forEach(function(doc) {
+//     path = "/tmp/uploads/" + doc._id;
+//     db.searchmissions.update({"_id" : doc._id}, {"$set" : {files : [{filename : "fil1.pdf", mimetype : "application/pdf", filepath : path}, {filename : "fil2.png", mimetype : "image/png", filepath : path}]}});
+// });
 
 //insert searchoperations
-db.searchops.update({title : "Sökop 2"}, { title : "Sökop 2", descr : "Skallgång i skogdunge 3", date : NumberLong("1221724810000"), location : "plats x", status : 0 }, true, true);
-db.searchops.update({title : "Sökop 3"}, { title : "Sökop 3", descr : "Skallgång på kulle 104", date : NumberLong("1221724820000"), location : "plats y", status : 1 }, true, true);
-db.searchops.update({title : "Sökop 1"}, { title : "Sökop 1", descr : "Skallgång på holme 15", date : NumberLong("1221724800000"), location : "plats z", status : 2, "searchers" : [ { name : "ola", tele : "123", email : "bla@bla.se" }, { name : "ola", tele : "123", email : "ola@mail.se" } ]}, true, true);
+// db.searchops.update({title : "Sökop 2"}, { title : "Sökop 2", descr : "Skallgång i skogdunge 3", date : NumberLong("1221724810000"), location : "plats x", status : 0 }, true, true);
+// db.searchops.update({title : "Sökop 3"}, { title : "Sökop 3", descr : "Skallgång på kulle 104", date : NumberLong("1221724820000"), location : "plats y", status : 1 }, true, true);
+// db.searchops.update({title : "Sökop 1"}, { title : "Sökop 1", descr : "Skallgång på holme 15", date : NumberLong("1221724800000"), location : "plats z", status : 2, "searchers" : [ { name : "ola", tele : "123", email : "bla@bla.se" }, { name : "ola", tele : "123", email : "ola@mail.se" } ]}, true, true);
 
 //assign parent mission to searchops
-result = db.searchmissions.findOne({name : "Sökuppdrag 1"});
-db.searchops.update({},{"$set" : {mission : result._id}}, false, true);
+//result = db.searchmissions.findOne({name : "Sökuppdrag 1"});
+//db.searchops.update({},{"$set" : {mission : result._id}}, false, true);
 
 //insert op statuses
-db.opstatuses.update({statusid : 0}, {"$set" : {statusid : 0, name : "Ej inledd", descr : "Sökoperationen har inte ännu inletts."}}, true, true);
+db.opstatuses.update({statusid : 2}, {"$set" : {statusid : 2, name : "Ej inledd", descr : "Sökoperationen har inte ännu inletts."}}, true, true);
 db.opstatuses.update({statusid : 1}, {"$set" : {statusid : 1, name : "Sökning inledd", descr : "Sökoperationen har inletts."}}, true, true);
-db.opstatuses.update({statusid : 2}, {"$set" : {statusid : 2, name : "Sökning avslutad", descr : "Sökoperationen har avslutats."}}, true, true);
+db.opstatuses.update({statusid : 0}, {"$set" : {statusid : 0, name : "Sökning avslutad", descr : "Sökoperationen har avslutats."}}, true, true);
 
 //insert mission statuses
 db.missionstatuses.update({statusid : 0}, {"$set" : {statusid : 0, name : "Avslutat uppdrag", descr : "Sökninguppdraget avslutat"}}, true, true);

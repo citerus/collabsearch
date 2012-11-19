@@ -36,4 +36,6 @@ public interface SearchMissionDAO {
 
 	public Status findMissionStatusByName(String statusName) throws IOException;
 
+	public void setDebugDB(String string);
+
 }

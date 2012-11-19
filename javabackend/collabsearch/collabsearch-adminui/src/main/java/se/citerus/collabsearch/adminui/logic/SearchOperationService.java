@@ -228,10 +228,6 @@ public class SearchOperationService {
 		}
 	}
 
-	public void setDebugMode() {
-		searchOperationDAO.setDebugDB("test");
-	}
-
 	public List<SearchOperation> getAllSearchOps() throws Exception {
 		List<SearchOperation> list = searchOperationDAO.getAllSearchOps();
 		notNull(list);
@@ -250,5 +246,9 @@ public class SearchOperationService {
 		String opId = searchOperationDAO.getOpIdByZone(zoneId);
 		notNull(opId);
 		return opId;
+	}
+	
+	public void setDebugMode() {
+		searchOperationDAO.setDebugDB("test");
 	}
 }

@@ -5,7 +5,12 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
+import org.bson.types.ObjectId;
+import org.mindrot.jbcrypt.BCrypt;
+
+import se.citerus.collabsearch.model.DbUser;
 import se.citerus.collabsearch.model.User;
 import se.citerus.collabsearch.model.exceptions.DuplicateUserDataException;
 import se.citerus.collabsearch.model.exceptions.UserNotFoundException;
@@ -29,11 +34,6 @@ public class UserDAOMongoDB implements UserDAO {
 	private DBCollection userColl;
 	private DBCollection authColl;
 	private DBCollection roleColl;
-
-	private static final boolean ENABLEUPSERT = true;
-	private static final boolean DISABLEUPSERT = false;
-	private static final boolean ENABLEMULTIUPDATE = true;
-	private static final boolean DISABLEMULTIUPDATE = false;
 	
 	private enum OpType {
 		INSERT, UPDATE, REMOVE
@@ -237,6 +237,7 @@ public class UserDAOMongoDB implements UserDAO {
 
 	public void addNewUser(User user) throws IOException, DuplicateUserDataException {
 		BasicDBObject userObject = makeUserDBO(user);
+//		userObject.append("authref", generateSaltForUser()); //TODO use salt for passwords?
 		WriteResult result = userColl.insert(userObject);
 		if (result.getLastError().ok() == false) {
 			if (result.getLastError().getException() instanceof MongoException.DuplicateKey) {
@@ -259,6 +260,14 @@ public class UserDAOMongoDB implements UserDAO {
 		userObject.put("tele", user.getTele());
 		userObject.put("role", user.getRole()); //TODO replace with dbref to roleColl
 		return userObject;
+	}
+	
+	private ObjectId generateSaltForUser() throws IOException {
+		UUID uuid = UUID.randomUUID(); //TODO replace with bcrypt?
+		BasicDBObject dbo = new BasicDBObject("salt", uuid.toString());
+		WriteResult result = authColl.insert(dbo);
+		checkResult(result, OpType.INSERT);
+		return dbo.getObjectId("_id");
 	}
 
 	@Override
@@ -286,6 +295,20 @@ public class UserDAOMongoDB implements UserDAO {
 				throw new IOException("No documents were affected by the op");
 			}
 		}
+	}
+
+	/**
+	 * This method is used by Spring Security to fetch user's names and passwords for login. 
+	 */
+	@Override
+	public DbUser findUserByName(String username) throws UserNotFoundException {
+		BasicDBObject dbo = (BasicDBObject) userColl.findOne(new BasicDBObject("username", username));
+		if (dbo == null) {
+			throw new UserNotFoundException(username);
+		}
+		String password = dbo.getString("password");
+		String role = dbo.getString("role");
+		return new DbUser(username, password, role);
 	}
 
 }

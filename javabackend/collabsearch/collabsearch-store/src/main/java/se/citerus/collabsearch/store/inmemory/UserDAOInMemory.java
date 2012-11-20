@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import se.citerus.collabsearch.model.DbUser;
 import se.citerus.collabsearch.model.User;
 import se.citerus.collabsearch.store.facades.UserDAO;
 
@@ -117,6 +118,12 @@ public class UserDAOInMemory implements UserDAO {
 	@Override
 	public void activateDebugMode() {
 		//no op
+	}
+
+	@Override
+	public DbUser findUserByName(String username) {
+		//return a mockup admin user with password "test" (sha256 encoded)
+		return new DbUser(username, "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08", "user");
 	}
 
 }

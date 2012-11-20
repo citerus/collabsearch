@@ -13,6 +13,7 @@ import se.citerus.collabsearch.adminui.view.searchoperation.EditZoneView;
 import se.citerus.collabsearch.adminui.view.usermgmt.UserEditView;
 import se.citerus.collabsearch.adminui.view.usermgmt.UserListView;
 
+import com.vaadin.Application;
 import com.vaadin.terminal.gwt.server.WebApplicationContext;
 import com.vaadin.ui.LoginForm.LoginEvent;
 import com.vaadin.ui.LoginForm.LoginListener;
@@ -47,11 +48,11 @@ public class MainWindow extends Window implements LoginListener, ViewSwitchContr
 	}
 
 	public void initWindow() {
-		if (LookingForApp.getInstance().getUser() == null) {
-			switchToLoginView();
-		} else {
+//		if (LookingForApp.getInstance().getUser() == null) {
+//			switchToLoginView();
+//		} else {
 			switchToWelcomeView();
-		}
+//		}
 	}
 
 	@Override

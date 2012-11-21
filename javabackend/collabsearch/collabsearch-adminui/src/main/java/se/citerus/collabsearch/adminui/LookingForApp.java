@@ -22,7 +22,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.WebApplicationContext;
 
-import se.citerus.collabsearch.adminui.logic.LocalizationService;
+import se.citerus.collabsearch.adminui.view.MainWindow;
 
 import com.vaadin.Application;
 import com.vaadin.terminal.gwt.server.HttpServletRequestListener;

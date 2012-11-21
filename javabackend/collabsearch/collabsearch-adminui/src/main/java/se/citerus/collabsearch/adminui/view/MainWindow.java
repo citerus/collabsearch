@@ -1,5 +1,6 @@
-package se.citerus.collabsearch.adminui;
+package se.citerus.collabsearch.adminui.view;
 
+import se.citerus.collabsearch.adminui.LookingForApp;
 import se.citerus.collabsearch.adminui.view.login.WelcomeView;
 import se.citerus.collabsearch.adminui.view.searchmission.FileUploadView;
 import se.citerus.collabsearch.adminui.view.searchmission.SearchMissionEditView;
@@ -45,16 +46,16 @@ public class MainWindow extends Window implements ViewSwitchController {
 	public void initWindow() {
 		switchToWelcomeView();
 	}
-
-	@Override
-	public void displayNotification(String caption, String message) {
-		showNotification(caption, message);
-	}
-
+	
 	@Override
 	public void logoutAndReload() {
 		LookingForApp.getInstance().setUser(null);
 		getApplication().close();
+	}
+
+	@Override
+	public void displayNotification(String caption, String message) {
+		showNotification(caption, message);
 	}
 
 	@Override
@@ -155,11 +156,6 @@ public class MainWindow extends Window implements ViewSwitchController {
 		}
 		fileMgmtView.resetView(missionId);
 		setContent(fileMgmtView);
-	}
-
-	@Override
-	public void refreshMissionTree() {
-		searchMissionListView.refreshMissionTree();
 	}
 
 	@Override

@@ -1,9 +1,5 @@
-package se.citerus.collabsearch.adminui;
+package se.citerus.collabsearch.adminui.view;
 
-import com.vaadin.data.util.BeanItemContainer;
-
-import se.citerus.collabsearch.model.SearchOperation;
-import se.citerus.collabsearch.model.User;
 
 public interface ViewSwitchController {
 	
@@ -66,6 +62,4 @@ public interface ViewSwitchController {
 	
 	public void switchToGroupEditView(String groupId, String opId);
 		
-	public void refreshMissionTree();
-
 }

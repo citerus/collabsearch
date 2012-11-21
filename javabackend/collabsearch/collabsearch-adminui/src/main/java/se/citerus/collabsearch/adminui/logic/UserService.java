@@ -1,11 +1,17 @@
 package se.citerus.collabsearch.adminui.logic;
 
+import static org.apache.commons.lang.Validate.notEmpty;
+
 import java.io.IOException;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
+import org.apache.commons.lang.Validate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.authentication.encoding.ShaPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import se.citerus.collabsearch.model.User;
@@ -17,6 +23,8 @@ import se.citerus.collabsearch.store.mongodb.UserDAOMongoDB;
 @Service
 public class UserService { //TODO refactor into spring service
 
+	@Autowired
+	@Qualifier("userDAOMongoDB")
 	private UserDAO userDAO;
 
 	public UserService() {
@@ -26,33 +34,25 @@ public class UserService { //TODO refactor into spring service
 	
 	@PostConstruct
 	public void init() {
-		userDAO = new UserDAOMongoDB();
+		if (userDAO == null) {
+			
+		}
 	}
 	
-	@PreDestroy
-	public void cleanUp() {
-		userDAO.disconnect();
+	public void setDebugMode() {
+		userDAO.activateDebugMode();
 	}
 
 	public List<User> getListOfUsers() throws IOException {
 		return userDAO.getAllUsers();
 	}
 
-	public User getUserData(String selectedUser) throws IOException, UserNotFoundException {
+	public User findUser(String selectedUser) throws IOException, UserNotFoundException {
 		return userDAO.getUserByUsername(selectedUser);
 	}
 
 	public void removeUser(String username) throws IOException, UserNotFoundException {
 		userDAO.deleteUserByUsername(username);
-	}
-
-	/**
-	 * Edits user (if existing) or adds a new one with the included attributes.
-	 * @throws UserNotFoundException 
-	 * @throws IOException 
-	 */
-	public void editUser(User user) throws IOException, UserNotFoundException {
-		userDAO.editExistingUser(user);
 	}
 
 	public List<String> getListOfRoles() {
@@ -64,21 +64,41 @@ public class UserService { //TODO refactor into spring service
 		return null;
 	}
 
-	/**
-	 * Searches for duplicate users by username or telephone number or email.
-	 * @return true if duplicates were found, else false.
-	 * @throws IOException 
-	 */
-	public boolean lookForDuplicates(String username, String tele, String email) throws IOException {
-		return userDAO.checkForDuplicateUserData(username, tele, email);
+	public void editUser(String username, String email, String tele, String role)
+			throws IOException, UserNotFoundException, DuplicateUserDataException {
+		notEmpty(username);
+		notEmpty(email);
+		notEmpty(tele);
+		notEmpty(role);
+		User user = new User(username, email, tele, role);
+		userDAO.editExistingUser(user);
 	}
 
-	public void addUser(User user) throws IOException, DuplicateUserDataException {
-		userDAO.addNewUser(user);
+	public String addUser(String username, String password, String email, String tele,
+			String role) throws IOException, DuplicateUserDataException {
+		notEmpty(username);
+		notEmpty(password);
+		notEmpty(email);
+		notEmpty(tele);
+		notEmpty(role);
+		String hashedPassword = hashPassword(password);
+		User user = new User(username, hashedPassword, email, tele, role);
+		String id = userDAO.addNewUser(user);
+		notEmpty(id);
+		return id;
 	}
 
-	public void setDebugMode() {
-		userDAO.activateDebugMode();
+	private String hashPassword(String password) {
+		ShaPasswordEncoder encoder = new ShaPasswordEncoder(256);
+		String hashedPassword = encoder.encodePassword(password, null);
+		notEmpty(hashedPassword);
+		return hashedPassword;
+	}
+	
+	public void changePassword(String username, String newPassword) throws IOException {
+		notEmpty(username);
+		notEmpty(newPassword);
+		userDAO.changePasswordForUser(username, hashPassword(newPassword));
 	}
 
 }

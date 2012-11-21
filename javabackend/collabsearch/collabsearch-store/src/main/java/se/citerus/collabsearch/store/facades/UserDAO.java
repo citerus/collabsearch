@@ -16,13 +16,7 @@ public interface UserDAO {
 	
 	public boolean findUser(String username, char[] password) throws IOException, UserNotFoundException;
 	
-	public void disconnect();
-	
 	public boolean findUserWithRole(String username, String role) throws IOException, UserNotFoundException;
-	
-	public void makeSaltForUser(String username) throws IOException, UserNotFoundException;
-	
-	public long retrieveSaltForUser(String username) throws Exception, UserNotFoundException;
 	
 	public List<User> getAllUsers() throws IOException;
 	
@@ -34,12 +28,14 @@ public interface UserDAO {
 
 	public boolean checkForDuplicateUserData(String username, String tele, String email) throws IOException;
 
-	public void editExistingUser(User user) throws IOException, UserNotFoundException;
+	public void editExistingUser(User user) throws IOException, UserNotFoundException, DuplicateUserDataException;
 
-	public void addNewUser(User user) throws IOException, DuplicateUserDataException;
+	public String addNewUser(User user) throws IOException, DuplicateUserDataException;
 
 	public void activateDebugMode();
 
 	public DbUser findUserByName(String username) throws UserNotFoundException;
-	
+
+	public void changePasswordForUser(String username, String hashedPassword) throws IOException;
+
 }

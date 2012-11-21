@@ -8,7 +8,7 @@ import java.util.Random;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 
-import se.citerus.collabsearch.adminui.ViewSwitchController;
+import se.citerus.collabsearch.adminui.view.ViewSwitchController;
 import se.citerus.collabsearch.model.FileMetadata;
 
 import com.vaadin.ui.Upload;
@@ -18,7 +18,7 @@ import com.vaadin.ui.Upload.SucceededEvent;
 
 @SuppressWarnings("serial")
 @Configurable(preConstruction=true)
-public class FileUploadHandler implements Upload.SucceededListener,
+public class FileUploadService implements Upload.SucceededListener,
 		Upload.FailedListener, Upload.Receiver {
 
 	//TODO upload filepath should be set in config file

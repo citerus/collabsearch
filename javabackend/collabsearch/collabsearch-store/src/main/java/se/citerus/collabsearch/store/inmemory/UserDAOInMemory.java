@@ -111,8 +111,9 @@ public class UserDAOInMemory implements UserDAO {
 		throw new IOException("Användare ej funnen!");
 	}
 
-	public void addNewUser(User user) throws IOException {
+	public String addNewUser(User user) throws IOException {
 		allUsers.add(user);
+		return user.getUsername();
 	}
 
 	@Override
@@ -124,6 +125,17 @@ public class UserDAOInMemory implements UserDAO {
 	public DbUser findUserByName(String username) {
 		//return a mockup admin user with password "test" (sha256 encoded)
 		return new DbUser(username, "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08", "user");
+	}
+
+	@Override
+	public void changePasswordForUser(String username, String hashedPassword) {
+		for (User user : allUsers) {
+			if (user.getUsername().equals(username)) {
+				User user2 = new User(user.getUsername(), hashedPassword,
+						user.getEmail(), user.getTele(), user.getRole());
+				allUsers.set(allUsers.indexOf(user), user2);
+			}
+		}
 	}
 
 }

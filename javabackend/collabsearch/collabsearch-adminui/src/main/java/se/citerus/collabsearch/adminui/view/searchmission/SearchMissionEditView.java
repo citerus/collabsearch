@@ -6,8 +6,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 
-import se.citerus.collabsearch.adminui.ViewSwitchController;
-import se.citerus.collabsearch.adminui.logic.FileUploadHandler;
+import se.citerus.collabsearch.adminui.view.ViewSwitchController;
+import se.citerus.collabsearch.adminui.logic.FileUploadService;
 import se.citerus.collabsearch.adminui.logic.SearchMissionService;
 import se.citerus.collabsearch.model.FileMetadata;
 import se.citerus.collabsearch.model.SearchMission;

@@ -7,7 +7,7 @@ import java.util.Locale;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 
-import se.citerus.collabsearch.adminui.ViewSwitchController;
+import se.citerus.collabsearch.adminui.view.ViewSwitchController;
 import se.citerus.collabsearch.adminui.logic.SearchOperationService;
 import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.Status;

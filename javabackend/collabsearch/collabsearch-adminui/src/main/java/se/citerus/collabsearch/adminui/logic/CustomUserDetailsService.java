@@ -26,11 +26,9 @@ import se.citerus.collabsearch.store.mongodb.UserDAOMongoDB;
 @Transactional(readOnly = true)
 public class CustomUserDetailsService implements UserDetailsService {
 
-//	protected static Logger logger = Logger.getLogger("service");
-
-//	private UserDAO userDAO = new UserDAO();
-//	@Autowired
-	private UserDAO userDAO = new UserDAOMongoDB();
+	@Autowired
+	@Qualifier("userDAOMongoDB")
+	private UserDAO userDAO;
 	
 	public UserDetails loadUserByUsername(String username)
 			throws UsernameNotFoundException, DataAccessException {

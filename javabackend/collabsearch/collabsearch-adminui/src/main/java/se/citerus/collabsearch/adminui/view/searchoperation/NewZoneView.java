@@ -17,7 +17,7 @@ import org.vaadin.hezamu.googlemapwidget.overlay.Marker;
 import org.vaadin.hezamu.googlemapwidget.overlay.PolyOverlay;
 import org.vaadin.hezamu.googlemapwidget.overlay.Polygon;
 
-import se.citerus.collabsearch.adminui.ViewSwitchController;
+import se.citerus.collabsearch.adminui.view.ViewSwitchController;
 import se.citerus.collabsearch.adminui.logic.SearchOperationService;
 import se.citerus.collabsearch.model.SearchGroup;
 import se.citerus.collabsearch.model.exceptions.SearchGroupNotFoundException;

@@ -1,14 +1,22 @@
 package se.citerus.collabsearch.store.mongodb;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import java.util.Random;
 import java.util.UUID;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+
 import org.bson.types.ObjectId;
 import org.mindrot.jbcrypt.BCrypt;
+import org.springframework.stereotype.Repository;
 
 import se.citerus.collabsearch.model.DbUser;
 import se.citerus.collabsearch.model.User;
@@ -23,11 +31,14 @@ import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+import com.mongodb.DBPort;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 import com.mongodb.MongoOptions;
+import com.mongodb.QueryBuilder;
 import com.mongodb.WriteResult;
 
+@Repository
 public class UserDAOMongoDB implements UserDAO {
 
 	private Mongo mongo;
@@ -40,19 +51,59 @@ public class UserDAOMongoDB implements UserDAO {
 	}
 
 	public UserDAOMongoDB() {
+//		try {
+//			MongoOptions options = new MongoOptions();
+//			options.socketTimeout = 2*60*1000;
+//			mongo = new Mongo("localhost", options);
+//			DB db = mongo.getDB("lookingfor");
+//			userColl = db.getCollection("users");
+//			authColl = db.getCollection("auth");
+//			roleColl = db.getCollection("roles");
+//		} catch (UnknownHostException e) {
+//			e.printStackTrace();
+//		} catch (MongoException e) {
+//			e.printStackTrace();
+//		}
+	}
+	
+	@PostConstruct
+	public void init() {
+		String dbName = "test";
+		String dbPort = "27017"; //default for MongoDB
+		try {
+			Properties prop = new Properties();
+			InputStream stream;
+			stream = UserDAOMongoDB.class.getResourceAsStream(
+				"/db-server-config.properties");
+			if (stream != null) {
+				prop.load(stream);
+				dbName = prop.getProperty("DBNAME");
+				dbPort = prop.getProperty("DBPORT");
+			}
+			System.out.println("Configured database name: " + dbName);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
 		try {
 			MongoOptions options = new MongoOptions();
 			options.socketTimeout = 2*60*1000;
-			mongo = new Mongo("localhost", options);
-			DB db = mongo.getDB("lookingfor");
+			String serverAddress = "localhost:" + dbPort;
+			mongo = new Mongo(serverAddress, options);
+			DB db = mongo.getDB(dbName);
 			userColl = db.getCollection("users");
 			authColl = db.getCollection("auth");
 			roleColl = db.getCollection("roles");
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
-		} catch (MongoException e) {
-			e.printStackTrace();
 		}
+	}
+	
+	@PreDestroy
+	public void cleanUp() {
+		mongo.close();
 	}
 
 	public boolean findUser(String username, char[] password) throws IOException, UserNotFoundException {
@@ -74,91 +125,44 @@ public class UserDAOMongoDB implements UserDAO {
 		return false; //no such user
 	}
 	
-	public void disconnect() {
-		mongo.close();
-	}
-
 	public boolean findUserWithRole(String username, String role) throws IOException, UserNotFoundException {
-		try {
-			BasicDBObject query = new BasicDBObject("username",username).append("role", role);
-			DBObject result = userColl.findOne(query);
-			if (result != null) {
-				return true;
-			}
-		} catch (MongoException e) {
-			throw new IOException("Kontakt med databasen kunde ej upprättas", e);
+		BasicDBObject query = new BasicDBObject("username",username).append("role", role);
+		DBObject result = userColl.findOne(query);
+		if (result != null) {
+			return true;
 		}
 		return false;
 	}
 
-	public void makeSaltForUser(String username) throws IOException {
-		try {
-			long salt = new Random().nextLong();
-			if (salt < 0) {
-				salt = (-1) * salt;
-			}
-			WriteResult result = authColl.insert(new BasicDBObject("username", username).append("salt", salt));
-			if (result.getLastError().ok() == false) {
-				throw new IOException("Databasfel");
-			}
-		} catch (MongoException e) {
-			throw new IOException("Kontakt med databasen kunde ej upprättas", e);
-		}
-	}
-
-	public long retrieveSaltForUser(String username) throws Exception {
-		try {
-			BasicDBObject query = new BasicDBObject("username", username);
-			BasicDBObject limit = new BasicDBObject("salt",1);
-			BasicDBObject result = (BasicDBObject) authColl.findOne(query,limit);
-			if (result != null) {
-				return result.getLong("salt");
-			} else {
-				throw new Exception("Användare ej funnen");
-			}
-		} catch (MongoException e) {
-			throw new IOException("Kontakt med databasen kunde ej upprättas", e);
-		}
-	}
-
 	public List<User> getAllUsers() throws IOException {
-		List<User> list = null;
-		try {
-			DBObject query = new BasicDBObject();
-			DBObject limit = new BasicDBObject("username", 1).append("role", 1).append("_id", 0);
-			DBCursor cursor = userColl.find(query, limit);
-			if (cursor != null) {
-				list = new ArrayList<User>();
-				while (cursor.hasNext()) {
-					BasicDBObject result = (BasicDBObject) cursor.next();
-					User user = new User(result.getString("username"),result.getString("role"));
-					list.add(user);
-				}
+		List<User> list = Collections.emptyList();
+		DBObject query = new BasicDBObject();
+		DBObject limit = new BasicDBObject("username", 1).append("role", 1).append("_id", 0);
+		DBCursor cursor = userColl.find(query, limit);
+		if (cursor != null) {
+			list = new ArrayList<User>();
+			while (cursor.hasNext()) {
+				BasicDBObject result = (BasicDBObject) cursor.next();
+				User user = new User(result.getString("username"),result.getString("role"));
+				list.add(user);
 			}
-		} catch (MongoException e) {
-			throw new IOException("Kontakt med databasen kunde ej upprättas", e);
 		}
 		return list;
 	}
 
 	public User getUserByUsername(String username) throws IOException, UserNotFoundException {
-		User user = null;
-		try {
-			BasicDBObject query = new BasicDBObject("username",username);
-			BasicDBObject result = (BasicDBObject) userColl.findOne(query);
-			if (result == null) {
-				throw new UserNotFoundException(username);
-			}
-			user = new User(
-				result.getString("username"), 
-				result.getString("password"), 
-				result.getString("email"), 
-				result.getString("tele"), 
-				result.getString("role")
-			);
-		} catch (MongoException e) {
-			throw new IOException("Kontakt med databasen kunde ej upprättas", e);
+		BasicDBObject query = new BasicDBObject("username",username);
+		BasicDBObject result = (BasicDBObject) userColl.findOne(query);
+		if (result == null) {
+			throw new UserNotFoundException(username);
 		}
+		User user = new User(
+			result.getString("username"), 
+			result.getString("password"), 
+			result.getString("email"), 
+			result.getString("tele"), 
+			result.getString("role")
+		);
 		return user;
 	}
 
@@ -168,35 +172,21 @@ public class UserDAOMongoDB implements UserDAO {
 		if (result.getN() == 0) {
 			throw new UserNotFoundException(username);
 		}
-//		checkResult(result, OpType.REMOVE);
-		
-		//auth collection not yet implemented
-//		result = authColl.remove(query);
-//		lastError = result.getLastError();
-//		if (!lastError.ok()) {
-//			throw new IOException("Error: Database write failure on Salt document deletion", e);
-//		} else if (result.getN() == 0) {
-//			throw new IOException("User " + username + " not found in auth collection", e);
-//		}
+		checkResult(result, OpType.REMOVE);
 	}
 	
 	public List<String> getAllRoles() throws IOException {
 		List<String> list = null;
-		try {
-			BasicDBObject query = new BasicDBObject();
-			BasicDBObject filter = new BasicDBObject("rolename", 1).append("_id", 0);
-			DBCursor cursor = roleColl.find(query, filter);
-			if (cursor != null) {
-				list = new ArrayList<String>(cursor.count());
-				while (cursor.hasNext()) {
-					BasicDBObject obj = (BasicDBObject) cursor.next();
-					list.add(obj.getString("rolename"));
-				}
-			} else {
-				throw new IOException("No roles found in database");
-			}
-		} catch (MongoException e) {
-			throw new IOException("Kontakt med databasen kunde ej upprättas", e);
+		BasicDBObject query = new BasicDBObject();
+		BasicDBObject filter = new BasicDBObject("rolename", 1).append("_id", 0);
+		DBCursor cursor = roleColl.find(query, filter);
+		if (cursor == null) {
+			throw new IOException("No roles found in database");
+		}
+		list = new ArrayList<String>(cursor.count());
+		while (cursor.hasNext()) {
+			BasicDBObject obj = (BasicDBObject) cursor.next();
+			list.add(obj.getString("rolename"));
 		}
 		return list;
 	}
@@ -214,8 +204,10 @@ public class UserDAOMongoDB implements UserDAO {
 			BasicDBObject query = new BasicDBObject("$or", basicDBList);
 			BasicDBObject filter = new BasicDBObject("_id", 1);
 			DBCursor cursor = userColl.find(query, filter);
-			if (cursor.hasNext()) {
-				return true;
+			if (cursor != null) {
+				if (cursor.hasNext()) {
+					return true;
+				}
 			}
 			return false;
 		} catch (MongoException e) {
@@ -223,33 +215,30 @@ public class UserDAOMongoDB implements UserDAO {
 		}
 	}
 
-	public void editExistingUser(User user) throws IOException, UserNotFoundException {
+	public void editExistingUser(User user) throws IOException, UserNotFoundException, DuplicateUserDataException {
 		BasicDBObject query = new BasicDBObject("username", user.getUsername());
 		BasicDBObject userObject = makeUserDBO(user);
 		WriteResult result = userColl.update(query, userObject);
-		if (result.getLastError().ok() == false) {
-			if (result.getLastError().getException() instanceof MongoException.DuplicateKey) {
-				throw new IOException("Duplicerat värde på användarnamn, epost eller telefonnummer");
-			}
-			throw new IOException("Databasfel");
-		}
-	}
-
-	public void addNewUser(User user) throws IOException, DuplicateUserDataException {
-		BasicDBObject userObject = makeUserDBO(user);
-//		userObject.append("authref", generateSaltForUser()); //TODO use salt for passwords?
-		WriteResult result = userColl.insert(userObject);
-		if (result.getLastError().ok() == false) {
-			if (result.getLastError().getException() instanceof MongoException.DuplicateKey) {
-				throw new IOException("Duplicerat värde på användarnamn, epost eller telefonnummer");
-			}
-			throw new IOException("Databasfel");
-		} else if (result.getField("code") != null) {
+		if (result.getField("code") != null) {
 			int code = Integer.parseInt(result.getField("code").toString());
 			if (code == 11000 || code == 11001) {
 				throw new DuplicateUserDataException("Duplicerat värde på användarnamn, epost eller telefonnummer");
 			}
 		}
+	}
+
+	public String addNewUser(User user) throws IOException, DuplicateUserDataException {
+		BasicDBObject userObject = makeUserDBO(user);
+//		userObject.append("authref", generateSaltForUser()); //TODO use salt for passwords?
+		WriteResult result = userColl.insert(userObject);
+		if (result.getField("code") != null) {
+			int code = Integer.parseInt(result.getField("code").toString());
+			if (code == 11000 || code == 11001) {
+				throw new DuplicateUserDataException("Duplicerat värde på användarnamn, epost eller telefonnummer");
+			}
+		}
+		checkResult(result, OpType.INSERT);
+		return userObject.getString("username");
 	}
 
 	private BasicDBObject makeUserDBO(User user) {
@@ -258,7 +247,7 @@ public class UserDAOMongoDB implements UserDAO {
 		userObject.put("password", user.getPassword());
 		userObject.put("email", user.getEmail());
 		userObject.put("tele", user.getTele());
-		userObject.put("role", user.getRole()); //TODO replace with dbref to roleColl
+		userObject.put("role", user.getRole());
 		return userObject;
 	}
 	
@@ -302,13 +291,24 @@ public class UserDAOMongoDB implements UserDAO {
 	 */
 	@Override
 	public DbUser findUserByName(String username) throws UserNotFoundException {
-		BasicDBObject dbo = (BasicDBObject) userColl.findOne(new BasicDBObject("username", username));
+		DBObject query = new BasicDBObject("username", username);
+		DBObject fields = new BasicDBObject("password", 1).append("role", 1);
+		BasicDBObject dbo = (BasicDBObject) userColl.findOne(query, fields);
 		if (dbo == null) {
 			throw new UserNotFoundException(username);
 		}
 		String password = dbo.getString("password");
 		String role = dbo.getString("role");
 		return new DbUser(username, password, role);
+	}
+
+	@Override
+	public void changePasswordForUser(String username, String hashedPassword) throws IOException {
+		BasicDBObject query = new BasicDBObject("username", username);
+		BasicDBObject pwDBO = new BasicDBObject("password", hashedPassword);
+		BasicDBObject update = new BasicDBObject("$set", pwDBO);
+		WriteResult result = userColl.update(query, update);
+		checkResult(result, OpType.UPDATE);
 	}
 
 }

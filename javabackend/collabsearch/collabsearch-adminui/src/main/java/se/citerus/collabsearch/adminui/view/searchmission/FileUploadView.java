@@ -1,7 +1,7 @@
 package se.citerus.collabsearch.adminui.view.searchmission;
 
-import se.citerus.collabsearch.adminui.ViewSwitchController;
-import se.citerus.collabsearch.adminui.logic.FileUploadHandler;
+import se.citerus.collabsearch.adminui.view.ViewSwitchController;
+import se.citerus.collabsearch.adminui.logic.FileUploadService;
 
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
@@ -20,7 +20,7 @@ public class FileUploadView extends CustomComponent {
 	private VerticalLayout mainLayout;
 	private Button uploadButton;
 	private Button cancelButton;
-	private FileUploadHandler fileUploadHandler;
+	private FileUploadService fileUploadHandler;
 
 	public FileUploadView(final ViewSwitchController listener) {
 		this.listener = listener;
@@ -40,7 +40,7 @@ public class FileUploadView extends CustomComponent {
 		HorizontalLayout fileButtonsLayout = new HorizontalLayout();
 		fileButtonsLayout.setSpacing(true);
 
-		fileUploadHandler = new FileUploadHandler();
+		fileUploadHandler = new FileUploadService();
 		fileUploadHandler.setViewRef(listener);
 
 		final Upload fileUpload = new Upload(null, fileUploadHandler);

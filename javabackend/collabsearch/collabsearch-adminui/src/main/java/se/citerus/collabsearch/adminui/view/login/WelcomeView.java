@@ -1,7 +1,7 @@
 package se.citerus.collabsearch.adminui.view.login;
 
 import static com.vaadin.ui.Alignment.MIDDLE_CENTER;
-import se.citerus.collabsearch.adminui.ViewSwitchController;
+import se.citerus.collabsearch.adminui.view.ViewSwitchController;
 
 import com.vaadin.terminal.ThemeResource;
 import com.vaadin.terminal.gwt.client.ui.AlignmentInfo.Bits;

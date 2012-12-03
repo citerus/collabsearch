@@ -1,18 +1,12 @@
 package se.citerus.collabsearch.adminui.logic;
 
 import java.io.File;
-import java.io.InputStream;
 import java.util.List;
-import java.util.Properties;
 
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import se.citerus.collabsearch.model.FileMetadata;
@@ -25,7 +19,7 @@ import se.citerus.collabsearch.store.facades.SearchMissionDAO;
 public class SearchMissionService {
 
 	@Autowired
-	@Qualifier("searchMissionDAOMongoDB")
+//	@Qualifier("searchMissionDAOMongoDB")
 	private SearchMissionDAO searchMissionDAO;
 
 	public SearchMissionService() {
@@ -33,24 +27,6 @@ public class SearchMissionService {
 
 	@PostConstruct
 	public void init() {
-		if (searchMissionDAO == null) {
-			try {
-				Properties prop = new Properties();
-				ApplicationContext context = 
-					new AnnotationConfigApplicationContext("se.citerus.collabsearch.store");
-				InputStream stream = SearchMissionService.class.getResourceAsStream(
-					"/server-config.properties");
-				String dbImpl = "searchMissionDAOInMemory";
-				if (stream != null) {
-					prop.load(stream);
-					dbImpl = prop.getProperty("DBIMPL");
-				}
-				System.out.println("Configured database implementation: " + dbImpl);
-				searchMissionDAO = context.getBean(dbImpl, SearchMissionDAO.class);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
 	}
 
 	public List<SearchMission> getListOfSearchMissions() throws Exception {
@@ -115,7 +91,7 @@ public class SearchMissionService {
 		try {
 			File file = new File(metadata.getFilePath() + File.pathSeparator + metadata.getFileName());
 			if (file.exists()) {
-				//TODO log file not found on deletion
+				//TODO log: file not found on deletion
 				file.delete();
 			}
 		} catch (Exception e) {

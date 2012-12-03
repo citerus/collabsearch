@@ -670,7 +670,7 @@ public class GroupEditView extends CustomComponent {
 		groupTree.setContainerDataSource(container);
 		groupTree.setItemCaptionPropertyId(NAME_PROPERTY_ID);
 		
-		if (group.getTreeRoot() == null) {
+		if (group == null || group.getTreeRoot() == null) {
 			addPlaceholderNodeToTree();
 		} else {
 			addNodesToTree(null, group.getTreeRoot(), container, searcherMap);
@@ -702,36 +702,6 @@ public class GroupEditView extends CustomComponent {
 		searcherTable.setColumnHeaders(new String[]{"Lediga sökare"});
 		
 //		insertDemoData(searcherMap);
-	}
-
-	/**
-	 * Inserts dummy data into searcherTable for debug/demo purposes.
-	 * @param searcherMap
-	 */
-	private void insertDemoData(Map<String, String> searcherMap) {
-		Container dataSource = searcherTable.getContainerDataSource();
-//		for (int i = 0; i < 20; i++) {
-//			Item item = dataSource.getItem(dataSource.addItem());
-//			String searcherId = "" + r.nextLong();
-//			searcherMap.put(searcherId, "Sökare " + r.nextInt());
-//			GroupNode node = new GroupNode(searcherId, null, null);
-//			setupItemProperties(node, item, searcherMap);
-//		}
-		
-		try {
-			Map<String, String> volunteersByOp = service.getVolunteersByOp("");
-			Iterator<String> it = volunteersByOp.keySet().iterator();
-			while (it.hasNext()) {
-				String key = it.next();
-				String value = volunteersByOp.get(key);
-				Item item = dataSource.getItem(dataSource.addItem());
-				searcherMap.put(key, value);
-				GroupNode node = new GroupNode(key, null, null);
-				setupItemProperties(node, item, searcherMap);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 	}
 
 	/**

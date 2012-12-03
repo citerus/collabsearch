@@ -7,5 +7,8 @@
 	<context:spring-configured />
 	<context:component-scan base-package="se.citerus.collabsearch.store.*"
 		annotation-config="true" />
+		
+		<bean id="userDAOInMemory" class="se.citerus.collabsearch.store.UserDAOInMemory">
+		</bean>
 
 </beans>

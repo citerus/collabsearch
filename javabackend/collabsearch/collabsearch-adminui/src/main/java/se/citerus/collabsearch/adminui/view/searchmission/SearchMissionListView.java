@@ -374,6 +374,10 @@ public class SearchMissionListView extends CustomComponent {
 	 */
 	public void refreshMissionTree() {
 		populateTreeTable();
+		
+		if (treeTable.getItemIds().isEmpty()) {
+			addButton.setEnabled(true);
+		}
 	}
 	
 	private void populateTreeTable() {
@@ -673,6 +677,8 @@ public class SearchMissionListView extends CustomComponent {
 			Item item = treeTable.getItem(itemId);
 			NodeType type = (NodeType) item.getItemProperty(TYPE).getValue();
 			handleAddActions((Integer)itemId, type);
+		} else if (treeTable.getItemIds().isEmpty()) {
+			handleAddActions(-1, NodeType.MISSION);
 		}
 	}
 	

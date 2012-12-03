@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 import org.springframework.stereotype.Repository;
@@ -27,8 +29,10 @@ import se.citerus.collabsearch.model.SearchOperationWrapper;
 import se.citerus.collabsearch.model.SearchZone;
 import se.citerus.collabsearch.model.SearcherInfo;
 import se.citerus.collabsearch.model.Status;
+import se.citerus.collabsearch.model.exceptions.SearchGroupNotFoundException;
 import se.citerus.collabsearch.model.exceptions.SearchMissionNotFoundException;
 import se.citerus.collabsearch.model.exceptions.SearchOperationNotFoundException;
+import se.citerus.collabsearch.model.exceptions.SearchZoneNotFoundException;
 import se.citerus.collabsearch.store.facades.SearchMissionDAO;
 import se.citerus.collabsearch.store.facades.SearchOperationDAO;
 
@@ -57,6 +61,11 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 			opStatusList.add(new Status(1, "Sökning inledd", "beskrivning här"));
 			opStatusList.add(new Status(2, "Sökning avslutad", "beskrivning här"));
 		}
+	}
+	
+	@PostConstruct
+	private void init() {
+		System.out.println("Initiated inmem db");
 	}
 
 	public List<SearchMission> getAllSearchMissions() throws IOException {
@@ -303,7 +312,7 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 		}
 		
 		mission.getFileList().add(fileMetaData);
-		return fileMetaData.getId();
+		return fileMetaData.getFileName();
 	}
 	
 	public String deleteFileMetadata(String filename, String missionId) throws IOException, FileNotFoundException, SearchMissionNotFoundException {
@@ -364,7 +373,7 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 	}
 
 	@Override
-	public SearchGroup getSearchGroup(String groupId) throws IOException {
+	public SearchGroup getSearchGroup(String groupId) throws IOException, SearchGroupNotFoundException {
 		for (SearchMission mission : missionsList) {
 			for (SearchOperation op : mission.getOpsList()) {
 				for (SearchGroup group : op.getGroups()) {
@@ -374,7 +383,7 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 				}
 			}
 		}
-		return null;
+		throw new SearchGroupNotFoundException(groupId);
 	}
 
 	@Override
@@ -399,6 +408,7 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 		for (SearchMission mission : missionsList) {
 			for (SearchOperation op : mission.getOpsList()) {
 				if (op.getId().equals(opId)) {
+					group.setId("" + new Random().nextInt());
 					op.getGroups().add(group);
 					return group.getId();
 				}
@@ -408,20 +418,20 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 	}
 
 	@Override
-	public void editSearchGroup(SearchGroup editedGroup, String opId) {
+	public void editSearchGroup(SearchGroup editedGroup, String groupId) throws IOException, SearchGroupNotFoundException {
 		for (SearchMission mission : missionsList) {
 			for (SearchOperation op : mission.getOpsList()) {
-				if (op.getId().equals(opId)) {
-					List<SearchGroup> groups = op.getGroups();
-					for (int i = 0; i < groups.size(); i++) {
-						SearchGroup oldGroup = groups.get(i);
-						if (oldGroup.getId().equals(editedGroup.getId())) {
-							groups.set(i, editedGroup);
-						}
+				List<SearchGroup> groups = op.getGroups();
+				for (int i = 0; i < groups.size(); i++) {
+					SearchGroup existingGroup = groups.get(i);
+					if (existingGroup.getId().equals(groupId)) {
+						groups.set(i, editedGroup);
+						return;
 					}
 				}
 			}
 		}
+		throw new SearchGroupNotFoundException();
 	}
 	
 	@Override
@@ -452,29 +462,43 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 	}
 
 	@Override
-	public String endOperation(String opId) {
-		return "Sökning avslutad";
+	public String endOperation(String opId) throws SearchOperationNotFoundException {
+		for (SearchMission mission : missionsList) {
+			for (SearchOperation op : mission.getOpsList()) {
+				if (opId.equals(op.getId())) {
+					for (Status status : opStatusList) {
+						if (status.getId() == 0) {
+							op.setStatus(status);
+							return status.getName();
+						}
+					}
+				}
+			}
+		}
+		throw new SearchOperationNotFoundException(opId);
 	}
 
 	@Override
-	public void deleteZone(String zoneId) throws IOException {
+	public void deleteZone(String zoneId) throws IOException, SearchZoneNotFoundException {
 		for (SearchMission mission : missionsList) {
 			for (SearchOperation op : mission.getOpsList()) {
 				List<SearchZone> zones = op.getZones();
 				for (int i = 0; i < zones.size(); i++) {
 					SearchZone existingZone = zones.get(i);
-					if (existingZone.getId().equals(zoneId)) {
-						zones.remove(i);
-						return;
+					if (existingZone != null && existingZone.getId() != null) {
+						if (existingZone.getId().equals(zoneId)) {
+							zones.remove(i);
+							return;
+						}
 					}
 				}
 			}
 		}
-		throw new IOException("Zone not found");
+		throw new SearchZoneNotFoundException(zoneId);
 	}
 
 	@Override
-	public void deleteGroup(String groupId) throws IOException {
+	public void deleteGroup(String groupId) throws IOException, SearchGroupNotFoundException {
 		for (SearchMission mission : missionsList) {
 			for (SearchOperation op : mission.getOpsList()) {
 				List<SearchGroup> groups = op.getGroups();
@@ -487,7 +511,7 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 				}
 			}
 		}
-		throw new IOException("Group not found");
+		throw new SearchGroupNotFoundException(groupId);
 	}
 
 	@Override
@@ -565,34 +589,40 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 	}
 
 	@Override
-	public SearchZone getZoneById(String zoneId) throws IOException {
+	public SearchZone getZoneById(String zoneId) throws IOException, SearchZoneNotFoundException {
 		for (SearchMission mission : missionsList) {
-			for (SearchOperation op : mission.getOpsList()) {
+			List<SearchOperation> opsList = mission.getOpsList();
+			if (opsList == null) {
+				continue;
+			}
+			for (SearchOperation op : opsList) {
 				for (SearchZone zone : op.getZones()) {
-					if (zone.getId().equals(zoneId)) {
+					if (zone != null && zone.getId() != null &&
+							zone.getId().equals(zoneId)) {
 						return zone;
 					}
 				}
 			}
 		}
-		throw new IOException("Zone not found");
+		throw new SearchZoneNotFoundException(zoneId);
 	}
 
 	@Override
-	public void editZone(String zoneId, SearchZone zone) throws IOException {
+	public void editZone(String zoneId, SearchZone zone) throws IOException, SearchZoneNotFoundException {
 		for (SearchMission mission : missionsList) {
 			for (SearchOperation op : mission.getOpsList()) {
 				List<SearchZone> zones = op.getZones();
 				for (int i = 0; i < zones.size(); i++) {
 					SearchZone existingZone = zones.get(i);
 					if (existingZone.getId().equals(zoneId)) {
+						zone.setId(zoneId);
 						zones.set(i, zone);
 						return;
 					}
 				}
 			}
 		}
-		throw new IOException("Zone not found");
+		throw new SearchZoneNotFoundException(zoneId);
 	}
 
 	@Override

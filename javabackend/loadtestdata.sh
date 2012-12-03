@@ -1,2 +1,2 @@
 #!/bin/bash
-mongo lookingfor mongo_script.js
+mongo db mongo_local_script.js

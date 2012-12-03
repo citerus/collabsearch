@@ -6,11 +6,8 @@ import java.io.IOException;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 
-import org.apache.commons.lang.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.encoding.ShaPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -18,18 +15,16 @@ import se.citerus.collabsearch.model.User;
 import se.citerus.collabsearch.model.exceptions.DuplicateUserDataException;
 import se.citerus.collabsearch.model.exceptions.UserNotFoundException;
 import se.citerus.collabsearch.store.facades.UserDAO;
-import se.citerus.collabsearch.store.mongodb.UserDAOMongoDB;
 
 @Service
 public class UserService { //TODO refactor into spring service
 
 	@Autowired
-	@Qualifier("userDAOMongoDB")
+//	@Qualifier("userDAOInMemory")
+//	@Qualifier("userDAOMongoDB")
 	private UserDAO userDAO;
 
 	public UserService() {
-		//TODO choose type of DAO by config file
-		//userDAL = new UserDALInMemory();
 	}
 	
 	@PostConstruct

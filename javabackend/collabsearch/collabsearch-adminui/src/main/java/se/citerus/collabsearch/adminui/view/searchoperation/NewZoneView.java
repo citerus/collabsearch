@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Configurable;
 import org.vaadin.hezamu.googlemapwidget.GoogleMap;
 import org.vaadin.hezamu.googlemapwidget.GoogleMap.MapClickListener;
 import org.vaadin.hezamu.googlemapwidget.overlay.BasicMarker;
+import org.vaadin.hezamu.googlemapwidget.overlay.BasicMarkerSource;
 import org.vaadin.hezamu.googlemapwidget.overlay.Marker;
 import org.vaadin.hezamu.googlemapwidget.overlay.PolyOverlay;
 import org.vaadin.hezamu.googlemapwidget.overlay.Polygon;
@@ -74,7 +75,7 @@ public class NewZoneView extends CustomComponent {
 					String prioStr = fragment.prioField.getValue().toString();
 					Double[] points = null;
 					Collection<PolyOverlay> overlays = map.getOverlays();
-					if (!overlays.isEmpty()) {
+					if (overlays != null && !overlays.isEmpty()) {
 						PolyOverlay overlay = overlays.iterator().next();
 						points = overlay.getPoints();
 					}
@@ -145,6 +146,11 @@ public class NewZoneView extends CustomComponent {
 			initMap();
 		}
 		
+		map.setMarkerSource(new BasicMarkerSource());
+		
+		//force initialization of marker source
+		map.addMarker(new BasicMarker(new Random().nextLong(), new Point2D.Double(0, 0), "testmarker"));
+		
 		map.removeAllMarkers();
 		Collection<PolyOverlay> overlays = map.getOverlays();
 		for (PolyOverlay overlay : overlays) {
@@ -159,6 +165,14 @@ public class NewZoneView extends CustomComponent {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
+		fragment.nameField.setValue("");
+		fragment.prioField.setValue("");
+		fragment.assignedGroupDropdown.select(
+				fragment.assignedGroupDropdown.getNullSelectionItemId());
+		
+		map.setCenter(new Double(DEFAULT_LAT, DEFAULT_LON));
+		map.setZoom(DEFAULT_ZOOM);
 	}
 
 	private void initMap() {
@@ -168,11 +182,14 @@ public class NewZoneView extends CustomComponent {
 		map.addListener(new MapClickListener() {
 			@Override
 			public void mapClicked(Double clickPos) {
-//				System.out.println("(" + clickPos.x + "," + clickPos.y + ")");
-				BasicMarker marker = new BasicMarker(generateId(), 
-						clickPos, "" + markerPoints.size());
-				map.addMarker(marker);
-				markerPoints.add(marker);
+				try {
+					BasicMarker marker = new BasicMarker(generateId(), clickPos, "" + markerPoints.size());
+					map.addMarker(marker);
+					markerPoints.add(marker);
+					System.out.println("Created marker at (" + clickPos.x + "," + clickPos.y + ")");
+				} catch (NullPointerException e) {
+					e.printStackTrace();
+				}
 			}
 		});
 	}

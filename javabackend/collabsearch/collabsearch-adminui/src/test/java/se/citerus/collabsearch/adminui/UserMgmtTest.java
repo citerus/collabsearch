@@ -24,6 +24,8 @@ import se.citerus.collabsearch.adminui.logic.UserService;
 import se.citerus.collabsearch.model.User;
 import se.citerus.collabsearch.model.exceptions.DuplicateUserDataException;
 import se.citerus.collabsearch.model.exceptions.UserNotFoundException;
+import se.citerus.collabsearch.store.inmemory.UserDAOInMemory;
+import se.citerus.collabsearch.store.mongodb.UserDAOMongoDB;
 
 /**
  * Unit tests for the user management.
@@ -37,20 +39,25 @@ public class UserMgmtTest {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		AnnotationConfigApplicationContext context = 
-				new AnnotationConfigApplicationContext(
-					"se.citerus.collabsearch.adminui",
-					"se.citerus.collabsearch.store"
-				);
+		AnnotationConfigApplicationContext context;
+//		context = new AnnotationConfigApplicationContext(
+//			"se.citerus.collabsearch.adminui",
+//			"se.citerus.collabsearch.store");
+		context = new AnnotationConfigApplicationContext(UserService.class, UserDAOInMemory.class);
+//		context = new AnnotationConfigApplicationContext(UserService.class, UserDAOMongoDB.class);
 		service = context.getBean(UserService.class);
 		service.setDebugMode();
 		
-		Mongo mongo = new Mongo();
-		DB db = mongo.getDB("test");
-		DBObject query = new BasicDBObject("username", Pattern.compile("testuser.*"));
-		WriteResult result = db.getCollection("users").remove(query);
-		System.out.println("Testusers removed: " + result.getN());
-		mongo.close();
+		try {
+			Mongo mongo = new Mongo();
+			DB db = mongo.getDB("test");
+			DBObject query = new BasicDBObject("username", Pattern.compile("testuser.*"));
+			WriteResult result = db.getCollection("users").remove(query);
+			System.out.println("Testusers removed: " + result.getN());
+			mongo.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Test
@@ -117,7 +124,7 @@ public class UserMgmtTest {
 		Assert.assertNotSame(origPassword, user.getPassword());
 	}
 
-	@Test(expected = Exception.class)
+	@Test(expected = UserNotFoundException.class)
 	public void testDeleteUser() throws Exception {
 		String username = "testuser4"; // create user
 		User user = new User(username, "password", username + "@email.com",

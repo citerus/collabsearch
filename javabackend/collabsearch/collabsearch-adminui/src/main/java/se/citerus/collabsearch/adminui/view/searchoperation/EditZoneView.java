@@ -1,8 +1,6 @@
 package se.citerus.collabsearch.adminui.view.searchoperation;
 
-import java.awt.geom.Point2D;
 import java.awt.geom.Point2D.Double;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -18,8 +16,8 @@ import org.vaadin.hezamu.googlemapwidget.overlay.Marker;
 import org.vaadin.hezamu.googlemapwidget.overlay.PolyOverlay;
 import org.vaadin.hezamu.googlemapwidget.overlay.Polygon;
 
-import se.citerus.collabsearch.adminui.view.ViewSwitchController;
 import se.citerus.collabsearch.adminui.logic.SearchOperationService;
+import se.citerus.collabsearch.adminui.view.ViewSwitchController;
 import se.citerus.collabsearch.model.SearchFinding;
 import se.citerus.collabsearch.model.SearchGroup;
 import se.citerus.collabsearch.model.SearchZone;
@@ -30,8 +28,6 @@ import se.citerus.collabsearch.model.exceptions.SearchZoneNotFoundException;
 import com.vaadin.Application;
 import com.vaadin.data.Container;
 import com.vaadin.data.Item;
-import com.vaadin.data.util.BeanContainer;
-import com.vaadin.data.util.IndexedContainer;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
@@ -102,8 +98,8 @@ public class EditZoneView extends CustomComponent {
 					listener.switchToSearchMissionListView();
 				} catch (Exception e) {
 					e.printStackTrace();
-					listener.displayError("Fel vid sparning", 
-						"Ett fel uppstod vid sparningen av zonen");
+					listener.displayError("Fel", "Ett fel uppstod vid " +
+							"kommunikationen med servern, zonen har ej sparats.");
 				}
 			}
 		});
@@ -212,7 +208,8 @@ public class EditZoneView extends CustomComponent {
 				genId++;
 			}
 			
-			fragment.assignedGroupDropdown.select(null);
+			fragment.assignedGroupDropdown.select(
+					fragment.assignedGroupDropdown.getNullSelectionItemId());
 			try {
 				List<SearchGroup> groupList = service.getSearchGroupsByOp(
 						service.getZoneParent(zoneId));

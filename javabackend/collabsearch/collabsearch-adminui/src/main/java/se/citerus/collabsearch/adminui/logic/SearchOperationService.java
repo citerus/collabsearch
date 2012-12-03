@@ -5,25 +5,16 @@ import static org.apache.commons.lang.Validate.notNull;
 
 import java.awt.geom.Point2D.Double;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
-import java.util.Random;
 
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.stereotype.Service;
 
 import se.citerus.collabsearch.model.SearchGroup;
 import se.citerus.collabsearch.model.SearchOperation;
-import se.citerus.collabsearch.model.SearchOperationWrapper;
 import se.citerus.collabsearch.model.SearchZone;
 import se.citerus.collabsearch.model.Status;
 import se.citerus.collabsearch.model.exceptions.SearchGroupNotFoundException;
@@ -35,7 +26,7 @@ import se.citerus.collabsearch.store.facades.SearchOperationDAO;
 public class SearchOperationService {
 
 	@Autowired
-	@Qualifier("searchMissionDAOMongoDB")
+//	@Qualifier("searchMissionDAOMongoDB")
 	private SearchOperationDAO searchOperationDAO;
 
 	public SearchOperationService() {
@@ -43,23 +34,6 @@ public class SearchOperationService {
 
 	@PostConstruct
 	public void init() {
-		if (searchOperationDAO == null) {
-			try {
-				Properties prop = new Properties();
-				ApplicationContext context = 
-					new AnnotationConfigApplicationContext("se.citerus.collabsearch.store");
-				InputStream stream = SearchMissionService.class.getResourceAsStream(
-					"/server-config.properties");
-				String dbImpl = "searchMissionDAOInMemory";
-				if (stream != null) {
-					prop.load(stream);
-					dbImpl = prop.getProperty("DBIMPL");
-				}
-				searchOperationDAO = context.getBean(dbImpl, SearchOperationDAO.class);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
 	}
 
 	public List<Status> getAllSearchOpStatuses() throws Exception {
@@ -195,37 +169,6 @@ public class SearchOperationService {
 			searchOperationDAO.editSearchGroup(group, groupId);
 		}
 		return null;
-	}
-
-	//TODO rewrite after demo
-	public Map<String, String> getVolunteersByOp(String opId) {
-		Map<String, String> map = new HashMap<String, String>();
-		Random r = new Random();
-		for (int i = 0; i < 20; i++) {
-			String name = generateName();
-			map.put("" + r.nextLong(), name );
-		}
-		return map;
-	}
-
-	//TODO remove after demo
-	private String[] lastNames = new String[] { "Johansson", "Andersson",
-			"Karlsson", "Nilsson", "Eriksson", "Larsson", "Olsson",
-			"Persson", "Svensson", "Gustafsson" };
-	private String[] femaleFirstNames = new String[] { "Maria", "Anna",
-			"Margareta", "Elisabeth", "Eva", "Birgitta", "Kristina",
-			"Karin", "Elisabet", "Marie" };
-	private String[] maleFirstNames = new String[] { "Erik", "Lars", "Karl",
-			"Anders", "Per", "Johan", "Nils", "Lennart", "Jan", "Hans" };
-	private String generateName() {
-		Random r = new Random();
-		if (r.nextBoolean()) {
-			return maleFirstNames[r.nextInt(maleFirstNames.length)] 
-					+ " " + lastNames[r.nextInt(lastNames.length)];
-		} else {
-			return femaleFirstNames[r.nextInt(femaleFirstNames.length)] 
-					+ " " + lastNames[r.nextInt(lastNames.length)];
-		}
 	}
 
 	public List<SearchOperation> getAllSearchOps() throws Exception {

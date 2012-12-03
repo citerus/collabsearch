@@ -16,6 +16,7 @@ import javax.annotation.PreDestroy;
 
 import org.bson.types.ObjectId;
 import org.mindrot.jbcrypt.BCrypt;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
 import se.citerus.collabsearch.model.DbUser;
@@ -36,9 +37,11 @@ import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 import com.mongodb.MongoOptions;
 import com.mongodb.QueryBuilder;
+import com.mongodb.ServerAddress;
 import com.mongodb.WriteResult;
 
 @Repository
+@Primary
 public class UserDAOMongoDB implements UserDAO {
 
 	private Mongo mongo;
@@ -51,25 +54,15 @@ public class UserDAOMongoDB implements UserDAO {
 	}
 
 	public UserDAOMongoDB() {
-//		try {
-//			MongoOptions options = new MongoOptions();
-//			options.socketTimeout = 2*60*1000;
-//			mongo = new Mongo("localhost", options);
-//			DB db = mongo.getDB("lookingfor");
-//			userColl = db.getCollection("users");
-//			authColl = db.getCollection("auth");
-//			roleColl = db.getCollection("roles");
-//		} catch (UnknownHostException e) {
-//			e.printStackTrace();
-//		} catch (MongoException e) {
-//			e.printStackTrace();
-//		}
 	}
 	
 	@PostConstruct
 	public void init() {
-		String dbName = "test";
-		String dbPort = "27017"; //default for MongoDB
+		String dbName = "";
+		String dbPort = "";
+		String dbUser = "";
+		String dbPass = "";
+		String dbAddr = "";
 		try {
 			Properties prop = new Properties();
 			InputStream stream;
@@ -77,10 +70,13 @@ public class UserDAOMongoDB implements UserDAO {
 				"/db-server-config.properties");
 			if (stream != null) {
 				prop.load(stream);
-				dbName = prop.getProperty("DBNAME");
-				dbPort = prop.getProperty("DBPORT");
+				dbName = prop.getProperty("DBNAME", "lookingfor");
+				dbPort = prop.getProperty("DBPORT", "27017");
+				dbUser = prop.getProperty("DBUSER", "");
+				dbPass = prop.getProperty("DBPASS", "");
+				dbAddr = prop.getProperty("DBADDR", "localhost");
 			}
-			System.out.println("Configured database name: " + dbName);
+			System.out.println("Found MongoDB database name: " + dbName);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -90,13 +86,26 @@ public class UserDAOMongoDB implements UserDAO {
 		try {
 			MongoOptions options = new MongoOptions();
 			options.socketTimeout = 2*60*1000;
-			String serverAddress = "localhost:" + dbPort;
-			mongo = new Mongo(serverAddress, options);
+			ServerAddress addr = new ServerAddress(dbAddr, Integer.parseInt(dbPort));
+			mongo = new Mongo(addr, options);
 			DB db = mongo.getDB(dbName);
-			userColl = db.getCollection("users");
-			authColl = db.getCollection("auth");
-			roleColl = db.getCollection("roles");
+			if (addr.getHost().equals("localhost")) {
+				db.addUser(dbUser, dbPass.toCharArray());
+			}
+			boolean authenticated = db.authenticate(dbUser, dbPass.toCharArray());
+			if (authenticated) {
+				userColl = db.getCollection("users");
+				authColl = db.getCollection("auth");
+				roleColl = db.getCollection("roles");
+				System.out.println("MongoDB successfully initialized");
+			} else {
+				throw new IOException("Authentication failure for user " + dbUser);
+			}
+		} catch (MongoException e) {
+			e.printStackTrace();
 		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}

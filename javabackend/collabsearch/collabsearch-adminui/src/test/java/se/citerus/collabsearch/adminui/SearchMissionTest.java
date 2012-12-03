@@ -17,6 +17,7 @@ import se.citerus.collabsearch.adminui.logic.SearchMissionService;
 import se.citerus.collabsearch.model.FileMetadata;
 import se.citerus.collabsearch.model.SearchMission;
 import se.citerus.collabsearch.model.Status;
+import se.citerus.collabsearch.store.inmemory.SearchMissionDAOInMemory;
 
 public class SearchMissionTest {
 	
@@ -24,15 +25,17 @@ public class SearchMissionTest {
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		ApplicationContext context = 
-			new AnnotationConfigApplicationContext("se.citerus.collabsearch.adminui","se.citerus.collabsearch.store");
+		ApplicationContext context;
+//		context = new AnnotationConfigApplicationContext(
+//				"se.citerus.collabsearch.adminui",
+//				"se.citerus.collabsearch.store");
+		context = new AnnotationConfigApplicationContext(SearchMissionService.class, SearchMissionDAOInMemory.class);
 		service = context.getBean(SearchMissionService.class);
 		service.setDebugMode();
 	}
 	
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
-		service.cleanUp();
 	}
 	
 	@Test
@@ -118,11 +121,12 @@ public class SearchMissionTest {
 		String id = service.addOrModifyMission(mission, null);
 		assertFalse(id.isEmpty());
 		
+		int originalStatusId = mission.getStatus().getId();
 		service.endMission(id);
 		
 		SearchMission changedMission = service.getSearchMissionById(id);
 		assertTrue(changedMission.getStatus().getId() == 0);
-		assertTrue(mission.getStatus().getId() != changedMission.getStatus().getId());
+		assertTrue(originalStatusId != changedMission.getStatus().getId());
 	}
 	
 	@Test(expected=Exception.class)

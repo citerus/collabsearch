@@ -14,11 +14,14 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
+import org.apache.commons.logging.impl.Log4JLogger;
 import org.bson.types.ObjectId;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
 import se.citerus.collabsearch.model.FileMetadata;
@@ -47,10 +50,13 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.DBPort;
 import com.mongodb.Mongo;
+import com.mongodb.MongoException;
 import com.mongodb.MongoOptions;
+import com.mongodb.ServerAddress;
 import com.mongodb.WriteResult;
 
 @Repository
+@Primary
 public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperationDAO {
 
 	private Mongo mongo;
@@ -71,46 +77,65 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 	
 	@PostConstruct
 	public void init() {
-//		Log4JLogger logger = new Log4JLogger();
-//		logger.info("Init db");
-		
-		String dbName = "test";
-		Properties prop = new Properties();
+		String dbName = "";
+		String dbPort = "";
+		String dbUser = "";
+		String dbPass = "";
+		String dbAddr = "";
 		try {
+			Properties prop = new Properties();
 			InputStream stream;
 			stream = SearchMissionDAOMongoDB.class.getResourceAsStream(
 				"/db-server-config.properties");
 			if (stream != null) {
 				prop.load(stream);
-				dbName = prop.getProperty("DBNAME");
+				dbName = prop.getProperty("DBNAME", "lookingfor");
+				dbPort = prop.getProperty("DBPORT", "27017");
+				dbUser = prop.getProperty("DBUSER", "");
+				dbPass = prop.getProperty("DBPASS", "");
+				dbAddr = prop.getProperty("DBADDR", "localhost");
 			}
-			System.out.println("Configured database name: " + dbName);
+			System.out.println("Found database name: " + dbName);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		
-		MongoOptions options = new MongoOptions();
-		options.socketTimeout = 2*60*1000;
-		String serverAddress = "localhost:" + DBPort.PORT;
 		try {
-			mongo = new Mongo(serverAddress, options);
+			MongoOptions options = new MongoOptions();
+			options.socketTimeout = 2*60*1000;
+			ServerAddress addr = new ServerAddress(dbAddr, Integer.parseInt(dbPort));
+			mongo = new Mongo(addr, options);
 			DB db = mongo.getDB(dbName);
-			missionColl = db.getCollection("searchmissions");
-			missionStatusColl = db.getCollection("missionstatuses");
-			operationsColl = db.getCollection("searchops");
-			opStatusColl = db.getCollection("opstatuses");
-			searcherColl = db.getCollection("searchers");
-			zonesColl = db.getCollection("searchzones");
-			groupsColl = db.getCollection("searchgroups");
+			if (addr.getHost().equals("localhost")) {
+				db.addUser(dbUser, dbPass.toCharArray());
+			}
+			boolean authenticated = db.authenticate(dbUser, dbPass.toCharArray());
+			if (authenticated) {
+				missionColl = db.getCollection("searchmissions");
+				missionStatusColl = db.getCollection("missionstatuses");
+				operationsColl = db.getCollection("searchops");
+				opStatusColl = db.getCollection("opstatuses");
+				searcherColl = db.getCollection("searchers");
+				zonesColl = db.getCollection("searchzones");
+				groupsColl = db.getCollection("searchgroups");
+				System.out.println("MongoDB successfully initialized");
+			} else {
+				throw new IOException("Authentication failure for user " + dbUser);
+			}
+		} catch (MongoException e) {
+			e.printStackTrace();
 		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 	
 	public void setDebugDB(String dbName) {
 		try {
+			System.out.println("Switching db to " + dbName);
 			DB db = mongo.getDB(dbName);
 			missionColl = db.getCollection("searchmissions");
 			missionStatusColl = db.getCollection("missionstatuses");

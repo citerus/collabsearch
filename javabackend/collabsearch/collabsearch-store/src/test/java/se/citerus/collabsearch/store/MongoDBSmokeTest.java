@@ -38,7 +38,7 @@ public class MongoDBSmokeTest extends TestCase {
 		Mongo mongo = null;
 		try {
 			mongo = new Mongo();
-			DB db = mongo.getDB("lookingfor");
+			DB db = mongo.getDB("test");
 			DBCollection userColl = db.getCollection("users");
 			DBCursor cursor = userColl.find();
 			assertNotNull("Empty user collection", cursor);

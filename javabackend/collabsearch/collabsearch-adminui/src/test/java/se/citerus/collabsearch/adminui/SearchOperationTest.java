@@ -34,23 +34,28 @@ import se.citerus.collabsearch.model.exceptions.SearchGroupNotFoundException;
 import se.citerus.collabsearch.model.exceptions.SearchOperationNotFoundException;
 import se.citerus.collabsearch.model.exceptions.SearchZoneNotFoundException;
 import se.citerus.collabsearch.store.facades.SearchOperationDAO;
+import se.citerus.collabsearch.store.inmemory.SearchMissionDAOInMemory;
 
 public class SearchOperationTest {
 
 	private static final Status DEFAULT_STATUS = new Status(0);
 	private static SearchOperationService service;
 	private static SearchMission testMission;
-	private static ApplicationContext context;
 	
 	final int testZoomLvl = 7;
 	final String testPrio = "1";
 	final Double testCenter = new Double(0, 0);
 
+	static ApplicationContext context;
+
 	@BeforeClass
 	public static void setUpBeforeClass() {
-		context = new AnnotationConfigApplicationContext("se.citerus.collabsearch.adminui","se.citerus.collabsearch.store");
+//		context = new AnnotationConfigApplicationContext(
+//				"se.citerus.collabsearch.adminui",
+//				"se.citerus.collabsearch.store");
+		context = new AnnotationConfigApplicationContext(SearchOperationService.class, SearchMissionDAOInMemory.class, SearchMissionService.class);
 		service = context.getBean(SearchOperationService.class);
-		service.setDebugMode(); //is there a better way to do it?
+		service.setDebugMode();
 		
 		try {
 			testMission = new SearchMission("testMission1", "blab", 1, DEFAULT_STATUS);
@@ -151,11 +156,12 @@ public class SearchOperationTest {
 	public void testEndOperation() throws Exception {
 		SearchOperation op = new SearchOperation(null, "testOp4", 
 			"blab", new Date(), "plats X", new Status(1));
+		int origStatusId = op.getStatus().getId();
 		String opId = service.editSearchOp(op, null, testMission.getId());
 		service.endOperation(opId);
 		SearchOperation op2 = service.getSearchOp(opId);
 		assertTrue(op2.getStatus().getId() == 0);
-		assertTrue(op.getStatus().getId() != op2.getStatus().getId());
+		assertTrue(origStatusId != op2.getStatus().getId());
 	}
 	
 	@Test
@@ -347,12 +353,14 @@ public class SearchOperationTest {
 		GroupNode treeRoot = rootNode;
 		treeRoot.getChildren().clear();
 		treeRoot.setRank(Title.GROUP_LEADER);
-		SearchGroup editedGroup = new SearchGroup(null, "testOp11v2", treeRoot );
+		SearchGroup editedGroup = service.getSearchGroup(groupId);
+		editedGroup.setName("sökgrupp1v2");
+		editedGroup.setTreeRoot(treeRoot);
 		service.addOrModifySearchGroup(editedGroup, groupId, opId);
 		
 		SearchGroup foundGroup = service.getSearchGroup(groupId);
 		assertEquals(groupId, foundGroup.getId());
-		assertEquals(editedGroup.getName(), foundGroup.getName());
+		assertEquals("sökgrupp1v2", foundGroup.getName());
 		GroupNode node = editedGroup.getTreeRoot();
 		assertEquals(node.getSearcherId(), list.get(0));
 		assertEquals(node.getRank(), Title.GROUP_LEADER);
@@ -393,7 +401,7 @@ public class SearchOperationTest {
 	
 	private void addSampleSearchers(String opId)
 			throws SearchOperationNotFoundException, IOException {
-		SearchOperationDAO dao = context.getBean("searchMissionDAOMongoDB", 
+		SearchOperationDAO dao = context.getBean("searchMissionDAOInMemory", 
 				SearchOperationDAO.class);
 		dao.assignUserToSearchOp(opId, "Person A", "pa@mail.se", "12319052871");
 		dao.assignUserToSearchOp(opId, "Person B", "pb@mail.se", "12319052872");

@@ -11,3 +11,7 @@ target/
 
 # No temp files
 *~
+
+# skip pre-compiled Vaadin widgetssets
+collabsearch/collabsearch-adminui/src/main/webapp/VAADIN/widgetsets/
+collabsearch/collabsearch-adminui/src/main/webapp/VAADIN/widgetsets/*

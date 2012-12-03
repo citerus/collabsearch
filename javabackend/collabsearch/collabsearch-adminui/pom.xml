@@ -27,6 +27,8 @@
 	    <spring.version>3.1.0.RELEASE</spring.version>
 	    <aspectj.version>1.6.12</aspectj.version>
 	    <aspectj-maven-plugin.version>1.4</aspectj-maven-plugin.version>
+	    
+	    <vaadin-widgets-dir>src/main/webapp/VAADIN/widgetsets</vaadin-widgets-dir>
 	</properties>
 
 	<build>
@@ -51,6 +53,7 @@
 					<!-- <modules> <module>com.example.gwt.ColorPickerWidgetSet</module> 
 						</modules> -->
 					<webappDirectory>${project.build.directory}/${project.build.finalName}/VAADIN/widgetsets</webappDirectory>
+<!-- 					<webappDirectory>${vaadin-widgets-dir}}</webappDirectory> -->
 					<!-- On Mac running Snow Leopard, add "-d32" -->
 					<!-- This causes error messages (but build works) in phase "package": 
 						two processes would use the same debug port -->
@@ -65,6 +68,10 @@
 				</configuration>
 				<executions>
 					<execution>
+						<configuration>
+		              		<webappDirectory>${vaadin-widgets-dir}</webappDirectory>
+		              		<extraJvmArgs> -Dgwt.style=PRETTY -Xmx512M -Xss1024k</extraJvmArgs>
+		            	</configuration>
 						<goals>
 							<goal>resources</goal>
 							<goal>compile</goal>
@@ -103,6 +110,18 @@
 						</goals>
 					</execution>
 				</executions>
+			</plugin>
+			
+			<plugin>
+			    <artifactId>maven-clean-plugin</artifactId>
+			    <configuration>
+			      <filesets>
+			        <fileset>
+			          <!-- also delete the generated vaadin web content -->
+			        <directory>${vaadin-widgets-dir}</directory>
+			      </fileset>
+			    </filesets>
+			  </configuration>
 			</plugin>
 	
 			<!-- A simple Jetty test server at http://localhost:8080/collabsearch-adminui 
@@ -151,6 +170,7 @@
 					<scanIntervalSeconds>0</scanIntervalSeconds>
 					<webAppConfig>
 						<contextPath>/collabsearch-adminui</contextPath>
+<!-- 						<resourcesAsCSV>src/main/webapp,${project.build.directory}/${project.build.finalName}</resourcesAsCSV> -->
 					</webAppConfig>
 				</configuration>
 			</plugin>
@@ -297,6 +317,7 @@
 			<groupId>tomcat</groupId>
 			<artifactId>servlet-api</artifactId>
 			<version>5.5.23</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>net.sourceforge.collections</groupId>

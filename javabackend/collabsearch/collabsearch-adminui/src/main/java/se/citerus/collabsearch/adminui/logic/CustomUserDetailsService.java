@@ -17,8 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import se.citerus.collabsearch.model.DbUser;
 import se.citerus.collabsearch.store.facades.UserDAO;
-import se.citerus.collabsearch.store.inmemory.UserDAOInMemory;
-import se.citerus.collabsearch.store.mongodb.UserDAOMongoDB;
 
 /**
  * This is custom service for retrieving users implemententing Spring's {@link UserDetailsService} for MongoDB.
@@ -45,6 +43,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 				getAuthorities(convertRoleToAccess(dbUser.getRole()))
 			);
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new UsernameNotFoundException("Error in retrieving user");
 		}
 		return user;

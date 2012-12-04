@@ -56,7 +56,7 @@ public interface ViewSwitchController {
 	 */
 	public void switchToFileUploadView(String missionId);
 	
-	public void switchToEditZoneView(String zoneId, String opId);
+	public void switchToEditZoneView(String zoneId);
 	
 	public void switchToNewZoneView(String opId);
 	

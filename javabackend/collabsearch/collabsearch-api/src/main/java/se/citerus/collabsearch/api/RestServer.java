@@ -40,7 +40,6 @@ public class RestServer implements RestService {
 	private static final int INTERNAL_SERVER_ERROR = 500;
 
 	@Autowired
-	@Qualifier("searchMissionDAOMongoDB")
 	private SearchOperationDAO dao;
 
 	@GET

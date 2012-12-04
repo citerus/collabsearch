@@ -1,11 +1,8 @@
 package se.citerus.collabsearch.model.validator;
 
-import java.text.DateFormat;
-import java.text.ParseException;
 import java.util.Date;
 
 import com.vaadin.data.Validator;
-import com.vaadin.data.Validator.InvalidValueException;
 
 @SuppressWarnings("serial")
 public class DateValidator implements Validator {

@@ -203,49 +203,49 @@
 			
 		</plugins>
 		<pluginManagement>
-			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings only. 
-					It has no influence on the Maven build itself. -->
-				<plugin>
-					<groupId>org.eclipse.m2e</groupId>
-					<artifactId>lifecycle-mapping</artifactId>
-					<version>1.0.0</version>
-					<configuration>
-						<lifecycleMappingMetadata>
-							<pluginExecutions>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>org.codehaus.mojo</groupId>
-										<artifactId>gwt-maven-plugin</artifactId>
-										<versionRange>[2.2.0,)</versionRange>
-										<goals>
-											<goal>resources</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>com.vaadin</groupId>
-										<artifactId>vaadin-maven-plugin</artifactId>
-										<versionRange>[1.0.2,)</versionRange>
-										<goals>
-											<goal>
-												update-widgetset
-											</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
-							</pluginExecutions>
-						</lifecycleMappingMetadata>
-					</configuration>
-				</plugin>
-			</plugins>
+      <plugins>
+        <!--This plugin's configuration is used to store Eclipse m2e settings only. 
+        It has no influence on the Maven build itself. -->
+        <plugin>
+          <groupId>org.eclipse.m2e</groupId>
+          <artifactId>lifecycle-mapping</artifactId>
+          <version>1.0.0</version>
+          <configuration>
+            <lifecycleMappingMetadata>
+              <pluginExecutions>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>gwt-maven-plugin</artifactId>
+                    <versionRange>[2.2.0,)</versionRange>
+                    <goals>
+                      <goal>resources</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore></ignore>
+                  </action>
+                </pluginExecution>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>com.vaadin</groupId>
+                    <artifactId>vaadin-maven-plugin</artifactId>
+                    <versionRange>[1.0.2,)</versionRange>
+                    <goals>
+                      <goal>
+                        update-widgetset
+                      </goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore></ignore>
+                  </action>
+                </pluginExecution>
+              </pluginExecutions>
+            </lifecycleMappingMetadata>
+          </configuration>
+        </plugin>
+      </plugins>
 		</pluginManagement>
 	</build>
 
@@ -334,15 +334,20 @@
 			<artifactId>collabsearch-store</artifactId>
 			<version>1.0</version>
 		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.vaadin.addons</groupId> -->
+<!-- 			<artifactId>googlemapwidget</artifactId> -->
+<!-- 			<version>0.9.13</version> -->
+<!-- 		</dependency> -->
+<!-- 		<dependency> -->
+<!-- 			<groupId>com.google.gwt</groupId> -->
+<!-- 			<artifactId>maps</artifactId> -->
+<!-- 			<version>1.1.1</version> -->
+<!-- 		</dependency> -->
 		<dependency>
-			<groupId>org.vaadin.addons</groupId>
-			<artifactId>googlemapwidget</artifactId>
-			<version>0.9.13</version>
-		</dependency>
-		<dependency>
-			<groupId>com.google.gwt</groupId>
-			<artifactId>maps</artifactId>
-			<version>1.1.1</version>
+			<groupId>org.vaadin.vol</groupId>
+			<artifactId>openlayers-wrapper</artifactId>
+			<version>1.2.0</version>
 		</dependency>
 		
 		<!-- Spring -->

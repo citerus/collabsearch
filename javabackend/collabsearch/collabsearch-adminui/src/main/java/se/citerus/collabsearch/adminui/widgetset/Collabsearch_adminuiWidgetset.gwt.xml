@@ -6,7 +6,13 @@
 
 	<!-- Inherit DefaultWidgetSet -->
 	<inherits name="com.vaadin.terminal.gwt.DefaultWidgetSet" />
-    <inherits name="org.vaadin.hezamu.googlemapwidget.widgetset.GooglemapwidgetWidgetset">
-    </inherits>
+<!--     <inherits name="org.vaadin.hezamu.googlemapwidget.widgetset.GooglemapwidgetWidgetset"> -->
+<!--     </inherits> -->
 <!-- 	<set-property name="user.agent" value="gecko1_8"/> -->
+	<inherits name="org.vaadin.vol.VolWidgetsetWithHostedScript" />
+    
+<!--     <script src="http://openlayers.org/api/2.12/OpenLayers.js"></script> -->
+<!--     <script src="http://www.openstreetmap.org/openlayers/OpenStreetMap.js"></script> -->
+	<script src="http://maps.google.com/maps/api/js?v=3.2&amp;sensor=false"></script>
+
 </module>

@@ -519,7 +519,7 @@ public class SearchMissionListView extends CustomComponent {
 				break;
 			case ZONE: 
 				id = getParentProperty(2, itemId, ID);
-				listener.switchToEditZoneView(null, id);
+				listener.switchToNewZoneView(id);
 				break;
 			case GROUPROOT: 
 				id = getParentProperty(1, itemId, ID);
@@ -541,8 +541,7 @@ public class SearchMissionListView extends CustomComponent {
 			String missionId = getParentProperty(2, itemId, ID);
 			listener.switchToSearchOperationEditView(id, missionId);
 		} else if (type == NodeType.ZONE) {
-			String opId = getParentProperty(2, itemId, ID);
-			listener.switchToEditZoneView(id, opId);
+			listener.switchToEditZoneView(id);
 		} else if (type == NodeType.GROUP) {
 			String opId = getParentProperty(2, itemId, ID);
 			listener.switchToGroupEditView(id, opId);

@@ -159,13 +159,13 @@ public class MainWindow extends Window implements ViewSwitchController {
 	}
 
 	@Override
-	public void switchToEditZoneView(String zoneId, String opId) {
+	public void switchToEditZoneView(String zoneId) {
 		if (editZoneView == null) {
 			editZoneView = new EditZoneView(this);
 			editZoneView.init();
 		}
 		setContent(editZoneView); //view must be attached to window before google maps init
-		editZoneView.resetView(zoneId, opId); //google maps initialized here
+		editZoneView.resetView(zoneId); //map window initialized here
 	}
 
 	@Override

@@ -170,9 +170,9 @@ public class SearchOperationTest {
 			"blab", new Date(), "plats x", DEFAULT_STATUS);
 		String opId = service.editSearchOp(op , null, testMission.getId());
 		Double[] points = new Double[3];
-		points[0] = new Double(1, 2);
-		points[1] = new Double(3, 4);
-		points[2] = new Double(5, 6);
+		points[0] = new Double(1.01, 2.02);
+		points[1] = new Double(3.03, 4.04);
+		points[2] = new Double(5.05, 6.06);
 		String zoneId = service.createZone(opId, "zone1", testPrio, points, testZoomLvl, testCenter, null);
 		assertNotNull(zoneId);
 	}

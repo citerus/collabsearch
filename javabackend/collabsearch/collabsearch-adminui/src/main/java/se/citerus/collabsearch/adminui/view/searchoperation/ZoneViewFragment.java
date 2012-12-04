@@ -2,10 +2,6 @@ package se.citerus.collabsearch.adminui.view.searchoperation;
 
 import java.util.List;
 
-import org.vaadin.hezamu.googlemapwidget.GoogleMap;
-import org.vaadin.hezamu.googlemapwidget.overlay.BasicMarkerSource;
-import org.vaadin.hezamu.googlemapwidget.overlay.MarkerSource;
-
 import se.citerus.collabsearch.model.SearchGroup;
 
 import com.vaadin.data.util.BeanContainer;
@@ -13,6 +9,7 @@ import com.vaadin.terminal.ThemeResource;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.ComboBox;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.Embedded;
 import com.vaadin.ui.HorizontalLayout;
@@ -44,8 +41,6 @@ public class ZoneViewFragment extends CustomComponent {
 	protected Button createZoneButton;
 	protected Button setMapCenterButton;
 	protected ComboBox assignedGroupDropdown;
-	
-	private MarkerSource markerSource;
 
 	protected ZoneViewFragment() {
 		mainLayout = new VerticalLayout();
@@ -137,13 +132,10 @@ public class ZoneViewFragment extends CustomComponent {
 		
 		mainLayout.addComponent(mainPanel);
 		mainLayout.setComponentAlignment(mainPanel, TOP_CENTER);
-		
-		markerSource = new BasicMarkerSource();
 	}
 	
-	protected void setMap(GoogleMap map) {
+	protected void setMap(Component map) {
 		mapLayout.addComponent(map);
-//		map.setMarkerSource(markerSource); //TODO use external marker source
 	}
 
 	protected void setupGroupComboBox(List<SearchGroup> groupList) {

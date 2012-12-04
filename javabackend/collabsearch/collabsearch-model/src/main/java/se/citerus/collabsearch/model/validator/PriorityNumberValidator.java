@@ -1,15 +1,11 @@
 package se.citerus.collabsearch.model.validator;
 
 import com.vaadin.data.Validator;
-import com.vaadin.data.validator.IntegerValidator;
 
 @SuppressWarnings("serial")
 public class PriorityNumberValidator implements Validator {
 
-	private final String errorMessage;
-
 	public PriorityNumberValidator(String errorMessage) {
-		this.errorMessage = errorMessage;
 	}
 	
 	public void validate(Object value) throws InvalidValueException {

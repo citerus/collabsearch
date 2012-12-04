@@ -20,8 +20,6 @@ import se.citerus.collabsearch.store.facades.UserDAO;
 public class UserService { //TODO refactor into spring service
 
 	@Autowired
-//	@Qualifier("userDAOInMemory")
-//	@Qualifier("userDAOMongoDB")
 	private UserDAO userDAO;
 
 	public UserService() {

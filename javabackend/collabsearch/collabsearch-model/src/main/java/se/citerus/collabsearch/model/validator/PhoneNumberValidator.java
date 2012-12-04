@@ -1,6 +1,6 @@
 package se.citerus.collabsearch.model.validator;
 
-import com.vaadin.data.Validator;;
+import com.vaadin.data.Validator;
 
 @SuppressWarnings("serial")
 public class PhoneNumberValidator implements Validator {

@@ -89,7 +89,7 @@ public class SearchMissionService {
 		Validate.notNull(metadata);
 		Validate.notEmpty(metadata.getFilePath());
 		try {
-			File file = new File(metadata.getFilePath() + File.pathSeparator + metadata.getFileName());
+			File file = new File(metadata.getFilePath());
 			if (file.exists()) {
 				//TODO log: file not found on deletion
 				file.delete();

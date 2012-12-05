@@ -19,13 +19,6 @@
 	</http>
 
 	<authentication-manager>
-<!-- 		<authentication-provider> -->
-<!-- 			<user-service> -->
-<!-- 				<user name="jimi" password="a" authorities="ROLE_USER, ROLE_ADMIN" /> -->
-<!-- 				<user name="bob" password="b" authorities="ROLE_USER" /> -->
-<!-- 			</user-service> -->
-<!-- 		</authentication-provider> -->
-		
 		<authentication-provider user-service-ref="customUserDetailsService">
        		<password-encoder ref="passwordEncoder"/>
         </authentication-provider>

@@ -1,9 +1,10 @@
 package se.citerus.collabsearch.adminui.logic;
 
+import static java.io.File.separatorChar;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
-import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
@@ -21,8 +22,6 @@ import com.vaadin.ui.Upload.SucceededEvent;
 public class FileUploadService implements Upload.SucceededListener,
 		Upload.FailedListener, Upload.Receiver {
 
-	//TODO upload filepath should be set in config file
-	private static final String UPLOADDIR = "/tmp/uploads/";
 	private String parentMissionId;
 	private FileMetadata metadata;
 	private ViewSwitchController listener;
@@ -33,19 +32,10 @@ public class FileUploadService implements Upload.SucceededListener,
 	public OutputStream receiveUpload(String filename, String mimeType) {
 		FileOutputStream fos = null;
 		
-		File uploadDir = new File(UPLOADDIR + parentMissionId);
-		if (!uploadDir.exists()) {
-			uploadDir.mkdir();
-		}
+		File file = getPathToServerStorage(filename);
 		
-		File file = new File(uploadDir.getPath() + "/" + filename);
-		if (file.exists()) {
-			System.err.println("File " + filename + " already exists for this mission");
-			return null;
-		}
-		//check if file exists here?
-		String debugFileId = "" + new Random().nextLong(); //TODO to be replaced with better solution
-		metadata = new FileMetadata(debugFileId, filename, mimeType, file.getPath());
+//		String internalFileId = "" + new Random().nextLong(); //do files need id?
+		metadata = new FileMetadata(filename, mimeType, file.getPath());
 		try {
 			fos = new FileOutputStream(file);
 		} catch (Exception e) {
@@ -53,6 +43,45 @@ public class FileUploadService implements Upload.SucceededListener,
 			return null;
 		}
 		return fos;
+	}
+
+	private File getPathToServerStorage(String filename) {
+		File uploadDir = null;
+		try {
+			String catalina_base = System.getProperty("catalina.base", "");
+			if (catalina_base.isEmpty()) {
+				System.err.println("CATALINA_BASE not set");
+				listener.displayError("Filhanteringsfel", "Filuppladdningskatalogen kunde ej skapas, ");
+				return null;
+			} else if (!catalina_base.endsWith("" + separatorChar)) {
+				catalina_base += separatorChar;
+			}
+			
+			File uploadRootDir = new File(catalina_base + "uploads");
+			if (!uploadRootDir.exists()) {
+				if (!uploadRootDir.mkdir()) {
+					System.err.println("Failed to create uploads folder: " + uploadRootDir.getAbsolutePath());
+				}
+			}
+			
+			uploadDir = new File(uploadRootDir.getAbsolutePath() + separatorChar + parentMissionId);
+			if (!uploadDir.exists()) {
+				if (!uploadDir.mkdir()) {
+					System.err.println("Failed to create mission folder: " + uploadDir.getAbsolutePath());
+				}
+			}
+		} catch (SecurityException e) {
+			e.printStackTrace();
+		}
+		
+		String pathname = uploadDir.getPath() + separatorChar + filename;
+		File file = new File(pathname);
+		if (file.exists()) {
+			System.err.println("File " + filename
+					+ " already exists for this mission");
+			return null;
+		}
+		return file;
 	}
 
 	public void uploadStarted(StartedEvent event) {

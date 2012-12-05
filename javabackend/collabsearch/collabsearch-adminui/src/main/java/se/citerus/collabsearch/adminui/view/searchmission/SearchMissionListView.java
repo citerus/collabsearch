@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.lang.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -78,6 +79,7 @@ public class SearchMissionListView extends CustomComponent {
 	private static Action[] addRemoveMenu;
 	private static Action[] addEditRemoveMenu;
 	private static Action[] addEditRemoveEndMenu;
+	private String uploadFolderPath;
 	
 	private static enum NodeType {
 		UNDEFINED, 
@@ -124,6 +126,10 @@ public class SearchMissionListView extends CustomComponent {
 				handleRemoveButtonClick();
 			}
 		});
+		
+		uploadFolderPath = System.getProperty("catalina.base");
+		uploadFolderPath += uploadFolderPath.endsWith("/") ? "" : "/";
+		uploadFolderPath += "uploads/";
 		
 		treeTable.addListener(new Property.ValueChangeListener() {
 			@Override
@@ -311,24 +317,27 @@ public class SearchMissionListView extends CustomComponent {
 				if (type == NodeType.FILE) {
 					final String missionId = getParentProperty(2, (Integer)itemId, ID);
 					final String fileName = item.getItemProperty(NAME).getValue().toString();
-					Button linkButton = new Button("Öppna filen");
-					linkButton.setStyleName(BaseTheme.BUTTON_LINK);
-					linkButton.addListener(new ClickListener() {
-						@Override
-						public void buttonClick(ClickEvent event) {
-							//getWindow().open(new ExternalResource("/tmp/uploads/" + missionId + "/" + fileName), "_blank");
-							File file = new File("/tmp/uploads/" + missionId + "/" + fileName);
-							getWindow().open(new FileResource(file, getApplication()));
-						}
-					});
-					return linkButton;
+					return generateFileLink(missionId, fileName);
 				} else {
 					return item.getItemProperty(DESCR).getValue();
 				}
 			}
+
+			private Object generateFileLink(final String missionId,
+					final String fileName) {
+				Button linkButton = new Button("Öppna filen");
+				linkButton.setStyleName(BaseTheme.BUTTON_LINK);
+				linkButton.addListener(new ClickListener() {
+					@Override
+					public void buttonClick(ClickEvent event) {
+						Validate.notNull(uploadFolderPath);
+						File file = new File(uploadFolderPath  + missionId + "/" + fileName);
+						getWindow().open(new FileResource(file, getApplication()));
+					}
+				});
+				return linkButton;
+			}
 		});
-		
-//		populateTreeTable();
 		
 		HorizontalLayout buttonLayout = new HorizontalLayout();
 		buttonLayout.setSpacing(true);
@@ -565,10 +574,8 @@ public class SearchMissionListView extends CustomComponent {
 				listener.displayError("Filraderingen misslyckades", e.getMessage());
 			}
 		} else if (type == NodeType.OPERATION) {
-//			SearchOperationService service = null;
 			String opId = item.getItemProperty(ID).getValue().toString();
 			try {
-//				service = new SearchOperationService();
 				opService.deleteSearchOp(opId);
 				removeItemsRecursively(itemId);
 			} catch (Exception e) {
@@ -581,9 +588,7 @@ public class SearchMissionListView extends CustomComponent {
 			}
 		} else if (type == NodeType.ZONE) {
 			String zoneId = item.getItemProperty(ID).getValue().toString();
-//			SearchOperationService service = null;
 			try {
-//				service = new SearchOperationService();
 				opService.deleteZone(zoneId);
 				treeTable.removeItem(itemId);
 			} catch (Exception e) {
@@ -596,9 +601,7 @@ public class SearchMissionListView extends CustomComponent {
 			}
 		} else if (type == NodeType.GROUP) {
 			String groupId = item.getItemProperty(ID).getValue().toString();
-//			SearchOperationService service = null;
 			try {
-//				service = new SearchOperationService();
 				opService.deleteGroup(groupId);
 				treeTable.removeItem(itemId);
 			} catch (Exception e) {
@@ -626,9 +629,7 @@ public class SearchMissionListView extends CustomComponent {
 				listener.displayError("Fel", e.getMessage());
 			}
 		} else if (type == NodeType.OPERATION) {
-//			SearchOperationService service = null;
 			try {
-//				service = new SearchOperationService();
 				String opId = item.getItemProperty(ID).getValue().toString();
 				String statusName = opService.endOperation(opId);
 				item.getItemProperty(STATUS).setValue(statusName);

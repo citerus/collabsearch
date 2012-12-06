@@ -1,22 +1,16 @@
 package se.citerus.collabsearch.adminui.view.searchmission;
 
-import java.io.File;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 
-import se.citerus.collabsearch.adminui.view.ViewSwitchController;
-import se.citerus.collabsearch.adminui.logic.FileUploadService;
 import se.citerus.collabsearch.adminui.logic.SearchMissionService;
-import se.citerus.collabsearch.model.FileMetadata;
+import se.citerus.collabsearch.adminui.view.ViewSwitchController;
 import se.citerus.collabsearch.model.SearchMission;
-import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.Status;
 
-import com.vaadin.data.Container;
 import com.vaadin.data.util.BeanContainer;
-import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.data.validator.IntegerValidator;
 import com.vaadin.data.validator.StringLengthValidator;
 import com.vaadin.terminal.ThemeResource;
@@ -30,15 +24,9 @@ import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.Embedded;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.ListSelect;
 import com.vaadin.ui.Panel;
-import com.vaadin.ui.Table;
-import com.vaadin.ui.Table.ColumnGenerator;
 import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TextField;
-import com.vaadin.ui.Upload;
-import com.vaadin.ui.Upload.StartedEvent;
-import com.vaadin.ui.Upload.StartedListener;
 import com.vaadin.ui.VerticalLayout;
 
 @SuppressWarnings("serial")
@@ -49,7 +37,6 @@ public class SearchMissionEditView extends CustomComponent {
 	private final ViewSwitchController listener;
 	private Button cancelButton;
 	private Button saveButton;
-	private BeanContainer<String,FileMetadata> fileBeanContainer;
 	private TextField titleField;
 	private TextArea descrField;
 	private TextField prioField;

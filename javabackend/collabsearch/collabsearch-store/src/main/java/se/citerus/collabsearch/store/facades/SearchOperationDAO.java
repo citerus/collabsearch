@@ -84,5 +84,7 @@ public interface SearchOperationDAO {
 
 	public String getOpIdByZone(String zoneId) throws IOException,
 			SearchOperationNotFoundException;
+	
+	public boolean getDatabaseStatus() throws IOException;
 
 }

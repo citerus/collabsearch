@@ -21,7 +21,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	    <maven.compiler.source>1.6</maven.compiler.source>
 	    <maven.compiler.target>1.6</maven.compiler.target>
-	
+		
 	    <vaadin.version>6.7.4</vaadin.version>
 	    <spring.version>3.1.0.RELEASE</spring.version>
 	    <aspectj.version>1.6.12</aspectj.version>

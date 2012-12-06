@@ -45,8 +45,6 @@ public class LookingForApp extends Application implements HttpServletRequestList
 	public void init() {
 		setInstance(this);
 		
-		System.out.println("Client locale: " + getLocale());
-
 		window = new MainWindow();
 		((MainWindow)window).initWindow();
 		setMainWindow(window);
@@ -60,16 +58,6 @@ public class LookingForApp extends Application implements HttpServletRequestList
 
 	public static void setInstance(LookingForApp lookingForApp) {
 		threadLocal.set(lookingForApp);
-	}
-
-	@Override
-	public String getUser() {
-		return (String)super.getUser();
-	}
-
-	@Override
-	public void setUser(Object user) {
-		super.setUser((String)user);
 	}
 
 	public void onRequestStart(HttpServletRequest request, HttpServletResponse response) {

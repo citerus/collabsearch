@@ -14,12 +14,11 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Logger;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-import org.apache.commons.logging.impl.Log4JLogger;
 import org.bson.types.ObjectId;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
@@ -48,7 +47,6 @@ import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
-import com.mongodb.DBPort;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 import com.mongodb.MongoOptions;
@@ -135,6 +133,13 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 	
 	public void setDebugDB(String dbName) {
 		try {
+			MongoOptions options = new MongoOptions();
+			options.socketTimeout = 2*60*1000;
+			String dbAddr = "localhost";
+			String dbPort = "27017";
+			ServerAddress addr = new ServerAddress(dbAddr, Integer.parseInt(dbPort));
+			mongo = new Mongo(addr, options);
+			
 			System.out.println("Switching db to " + dbName);
 			DB db = mongo.getDB(dbName);
 			missionColl = db.getCollection("searchmissions");
@@ -995,5 +1000,26 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 		}
 		String opId = dbo.getObjectId("parentop").toString();
 		return opId;
+	}
+
+	@Override
+	public boolean getDatabaseStatus() throws IOException {
+		try {
+			List<String> databaseNames = mongo.getDatabaseNames();
+			if (databaseNames.isEmpty()) {
+				throw new IOException("No databases found");
+			}
+			for (String dbName : databaseNames) {
+				DB db = mongo.getDB(dbName);
+				Set<String> collectionNames = db.getCollectionNames();
+				for (String collectionName : collectionNames) {
+					DBCollection collection = db.getCollection(collectionName);
+					CommandResult stats = collection.getStats();
+				}
+			}
+			return true;
+		} catch (Exception e) {
+			throw new IOException(e.getMessage());
+		}
 	}
 }

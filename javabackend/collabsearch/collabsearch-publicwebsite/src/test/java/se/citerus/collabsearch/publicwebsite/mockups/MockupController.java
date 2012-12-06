@@ -1,7 +1,5 @@
 package se.citerus.collabsearch.publicwebsite.mockups;
 
-import java.util.HashMap;
-
 import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.SearchOperationWrapper;
 import se.citerus.collabsearch.publicwebsite.ControllerListener;
@@ -57,18 +55,4 @@ public class MockupController implements ControllerListener {
 		return null;
 	}
 	
-	private class MockupError {
-		private String methodName;
-		private HashMap<String, String> inputMap = new HashMap<String, String>();
-		
-		public MockupError(String methodName, String... inputs) {
-			this.methodName = methodName;
-			
-			String previous = null;
-			for (int i = 0; i < inputs.length; i++) {
-				
-			}
-		}
-	}
-
 }

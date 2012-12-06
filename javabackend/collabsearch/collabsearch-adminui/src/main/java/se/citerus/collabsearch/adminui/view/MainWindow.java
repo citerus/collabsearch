@@ -1,6 +1,5 @@
 package se.citerus.collabsearch.adminui.view;
 
-import se.citerus.collabsearch.adminui.LookingForApp;
 import se.citerus.collabsearch.adminui.view.login.WelcomeView;
 import se.citerus.collabsearch.adminui.view.searchmission.FileUploadView;
 import se.citerus.collabsearch.adminui.view.searchmission.SearchMissionEditView;
@@ -49,7 +48,6 @@ public class MainWindow extends Window implements ViewSwitchController {
 	
 	@Override
 	public void logoutAndReload() {
-		LookingForApp.getInstance().setUser(null);
 		getApplication().close();
 	}
 

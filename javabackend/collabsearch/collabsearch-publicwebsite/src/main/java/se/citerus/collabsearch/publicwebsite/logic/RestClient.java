@@ -1,5 +1,7 @@
 package se.citerus.collabsearch.publicwebsite.logic;
 
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
@@ -11,7 +13,6 @@ import se.citerus.collabsearch.model.StringArrayWrapper;
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientHandlerException;
-import com.sun.jersey.api.client.ClientRequest;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.WebResource;
@@ -21,20 +22,28 @@ import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 public class RestClient {
 	
+	private static final int OK = 200;
+	private static final int NOT_FOUND = 404;
 	private WebResource basicPath;
 
 	public RestClient() {
 		ClientConfig config = new DefaultClientConfig();
 		Client client = Client.create(config);
+		String uri;
+//		uri = "http://localhost:8080/collabsearch-api";
+		uri = "http://missingpeople-ws.cloudfoundry.com/";
 		WebResource service = client.resource(
-			UriBuilder.fromUri("http://localhost:8080/collabsearch-api").build());
+			UriBuilder.fromUri(uri).build());
 		basicPath = service.path("rest").path("ws");
 	}
 
 	public SearchOperationWrapper[] getAllOps() throws Exception {
 		SearchOperationWrapper[] array;
 		try {
-			array = basicPath.path("getAllOps").accept(MediaType.APPLICATION_JSON).get(SearchOperationWrapper[].class);
+			array = basicPath
+					.path("getAllOps")
+					.accept(APPLICATION_JSON)
+					.get(SearchOperationWrapper[].class);
 		} catch (UniformInterfaceException e) {
 			e.printStackTrace();
 			throw new Exception(e.getMessage());
@@ -53,10 +62,10 @@ public class RestClient {
 			return basicPath
 					.path("getSearchOp")
 					.path(id)
-					.accept(MediaType.APPLICATION_JSON)
+					.accept(APPLICATION_JSON)
 					.get(SearchOperation.class);
 		} catch (UniformInterfaceException e) {
-			if (e.getResponse().getStatus() != 404) {
+			if (e.getResponse().getStatus() != NOT_FOUND) {
 				e.printStackTrace();
 				throw new Exception(e.getMessage());
 			}
@@ -75,8 +84,11 @@ public class RestClient {
 		formData.add("email", email);
 		formData.add("tele", tele);
 		try {
-			ClientResponse response = basicPath.path("apply").type(MediaType.APPLICATION_FORM_URLENCODED_TYPE).post(ClientResponse.class, formData);
-			if (response.getStatus() != 200) {
+			ClientResponse response = basicPath
+					.path("apply")
+					.type(MediaType.APPLICATION_FORM_URLENCODED_TYPE)
+					.post(ClientResponse.class, formData);
+			if (response.getStatus() != OK) {
 				throw new Exception("Non-OK response received");
 			}
 		} catch (UniformInterfaceException e) {
@@ -111,7 +123,7 @@ public class RestClient {
 					.queryParams(queryParams)
 					.get(SearchOperationWrapper[].class);
 		} catch (UniformInterfaceException e) {
-			if (e.getResponse().getStatus() != 404) {
+			if (e.getResponse().getStatus() != NOT_FOUND) {
 				e.printStackTrace();
 				throw new Exception(e.getMessage());
 			}
@@ -130,10 +142,10 @@ public class RestClient {
 		try {
 			array = basicPath
 					.path("getAllLocations")
-					.accept(MediaType.APPLICATION_JSON)
+					.accept(APPLICATION_JSON)
 					.get(StringArrayWrapper[].class);
 		} catch (UniformInterfaceException e) {
-			if (e.getResponse().getStatus() != 404) {
+			if (e.getResponse().getStatus() != NOT_FOUND) {
 				e.printStackTrace();
 				throw new Exception(e.getMessage());
 			}
@@ -152,10 +164,10 @@ public class RestClient {
 		try {
 			array = basicPath
 					.path("getAllTitles")
-					.accept(MediaType.APPLICATION_JSON)
+					.accept(APPLICATION_JSON)
 					.get(StringArrayWrapper[].class);
 		} catch (UniformInterfaceException e) {
-			if (e.getResponse().getStatus() != 404) {
+			if (e.getResponse().getStatus() != NOT_FOUND) {
 				e.printStackTrace();
 				throw new Exception(e.getMessage());
 			}

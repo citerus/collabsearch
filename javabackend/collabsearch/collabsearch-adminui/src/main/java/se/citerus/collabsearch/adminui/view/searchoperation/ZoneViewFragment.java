@@ -138,6 +138,7 @@ public class ZoneViewFragment extends CustomComponent {
 		mapLayout.addComponent(map);
 	}
 
+	@SuppressWarnings("unchecked")
 	protected void setupGroupComboBox(List<SearchGroup> groupList) {
 		BeanContainer<String, SearchGroup> container = 
 			(BeanContainer<String, SearchGroup>) assignedGroupDropdown.getContainerDataSource();

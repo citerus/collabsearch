@@ -8,11 +8,10 @@ import java.util.List;
 import org.apache.commons.lang.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.beans.factory.annotation.Qualifier;
 
-import se.citerus.collabsearch.adminui.view.ViewSwitchController;
 import se.citerus.collabsearch.adminui.logic.SearchMissionService;
 import se.citerus.collabsearch.adminui.logic.SearchOperationService;
+import se.citerus.collabsearch.adminui.view.ViewSwitchController;
 import se.citerus.collabsearch.model.FileMetadata;
 import se.citerus.collabsearch.model.SearchGroup;
 import se.citerus.collabsearch.model.SearchMission;

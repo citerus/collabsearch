@@ -26,8 +26,12 @@ import se.citerus.collabsearch.store.facades.SearchOperationDAO;
 public class SearchOperationService {
 
 	@Autowired
-//	@Qualifier("searchMissionDAOMongoDB")
 	private SearchOperationDAO searchOperationDAO;
+	
+	@Autowired
+	private SMSService smsService;
+	
+//	private EmailerService emailerService;
 
 	public SearchOperationService() {
 	}

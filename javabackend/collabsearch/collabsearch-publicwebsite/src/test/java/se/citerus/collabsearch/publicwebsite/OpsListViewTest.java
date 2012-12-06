@@ -1,8 +1,8 @@
 package se.citerus.collabsearch.publicwebsite;
 
-import static org.junit.Assert.*;
-
-import java.util.Date;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.After;
 import org.junit.AfterClass;

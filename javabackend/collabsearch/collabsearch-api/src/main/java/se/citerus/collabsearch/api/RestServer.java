@@ -158,4 +158,25 @@ public class RestServer implements RestService {
 		}
 		return array;
 	}
+	
+	@GET
+	@Path("/getServiceStatus")
+	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+	public Response getServiceStatus() {
+		Response response = null;
+		try {
+			if (dao.getDatabaseStatus()) {
+				response = Response.ok().build();
+			} else {
+				response = Response.serverError().build();
+			}
+		} catch (IOException e) {
+			response = Response.serverError().build();
+			e.printStackTrace();
+		} catch (Exception e) {
+			response = Response.serverError().build();
+			e.printStackTrace();
+		}
+		return response;
+	}
 }

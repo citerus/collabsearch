@@ -38,8 +38,6 @@ import com.vaadin.ui.VerticalLayout;
 public class SearchOperationEditView extends CustomComponent {
 	
 	private VerticalLayout mainLayout;
-	private Button zoneButton;
-	private Button groupButton;
 	private final ViewSwitchController listener;
 	private Button cancelButton;
 	private Button saveButton;

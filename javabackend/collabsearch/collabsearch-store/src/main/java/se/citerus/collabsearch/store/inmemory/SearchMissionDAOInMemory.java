@@ -679,4 +679,9 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 		}
 		return null;
 	}
+
+	@Override
+	public boolean getDatabaseStatus() throws IOException {
+		return true;
+	}
 }

@@ -4,12 +4,9 @@ import static com.vaadin.ui.Alignment.MIDDLE_CENTER;
 import se.citerus.collabsearch.adminui.view.ViewSwitchController;
 
 import com.vaadin.terminal.ThemeResource;
-import com.vaadin.terminal.gwt.client.ui.AlignmentInfo.Bits;
-import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
-import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.Embedded;
 import com.vaadin.ui.HorizontalLayout;

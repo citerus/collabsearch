@@ -4,8 +4,6 @@ import static org.apache.commons.collections15.CollectionUtils.collect;
 import static org.apache.commons.collections15.CollectionUtils.select;
 
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
@@ -17,8 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 
 import se.citerus.collabsearch.adminui.LookingForApp;
-import se.citerus.collabsearch.adminui.view.ViewSwitchController;
 import se.citerus.collabsearch.adminui.logic.SearchOperationService;
+import se.citerus.collabsearch.adminui.view.ViewSwitchController;
 import se.citerus.collabsearch.model.GroupNode;
 import se.citerus.collabsearch.model.Rank;
 import se.citerus.collabsearch.model.Rank.Title;
@@ -744,30 +742,6 @@ public class GroupEditView extends CustomComponent {
 		}
 	}
 
-	/**
-	 * Traverses the GroupNode and it's children (depth first) in order 
-	 * to add them to the tree. The itemId of the first node is returned.
-	 * @param itemId the item id of the current node's parent.
-	 * @param children the children of the current node, if applicable.
-	 * @param container the container the node will be added to.
-	 * @param searcherMap the map containing key/value pairs of searchers' ids and names.
-	 */
-	private void addChildrenToTree(Object parentItemId, List<GroupNode> children, 
-			HierarchicalContainer container, Map<String, String> searcherMap) {
-		Object itemId = null;
-		for (int i = 0; i < children.size(); i++) {
-			GroupNode node = children.get(i);
-			itemId = container.addItem();
-			Item item = container.getItem(itemId);
-			if (!node.isLeaf()) {
-				addChildrenToTree(itemId, node.getChildren(), 
-						container, searcherMap);
-			}
-			setupItemProperties(node, item, searcherMap);
-			container.setParent(itemId, parentItemId);
-		}
-	}
-	
 	private void addNodesToTree(Object parentItemId, GroupNode currentNode,
 			final HierarchicalContainer container, final Map<String, String> searcherMap) {
 		Object currentItemId = container.addItem();

@@ -1,10 +1,6 @@
 <html>
 <body>
-<h2>Jersey REST-WS for CollabSearch</h2>
-<br>
-<a href="/collabsearch-api/rest/ws/getSearchOp/test">getSeaOp/(name)</a><br>
-<a href="/collabsearch-api/rest/ws/getAllOps">getAllOps</a><br>
-<br>
-<a href="/collabsearch-api/rest/application.wadl">WADL descriptor</a>
+Var god besök: <a href="http://missingpeople-web.cloudfoundry.com/">Missing People's anmälningssida</a> 
+eller <a href="http://ww.missingpeople.se/">Missing People's webbsida</a>
 </body>
 </html>

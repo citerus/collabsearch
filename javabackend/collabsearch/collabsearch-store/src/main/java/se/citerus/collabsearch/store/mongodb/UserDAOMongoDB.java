@@ -19,11 +19,13 @@ import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
+import se.citerus.collabsearch.model.CloudFoundryMongoConnectionInfo;
 import se.citerus.collabsearch.model.DbUser;
 import se.citerus.collabsearch.model.User;
 import se.citerus.collabsearch.model.exceptions.DuplicateUserDataException;
 import se.citerus.collabsearch.model.exceptions.UserNotFoundException;
 import se.citerus.collabsearch.store.facades.UserDAO;
+import se.citerus.collabsearch.store.utils.CloudFoundrySettingsParser;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -63,23 +65,47 @@ public class UserDAOMongoDB implements UserDAO {
 		String dbUser = "";
 		String dbPass = "";
 		String dbAddr = "";
+		
+		//Obsolete properties-file-based config
+//		try {
+//			Properties prop = new Properties();
+//			InputStream stream;
+//			stream = UserDAOMongoDB.class.getResourceAsStream(
+//				"/db-server-config.properties");
+//			if (stream != null) {
+//				prop.load(stream);
+//				dbName = prop.getProperty("DBNAME", "lookingfor");
+//				dbPort = prop.getProperty("DBPORT", "27017");
+//				dbUser = prop.getProperty("DBUSER", "");
+//				dbPass = prop.getProperty("DBPASS", "");
+//				dbAddr = prop.getProperty("DBADDR", "localhost");
+//			}
+//			System.out.println("Found MongoDB database name: " + dbName);
+//		} catch (FileNotFoundException e) {
+//			e.printStackTrace();
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+		
+		//New envvar-based config
 		try {
-			Properties prop = new Properties();
-			InputStream stream;
-			stream = UserDAOMongoDB.class.getResourceAsStream(
-				"/db-server-config.properties");
-			if (stream != null) {
-				prop.load(stream);
-				dbName = prop.getProperty("DBNAME", "lookingfor");
-				dbPort = prop.getProperty("DBPORT", "27017");
-				dbUser = prop.getProperty("DBUSER", "");
-				dbPass = prop.getProperty("DBPASS", "");
-				dbAddr = prop.getProperty("DBADDR", "localhost");
+			String envVarJsonString = System.getenv("VCAP_SERVICES");
+			if (envVarJsonString != null) {
+				CloudFoundryMongoConnectionInfo connectionInfo = CloudFoundrySettingsParser.parseVcapServicesEnvVar(envVarJsonString);
+				dbName = connectionInfo.getDb();
+				dbPort = "" + connectionInfo.getPort();
+				dbUser = connectionInfo.getUsername();
+				dbPass = connectionInfo.getPassword();
+				dbAddr = connectionInfo.getHost();
+			} else {
+				System.out.println("VCAP_SERVICES not declared, falling back to defaults");
+				dbName = "lookingfor";
+				dbPort = "27017";
+				dbUser = "f6b2f4e2-5b8f-4efd-a98f-a2467f45deb6";
+				dbPass = "0d8cfbad-12bd-4283-95c9-5e5c1ee8cd19";
+				dbAddr = "localhost";
 			}
-			System.out.println("Found MongoDB database name: " + dbName);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		
@@ -94,9 +120,7 @@ public class UserDAOMongoDB implements UserDAO {
 			}
 			boolean authenticated = db.authenticate(dbUser, dbPass.toCharArray());
 			if (authenticated) {
-				userColl = db.getCollection("users");
-				authColl = db.getCollection("auth");
-				roleColl = db.getCollection("roles");
+				initCollections(db);
 				System.out.println("MongoDB successfully initialized");
 			} else {
 				throw new IOException("Authentication failure for user " + dbUser);
@@ -108,6 +132,12 @@ public class UserDAOMongoDB implements UserDAO {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	private void initCollections(DB db) {
+		userColl = db.getCollection("users");
+		authColl = db.getCollection("auth");
+		roleColl = db.getCollection("roles");
 	}
 	
 	@PreDestroy
@@ -272,9 +302,7 @@ public class UserDAOMongoDB implements UserDAO {
 	public void activateDebugMode() {
 		try {
 			DB db = mongo.getDB("test");
-			userColl = db.getCollection("users");
-			authColl = db.getCollection("auth");
-			roleColl = db.getCollection("roles");
+			initCollections(db);
 		} catch (MongoException e) {
 			e.printStackTrace();
 		}

@@ -3,21 +3,26 @@ package se.citerus.collabsearch.adminui.view.searchmission;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 
+import se.citerus.collabsearch.adminui.logic.SMSService;
 import se.citerus.collabsearch.adminui.logic.SearchMissionService;
 import se.citerus.collabsearch.adminui.logic.SearchOperationService;
 import se.citerus.collabsearch.adminui.view.ViewSwitchController;
 import se.citerus.collabsearch.model.FileMetadata;
+import se.citerus.collabsearch.model.SMSMessage;
 import se.citerus.collabsearch.model.SearchGroup;
 import se.citerus.collabsearch.model.SearchMission;
 import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.SearchZone;
+import se.citerus.collabsearch.model.SearcherInfo;
 import se.citerus.collabsearch.model.exceptions.SearchMissionNotFoundException;
+import se.citerus.collabsearch.model.exceptions.SearchOperationNotFoundException;
 
 import com.vaadin.data.Item;
 import com.vaadin.data.Property;
@@ -30,15 +35,19 @@ import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.CustomComponent;
+import com.vaadin.ui.DateField;
 import com.vaadin.ui.Embedded;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.Table.ColumnGenerator;
+import com.vaadin.ui.TextField;
 import com.vaadin.ui.TreeTable;
 import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.Window;
 import com.vaadin.ui.themes.BaseTheme;
 
 @SuppressWarnings("serial")
@@ -58,6 +67,9 @@ public class SearchMissionListView extends CustomComponent {
 	@Autowired
 	private SearchOperationService opService;
 	
+	@Autowired
+	private SMSService smsService;
+	
 	private final ViewSwitchController listener;
 	private VerticalLayout mainLayout;
 	private Button homeButton;
@@ -65,7 +77,9 @@ public class SearchMissionListView extends CustomComponent {
 	private Button editButton;
 	private Button addButton;
 	private Button removeButton;
+	private Button composeSMSButton;
 	private TreeTable treeTable;
+	private Window popupWindow;
 	
 	private Handler contextMenuHandler;
 	private static Action ACTION_ADDITEM;
@@ -79,6 +93,11 @@ public class SearchMissionListView extends CustomComponent {
 	private static Action[] addEditRemoveMenu;
 	private static Action[] addEditRemoveEndMenu;
 	private String uploadFolderPath;
+	private DateField smsDateField;
+	private TextField smsLocField;
+	private TextField smsOpTitleField;
+	private TextField smsContactField;
+	private TextField smsBodyField;
 	
 	private static enum NodeType {
 		UNDEFINED, 
@@ -125,8 +144,19 @@ public class SearchMissionListView extends CustomComponent {
 				handleRemoveButtonClick();
 			}
 		});
+		composeSMSButton.addListener(new ClickListener() {
+			@Override
+			public void buttonClick(ClickEvent event) {
+				handleComposeSMSButtonClick();
+			}
+		});
 		
 		uploadFolderPath = System.getProperty("catalina.base");
+		if (uploadFolderPath == null) {
+			System.err.println("Enviro var catalina.base not found, " +
+							"falling back to local disk upload folder");
+			uploadFolderPath = "/tmp";
+		}
 		uploadFolderPath += uploadFolderPath.endsWith("/") ? "" : "/";
 		uploadFolderPath += "uploads/";
 		
@@ -142,6 +172,7 @@ public class SearchMissionListView extends CustomComponent {
 				addButton.setEnabled(false);
 				editButton.setEnabled(false);
 				removeButton.setEnabled(false);
+				composeSMSButton.setEnabled(false);
 				
 				Item item = treeTable.getItem(itemId);
 				NodeType type = (NodeType) item.getItemProperty(TYPE).getValue();
@@ -159,6 +190,7 @@ public class SearchMissionListView extends CustomComponent {
 						addButton.setEnabled(true);
 						editButton.setEnabled(true);
 						removeButton.setEnabled(true);
+						composeSMSButton.setEnabled(true);
 						break;
 					case FILEROOT: 
 						addButton.setEnabled(true);
@@ -350,6 +382,10 @@ public class SearchMissionListView extends CustomComponent {
 		rightButtonLayout.setSpacing(true);
 //		rightButtonLayout.setWidth("100%");
 		
+		composeSMSButton = new Button("Skapa SMS-utskick");
+		composeSMSButton.setEnabled(false);
+		rightButtonLayout.addComponent(composeSMSButton);
+		
 		endButton = new Button("Avsluta");
 		endButton.setEnabled(false);
 		rightButtonLayout.addComponent(endButton);
@@ -375,6 +411,8 @@ public class SearchMissionListView extends CustomComponent {
 		mainPanel.addComponent(innerLayout);
 		mainLayout.addComponent(mainPanel);
 		mainLayout.setComponentAlignment(mainPanel, Alignment.TOP_CENTER);
+		
+		buildPopupWindow();
 	}
 
 	/**
@@ -707,4 +745,149 @@ public class SearchMissionListView extends CustomComponent {
 			handleRemoveActions((Integer)itemId, item, type);
 		}
 	}
+	
+	private void handleComposeSMSButtonClick() {
+		try {
+			Object itemId = treeTable.getValue();
+			Item item = treeTable.getItem(itemId);
+			String opId = item.getItemProperty(ID).getValue().toString();
+			
+			SearchOperation op = opService.getSearchOp(opId);
+			
+			smsDateField.setValue(op.getDate().getTime()); //FIXME date format not recognized
+			smsLocField.setValue(op.getLocation());
+			smsOpTitleField.setValue(op.getTitle());
+			smsContactField.setValue(opService.getOpOrganizerContactInfo());
+			smsBodyField.setValue(opService.getDefaultSMSBody());
+			getWindow().addWindow(popupWindow);
+		} catch (SearchOperationNotFoundException e) {
+			listener.displayError("Sökoperationsfel", "Sökuppdraget ej funnet");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void handleSendSMSButtonClick(SMSMessage message) {
+		String messageString = message.toString();
+		if (messageString.length() > 140) {
+			listener.displayError("Fel vid SMS-utskick", 
+					"Meddelandet är för långt: " + messageString.length() + "/140");
+			return;
+		}
+		
+		Object itemId = treeTable.getValue();
+		if (itemId != null) {
+			Item item = treeTable.getItem(itemId);
+			NodeType type = (NodeType) item.getItemProperty(TYPE).getValue();
+			if (type != NodeType.OPERATION) {
+				return;
+			}
+			
+			//get selected op id
+			String opId = item.getItemProperty(ID).getValue().toString();
+			
+			//get all searchers for mission
+			List<SearcherInfo> searcherList = null;
+			try {
+				searcherList = opService.getSearchersInfoByOp(opId);
+			} catch (SearchOperationNotFoundException e) {
+				e.printStackTrace();
+				listener.displayError("Fel vid SMS-utskick", 
+						"Operationens id kunde ej hittas");
+				return;
+			} catch (Exception e) {
+				e.printStackTrace();
+				return;
+			}
+			
+			try {
+				List<String> list = smsService.sendSMSToSearchers(searcherList, message);
+				if (!list.isEmpty()) {
+					StringBuilder sb = new StringBuilder();
+					for (String numStr : list) {
+						sb.append(numStr + "\n");
+					}
+					listener.displayError("Fel vid SMS-utskick", 
+							"Följande nummer gick ej att nå: " + sb.toString());
+				}
+			} catch (Exception e) {
+				listener.displayError("Fel", e.getMessage());
+				e.printStackTrace();
+			}
+			
+		}
+	}
+	
+	private void buildPopupWindow() {
+		popupWindow = new Window("Meddelande");
+		popupWindow.setModal(true);
+		popupWindow.center();
+
+		VerticalLayout layout = (VerticalLayout) popupWindow.getContent();
+		layout.setMargin(true);
+		layout.setSpacing(true);
+
+		Label popupMessage = new Label("Skapa SMS-utskick");
+		layout.addComponent(popupMessage);
+
+		VerticalLayout formLayout = new VerticalLayout();
+		formLayout.setWidth("100%");
+		formLayout.setSpacing(true);
+
+		smsDateField = new DateField("Datum för sökoperation");
+		formLayout.addComponent(smsDateField);
+
+		smsLocField = new TextField("Ort för sökoperation");
+		formLayout.addComponent(smsLocField);
+
+		smsOpTitleField = new TextField("Operationsnamn");
+		formLayout.addComponent(smsOpTitleField);
+
+		smsContactField = new TextField("Kontaktinfo för översta sökbefäl");
+		formLayout.addComponent(smsContactField);
+
+		smsBodyField = new TextField("Meddelandekropp");
+		formLayout.addComponent(smsBodyField);
+
+		layout.addComponent(formLayout);
+
+		HorizontalLayout buttonLayout = new HorizontalLayout();
+		buttonLayout.setWidth("100%");
+
+		Button closePopupButton = new Button("Avbryt");
+		closePopupButton.addListener(new Button.ClickListener() {
+			public void buttonClick(ClickEvent event) {
+				(popupWindow.getParent()).removeWindow(popupWindow);
+			}
+		});
+		buttonLayout.addComponent(closePopupButton);
+		buttonLayout.setComponentAlignment(closePopupButton,
+				Alignment.BOTTOM_RIGHT);
+
+		Button sendSMSButton = new Button("Skicka");
+		sendSMSButton.addListener(new ClickListener() {
+			@Override
+			public void buttonClick(ClickEvent event) {
+				try {
+					SMSMessage message = new SMSMessage(
+							new Date((Long) smsDateField.getValue()).toString(), 
+							smsLocField.getValue().toString(), 
+							smsBodyField.getValue().toString(), 
+							smsOpTitleField.getValue().toString(), 
+							smsContactField.getValue().toString());
+					handleSendSMSButtonClick(message);
+				} catch (Exception e) {
+					e.printStackTrace();
+				} finally {
+					(popupWindow.getParent()).removeWindow(popupWindow);
+				}
+			}
+		});
+		buttonLayout.addComponent(sendSMSButton);
+		buttonLayout.setComponentAlignment(sendSMSButton,
+				Alignment.BOTTOM_RIGHT);
+
+		layout.addComponent(buttonLayout);
+	}
+	
 }

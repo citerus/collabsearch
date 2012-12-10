@@ -5,8 +5,10 @@ import static org.apache.commons.lang.Validate.notNull;
 
 import java.awt.geom.Point2D.Double;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.annotation.PostConstruct;
 
@@ -16,11 +18,13 @@ import org.springframework.stereotype.Service;
 import se.citerus.collabsearch.model.SearchGroup;
 import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.SearchZone;
+import se.citerus.collabsearch.model.SearcherInfo;
 import se.citerus.collabsearch.model.Status;
 import se.citerus.collabsearch.model.exceptions.SearchGroupNotFoundException;
 import se.citerus.collabsearch.model.exceptions.SearchOperationNotFoundException;
 import se.citerus.collabsearch.model.exceptions.SearchZoneNotFoundException;
 import se.citerus.collabsearch.store.facades.SearchOperationDAO;
+import se.citerus.collabsearch.store.mongodb.SearchMissionDAOMongoDB;
 
 @Service
 public class SearchOperationService {
@@ -28,16 +32,24 @@ public class SearchOperationService {
 	@Autowired
 	private SearchOperationDAO searchOperationDAO;
 	
-	@Autowired
-	private SMSService smsService;
+	private static String ORGANIZER_TELE;
 	
-//	private EmailerService emailerService;
-
 	public SearchOperationService() {
 	}
 
 	@PostConstruct
 	public void init() {
+		try {
+			Properties prop = new Properties();
+			InputStream stream = SearchMissionDAOMongoDB.class.getResourceAsStream(
+					"/sms-config.properties");
+			if (stream != null) {
+				prop.load(stream);
+				ORGANIZER_TELE = prop.getProperty("ORGANIZER_TELE");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	public List<Status> getAllSearchOpStatuses() throws Exception {
@@ -134,12 +146,10 @@ public class SearchOperationService {
 	public String editSearchOp(SearchOperation operation, String opId, String missionId) throws Exception {
 		//TODO break into two methods 
 		if (opId == null && missionId != null) {
-			//TODO create operation object here
 			String id = searchOperationDAO.createSearchOperation(operation, missionId);
 			notEmpty(id);
 			return id;
 		} else if (opId != null && missionId == null) {
-			//TODO create operation object here
 			searchOperationDAO.editSearchOperation(operation, opId);
 		}
 		return null;
@@ -160,7 +170,7 @@ public class SearchOperationService {
 	 */
 	public Map<String, String> getSearchersByOp(String opId) throws Exception, SearchOperationNotFoundException {
 		notEmpty(opId);
-		Map<String, String> map = searchOperationDAO.getUsersForSearchOp(opId);
+		Map<String, String> map = searchOperationDAO.getSearcherNamesByOp(opId);
 		notNull(map);
 		return map;
 	}
@@ -182,20 +192,36 @@ public class SearchOperationService {
 	}
 
 	public List<SearchGroup> getSearchGroupsByOp(String opId) throws IOException, SearchGroupNotFoundException {
-		notNull(opId);
+		notEmpty(opId);
 		List<SearchGroup> list = searchOperationDAO.getSearchGroupsByOp(opId);
 		notNull(list);
 		return list;
 	}
 
 	public String getZoneParent(String zoneId) throws IOException, SearchOperationNotFoundException {
-		notNull(zoneId);
+		notEmpty(zoneId);
 		String opId = searchOperationDAO.getOpIdByZone(zoneId);
 		notNull(opId);
 		return opId;
 	}
-	
+
 	public void setDebugMode() {
 		searchOperationDAO.setDebugDB("test");
+	}
+
+	public List<SearcherInfo> getSearchersInfoByOp(String opId) throws IOException, SearchOperationNotFoundException {
+		notEmpty(opId);
+		List<SearcherInfo> list = searchOperationDAO.getSearchersInfoByOp(opId);
+		notNull(list);
+		return list;
+	}
+
+	public String getDefaultSMSBody() { //TODO replace with user-defined string
+		String bodyMsg = "Du är kallad till skallgång.";
+		return bodyMsg;
+	}
+
+	public String getOpOrganizerContactInfo() {
+		return ORGANIZER_TELE;
 	}
 }

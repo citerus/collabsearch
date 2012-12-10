@@ -8,32 +8,18 @@ import com.mongodb.DBCursor;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 
-import junit.framework.Test;
+import org.junit.Test;
 import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
 /**
  * Unit test for simple App.
  */
 public class MongoDBSmokeTest extends TestCase {
-	/**
-	 * Create the test case
-	 * @param testName name of the test case
-	 */
-	public MongoDBSmokeTest(String testName) {
-		super(testName);
-	}
-
-	/**
-	 * @return the suite of tests being tested
-	 */
-	public static Test suite() {
-		return new TestSuite(MongoDBSmokeTest.class);
-	}
 
 	/**
 	 * Test the connectivity of the MongoDB database
 	 */
+	@Test
 	public void testMongoConnectivity() {
 		Mongo mongo = null;
 		try {

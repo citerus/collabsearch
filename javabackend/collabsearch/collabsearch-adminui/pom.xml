@@ -404,6 +404,12 @@
 			<artifactId>spring-security-config</artifactId>
 			<version>3.0.0.RELEASE</version>
 		</dependency>
+		<dependency>
+			<groupId>com.twilio.sdk</groupId>
+			<artifactId>twilio-java-sdk</artifactId>
+			<version>3.3.10</version>
+			<scope>compile</scope>
+		</dependency>
 	</dependencies>
 
 </project>

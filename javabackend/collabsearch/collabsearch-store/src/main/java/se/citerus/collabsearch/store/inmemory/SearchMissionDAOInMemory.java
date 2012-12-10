@@ -387,7 +387,7 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 	}
 
 	@Override
-	public Map<String, String> getUsersForSearchOp(String opId) throws IOException {
+	public Map<String, String> getSearcherNamesByOp(String opId) throws IOException {
 		for (SearchMission mission : missionsList) {
 			for (SearchOperation op : mission.getOpsList()) {
 				if (op.getId().equals(opId)) {
@@ -683,5 +683,18 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 	@Override
 	public boolean getDatabaseStatus() throws IOException {
 		return true;
+	}
+
+	@Override
+	public List<SearcherInfo> getSearchersInfoByOp(String opId)
+			throws IOException, SearchOperationNotFoundException {
+		for (SearchMission mission : missionsList) {
+			for (SearchOperation op : mission.getOpsList()) {
+				if (op.getId().equals(opId)) {
+					return op.getSearchers();
+				}
+			}
+		}
+		return Collections.emptyList();
 	}
 }

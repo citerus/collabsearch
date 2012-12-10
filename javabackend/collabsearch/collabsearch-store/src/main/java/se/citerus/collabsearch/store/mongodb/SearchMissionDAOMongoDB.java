@@ -23,6 +23,7 @@ import org.bson.types.ObjectId;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
+import se.citerus.collabsearch.model.CloudFoundryMongoConnectionInfo;
 import se.citerus.collabsearch.model.FileMetadata;
 import se.citerus.collabsearch.model.GroupNode;
 import se.citerus.collabsearch.model.Rank;
@@ -32,6 +33,7 @@ import se.citerus.collabsearch.model.SearchMission;
 import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.SearchOperationWrapper;
 import se.citerus.collabsearch.model.SearchZone;
+import se.citerus.collabsearch.model.SearcherInfo;
 import se.citerus.collabsearch.model.Status;
 import se.citerus.collabsearch.model.exceptions.SearchGroupNotFoundException;
 import se.citerus.collabsearch.model.exceptions.SearchMissionNotFoundException;
@@ -39,6 +41,7 @@ import se.citerus.collabsearch.model.exceptions.SearchOperationNotFoundException
 import se.citerus.collabsearch.model.exceptions.SearchZoneNotFoundException;
 import se.citerus.collabsearch.store.facades.SearchMissionDAO;
 import se.citerus.collabsearch.store.facades.SearchOperationDAO;
+import se.citerus.collabsearch.store.utils.CloudFoundrySettingsParser;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -80,23 +83,45 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 		String dbUser = "";
 		String dbPass = "";
 		String dbAddr = "";
+		
+//		try {
+//			Properties prop = new Properties();
+//			InputStream stream;
+//			stream = SearchMissionDAOMongoDB.class.getResourceAsStream(
+//				"/db-server-config.properties");
+//			if (stream != null) {
+//				prop.load(stream);
+//				dbName = prop.getProperty("DBNAME", "lookingfor");
+//				dbPort = prop.getProperty("DBPORT", "27017");
+//				dbUser = prop.getProperty("DBUSER", "");
+//				dbPass = prop.getProperty("DBPASS", "");
+//				dbAddr = prop.getProperty("DBADDR", "localhost");
+//			}
+//			System.out.println("Found database name: " + dbName);
+//		} catch (FileNotFoundException e) {
+//			e.printStackTrace();
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+		//New envvar-based config
 		try {
-			Properties prop = new Properties();
-			InputStream stream;
-			stream = SearchMissionDAOMongoDB.class.getResourceAsStream(
-				"/db-server-config.properties");
-			if (stream != null) {
-				prop.load(stream);
-				dbName = prop.getProperty("DBNAME", "lookingfor");
-				dbPort = prop.getProperty("DBPORT", "27017");
-				dbUser = prop.getProperty("DBUSER", "");
-				dbPass = prop.getProperty("DBPASS", "");
-				dbAddr = prop.getProperty("DBADDR", "localhost");
+			String envVarJsonString = System.getenv("VCAP_SERVICES");
+			if (envVarJsonString != null) {
+				CloudFoundryMongoConnectionInfo connectionInfo = CloudFoundrySettingsParser.parseVcapServicesEnvVar(envVarJsonString);
+				dbName = connectionInfo.getDb();
+				dbPort = "" + connectionInfo.getPort();
+				dbUser = connectionInfo.getUsername();
+				dbPass = connectionInfo.getPassword();
+				dbAddr = connectionInfo.getHost();
+			} else {
+				System.out.println("VCAP_SERVICES not declared, falling back to defaults");
+				dbName = "lookingfor";
+				dbPort = "27017";
+				dbUser = "f6b2f4e2-5b8f-4efd-a98f-a2467f45deb6";
+				dbPass = "0d8cfbad-12bd-4283-95c9-5e5c1ee8cd19";
+				dbAddr = "localhost";
 			}
-			System.out.println("Found database name: " + dbName);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		
@@ -111,13 +136,7 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 			}
 			boolean authenticated = db.authenticate(dbUser, dbPass.toCharArray());
 			if (authenticated) {
-				missionColl = db.getCollection("searchmissions");
-				missionStatusColl = db.getCollection("missionstatuses");
-				operationsColl = db.getCollection("searchops");
-				opStatusColl = db.getCollection("opstatuses");
-				searcherColl = db.getCollection("searchers");
-				zonesColl = db.getCollection("searchzones");
-				groupsColl = db.getCollection("searchgroups");
+				initCollections(db);
 				System.out.println("MongoDB successfully initialized");
 			} else {
 				throw new IOException("Authentication failure for user " + dbUser);
@@ -129,6 +148,16 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	private void initCollections(DB db) {
+		missionColl = db.getCollection("searchmissions");
+		missionStatusColl = db.getCollection("missionstatuses");
+		operationsColl = db.getCollection("searchops");
+		opStatusColl = db.getCollection("opstatuses");
+		searcherColl = db.getCollection("searchers");
+		zonesColl = db.getCollection("searchzones");
+		groupsColl = db.getCollection("searchgroups");
 	}
 	
 	public void setDebugDB(String dbName) {
@@ -142,13 +171,7 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 			
 			System.out.println("Switching db to " + dbName);
 			DB db = mongo.getDB(dbName);
-			missionColl = db.getCollection("searchmissions");
-			missionStatusColl = db.getCollection("missionstatuses");
-			operationsColl = db.getCollection("searchops");
-			opStatusColl = db.getCollection("opstatuses");
-			searcherColl = db.getCollection("searchers");
-			zonesColl = db.getCollection("searchzones");
-			groupsColl = db.getCollection("searchgroups");
+			initCollections(db);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -565,7 +588,8 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 	}
 
 	@Override
-	public Map<String, String> getUsersForSearchOp(String opId) throws IOException, SearchOperationNotFoundException {
+	public Map<String, String> getSearcherNamesByOp(String opId)
+			throws IOException, SearchOperationNotFoundException {
 		BasicDBObject query = makeObjectIdQuery(opId);
 		BasicDBObject fields = new BasicDBObject("searchers", 1);
 		DBObject dbo = operationsColl.findOne(query, fields);
@@ -590,6 +614,38 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 				searcher.getString("name"));
 		}
 		return map;
+	}
+	
+	@Override
+	public List<SearcherInfo> getSearchersInfoByOp(String opId) 
+			throws IOException, SearchOperationNotFoundException {
+		BasicDBObject query = makeObjectIdQuery(opId);
+		BasicDBObject fields = new BasicDBObject("searchers", 1);
+		DBObject dbo = operationsColl.findOne(query, fields);
+		if (dbo == null) {
+			throw new SearchOperationNotFoundException(opId);
+		}
+		BasicDBList list = (BasicDBList) dbo.get("searchers");
+		DBCursor cursor = null;
+		if (list != null) {
+			BasicDBObject searcherQuery = new BasicDBObject();
+			searcherQuery.append("_id", new BasicDBObject("$in", list));
+			cursor = searcherColl.find(searcherQuery);
+		}
+		if (cursor == null) {
+			return Collections.emptyList();
+		}
+		List<SearcherInfo> outputList = new ArrayList<SearcherInfo>();
+		while(cursor.hasNext()) {
+			BasicDBObject searcherDBO = (BasicDBObject) cursor.next();
+			SearcherInfo searcher = new SearcherInfo(
+					searcherDBO.getObjectId("_id").toString(),
+					searcherDBO.getString("name"),
+					searcherDBO.getString("tele"),
+					searcherDBO.getString("email"));
+			outputList.add(searcher);
+		}
+		return outputList;
 	}
 	
 	@Override

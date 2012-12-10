@@ -10,6 +10,7 @@ import se.citerus.collabsearch.model.SearchGroup;
 import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.SearchOperationWrapper;
 import se.citerus.collabsearch.model.SearchZone;
+import se.citerus.collabsearch.model.SearcherInfo;
 import se.citerus.collabsearch.model.Status;
 import se.citerus.collabsearch.model.exceptions.SearchGroupNotFoundException;
 import se.citerus.collabsearch.model.exceptions.SearchOperationNotFoundException;
@@ -47,7 +48,8 @@ public interface SearchOperationDAO {
 	public SearchZone getZoneById(String zoneId) throws IOException,
 			SearchZoneNotFoundException;
 
-	public void editZone(String zoneId, SearchZone zone) throws IOException, SearchZoneNotFoundException;
+	public void editZone(String zoneId, SearchZone zone) 
+			throws IOException, SearchZoneNotFoundException;
 
 	public String createZone(String opId, SearchZone zone) throws IOException;
 
@@ -66,7 +68,7 @@ public interface SearchOperationDAO {
 	public SearchGroup getSearchGroup(String groupId) throws IOException,
 			SearchGroupNotFoundException;
 
-	public Map<String, String> getUsersForSearchOp(String opId)
+	public Map<String, String> getSearcherNamesByOp(String opId)
 			throws IOException, SearchOperationNotFoundException;
 
 	public String createSearchGroup(SearchGroup group, String opId)
@@ -86,5 +88,8 @@ public interface SearchOperationDAO {
 			SearchOperationNotFoundException;
 	
 	public boolean getDatabaseStatus() throws IOException;
+
+	public List<SearcherInfo> getSearchersInfoByOp(String opId) 
+			throws IOException, SearchOperationNotFoundException;
 
 }

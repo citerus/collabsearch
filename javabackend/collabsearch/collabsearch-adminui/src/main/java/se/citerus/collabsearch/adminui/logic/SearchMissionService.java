@@ -1,6 +1,7 @@
 package se.citerus.collabsearch.adminui.logic;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -60,14 +61,25 @@ public class SearchMissionService {
 		return searchMission;
 	}
 
+	public void addOrModifyMission(String name, String description, int prio,
+			Status status, String missionId) throws Exception {
+		Validate.notEmpty(name);
+		Validate.notEmpty(description);
+		Validate.isTrue(prio >= 0);
+		Validate.notNull(status);
+		Validate.isTrue(status.getId() >= 0);
+		Validate.notEmpty(status.getName());
+		Validate.notEmpty(status.getDescr());
+		SearchMission mission = new SearchMission(missionId, name, description, prio, status);
+		addOrModifyMission(mission, missionId);
+	}
+	
 	public String addOrModifyMission(SearchMission mission, String missionId) throws Exception {
 		Validate.notNull(mission);
 		//TODO break into two methods
 		if (missionId == null) {
-			//TODO create mission obj here instead
 			return searchMissionDAO.createSearchMission(mission);
 		} else {
-			//TODO create mission obj here instead
 			Validate.notEmpty(missionId);
 			searchMissionDAO.editSearchMission(mission, missionId);
 			return null;
@@ -75,7 +87,6 @@ public class SearchMissionService {
 	}
 	
 	public void addFileToMission(String missionId, FileMetadata metadata) throws Exception {
-		//TODO create filemetadata here instead
 		Validate.notEmpty(missionId);
 		Validate.notNull(metadata);
 		String fileName = searchMissionDAO.addFileMetadata(missionId, metadata);
@@ -91,8 +102,9 @@ public class SearchMissionService {
 		try {
 			File file = new File(metadata.getFilePath());
 			if (file.exists()) {
-				//TODO log: file not found on deletion
 				file.delete();
+			} else {
+				System.err.println("File not found: filename");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

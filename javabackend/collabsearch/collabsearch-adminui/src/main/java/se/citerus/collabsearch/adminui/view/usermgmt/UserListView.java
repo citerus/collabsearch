@@ -58,7 +58,7 @@ public class UserListView extends CustomComponent {
 	public void init() {
 		buildMainLayout();
 		buildPopupWindow();
-		listener.setMainWindowCaption("Collaborative Search - Användare");
+		listener.setMainWindowCaption("Missing People - Användare");
 
 		homeButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {

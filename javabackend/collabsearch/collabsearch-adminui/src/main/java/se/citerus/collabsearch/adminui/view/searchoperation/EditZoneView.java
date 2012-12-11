@@ -67,6 +67,8 @@ public class EditZoneView extends CustomComponent {
 	}
 
 	public void init() {
+		listener.setMainWindowCaption("Missing People - Sökområde");
+		
 		mainLayout.setWidth("100%");
 		mainLayout.setHeight("100%");
 		mainLayout.setMargin(false, true, false, true);

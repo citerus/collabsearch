@@ -102,6 +102,8 @@ public class GroupEditView extends CustomComponent {
 	}
 
 	private void buildMainLayout() {
+		listener.setMainWindowCaption("Missing People - Sökgrupp");
+		
 		mainLayout.setSizeFull();
 		mainLayout.setMargin(true);
 		mainLayout.setSpacing(true);

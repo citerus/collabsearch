@@ -641,8 +641,8 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 			SearcherInfo searcher = new SearcherInfo(
 					searcherDBO.getObjectId("_id").toString(),
 					searcherDBO.getString("name"),
-					searcherDBO.getString("tele"),
-					searcherDBO.getString("email"));
+					searcherDBO.getString("email"),
+					searcherDBO.getString("tele"));
 			outputList.add(searcher);
 		}
 		return outputList;

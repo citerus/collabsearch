@@ -76,13 +76,13 @@ public class SearchMissionEditView extends CustomComponent {
 		if (missionId != null) { //edit mission mode
 			this.missionId = missionId;
 			populateForms(missionId);
-			listener.setMainWindowCaption("Collaborative Search - Redigera sökuppdrag");
+			listener.setMainWindowCaption("Missing People - Redigera sökuppdrag");
 		} else { //new mission mode
 			titleField.setValue(null);
 			descrField.setValue(descrField.getNullRepresentation());
 			prioField.setValue(prioField.getNullRepresentation());
 			statusField.setValue(null);
-			listener.setMainWindowCaption("Collaborative Search - Nytt sökuppdrag");
+			listener.setMainWindowCaption("Missing People - Nytt sökuppdrag");
 		}
 	}
 
@@ -199,7 +199,7 @@ public class SearchMissionEditView extends CustomComponent {
 	private void makeFormItem(VerticalLayout formLayout, Label label, AbstractField field, Alignment labelAlignment) {
 		HorizontalLayout layout = new HorizontalLayout();
 		layout.setWidth("100%");
-		label.setWidth("100%"); //TODO minska label width?
+		label.setWidth("100%");
 		layout.addComponent(label);
 		layout.setExpandRatio(label, 1f);
 		layout.setComponentAlignment(label, labelAlignment);
@@ -231,21 +231,13 @@ public class SearchMissionEditView extends CustomComponent {
 	}
 	
 	private void saveSearchMissionData() {
-		//popup dialogue here?
 		if (allFieldsValid()) {
 			try {
 				int prio = Integer.parseInt(prioField.getValue().toString());
 				Status status = service.getStatusByName(statusField.getValue().toString());
 				String title = (String) titleField.getValue();
 				String description = (String) descrField.getValue();
-				SearchMission mission = new SearchMission(
-						missionId, 
-						title, 
-						description, 
-						prio, 
-						status
-				);
-				service.addOrModifyMission(mission, missionId);
+				service.addOrModifyMission(title, description, prio, status, missionId);
 				missionId = null;
 				listener.switchToSearchMissionListView();
 			} catch (Exception e) {

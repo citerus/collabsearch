@@ -27,7 +27,7 @@ public class FileUploadView extends CustomComponent {
 	}
 
 	public void init() {
-		listener.setMainWindowCaption("Collaborative Search - Filhantering");
+		listener.setMainWindowCaption("Missing People - Filhantering");
 
 		mainLayout.setSizeFull();
 		mainLayout.setMargin(true);
@@ -38,8 +38,7 @@ public class FileUploadView extends CustomComponent {
 		HorizontalLayout fileButtonsLayout = new HorizontalLayout();
 		fileButtonsLayout.setSpacing(true);
 
-		fileUploadHandler = new FileUploadService();
-		fileUploadHandler.setViewRef(listener);
+		fileUploadHandler = new FileUploadService(listener);
 
 		final Upload fileUpload = new Upload(null, fileUploadHandler);
 		fileUpload.setButtonCaption(null);

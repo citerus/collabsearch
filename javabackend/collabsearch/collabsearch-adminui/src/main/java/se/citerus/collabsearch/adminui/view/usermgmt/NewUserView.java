@@ -41,7 +41,7 @@ public class NewUserView extends CustomComponent {
 		fragment.roleField.setContainerDataSource(getRolesDataSource());
 		mainLayout.addComponent(fragment);
 		
-		listener.setMainWindowCaption("Collaborative Search - Användarhantering");
+		listener.setMainWindowCaption("Missing People - Användarhantering");
 		
 		fragment.saveButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {

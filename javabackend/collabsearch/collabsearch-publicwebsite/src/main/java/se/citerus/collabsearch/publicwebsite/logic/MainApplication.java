@@ -34,7 +34,7 @@ public class MainApplication extends Application {
 	
 	@Override
 	public void init() {
-		mainWindow = new Window("Collaborative Search");
+		mainWindow = new Window("Missing People");
 		setMainWindow(mainWindow);
 		setTheme("mytheme");
 		

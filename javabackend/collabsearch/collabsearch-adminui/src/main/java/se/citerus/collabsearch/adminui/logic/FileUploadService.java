@@ -28,13 +28,20 @@ public class FileUploadService implements Upload.SucceededListener,
 	
 	@Autowired
 	private SearchMissionService service;
+	
+	public FileUploadService(ViewSwitchController listener) {
+		this.listener = listener;
+	}
 
+	public void setParentMissionId(String parentMissionId) {
+		this.parentMissionId = parentMissionId;
+	}
+	
 	public OutputStream receiveUpload(String filename, String mimeType) {
 		FileOutputStream fos = null;
 		
 		File file = getPathToServerStorage(filename);
 		
-//		String internalFileId = "" + new Random().nextLong(); //do files need id?
 		metadata = new FileMetadata(filename, mimeType, file.getPath());
 		try {
 			fos = new FileOutputStream(file);
@@ -50,10 +57,13 @@ public class FileUploadService implements Upload.SucceededListener,
 		try {
 			String catalina_base = System.getProperty("catalina.base", "");
 			if (catalina_base.isEmpty()) {
-				System.err.println("CATALINA_BASE not set");
-				listener.displayError("Filhanteringsfel", "Filuppladdningskatalogen kunde ej skapas, ");
+				System.err.println("Enviro var catalina.base not found, " +
+						"falling back to local disk upload folder");
 				return null;
-			} else if (!catalina_base.endsWith("" + separatorChar)) {
+			} else {
+				catalina_base = "/tmp";
+			}
+			if (!catalina_base.endsWith("" + separatorChar)) {
 				catalina_base += separatorChar;
 			}
 			
@@ -89,9 +99,8 @@ public class FileUploadService implements Upload.SucceededListener,
 	}
 
 	public void uploadSucceeded(SucceededEvent event) {
-		//add filemetadata to db
 		try {
-			service.addFileToMission(parentMissionId, metadata);
+			service.addFileToMission(parentMissionId, metadata); //add filemetadata to db
 		} catch (RuntimeException e) {
 			e.printStackTrace();
 			listener.displayError("Fel", "Ett fel uppstod vid filöverföringen");
@@ -110,18 +119,6 @@ public class FileUploadService implements Upload.SucceededListener,
 		listener.displayError("Filuppladdning", "Filöverföringen misslyckades.");
 		parentMissionId = null;
 		metadata = null;
-	}
-
-	public String getParentMissionId() {
-		return parentMissionId;
-	}
-
-	public void setParentMissionId(String parentMissionId) {
-		this.parentMissionId = parentMissionId;
-	}
-
-	public void setViewRef(ViewSwitchController listener) {
-		this.listener = listener;
 	}
 
 }

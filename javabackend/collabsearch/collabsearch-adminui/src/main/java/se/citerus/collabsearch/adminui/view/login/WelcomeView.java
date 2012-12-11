@@ -31,7 +31,7 @@ public class WelcomeView extends CustomComponent {
 	
 	public void init() {
 		buildMainLayout();
-		listener.setMainWindowCaption("Välkommen");
+		listener.setMainWindowCaption("Missing People - Välkommen");
 		
 		userButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {

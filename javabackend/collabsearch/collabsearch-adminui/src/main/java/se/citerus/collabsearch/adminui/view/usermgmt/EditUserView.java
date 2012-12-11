@@ -47,7 +47,7 @@ public class EditUserView extends CustomComponent {
 		
 		fragment.removePasswordField();
 		
-		listener.setMainWindowCaption("Collaborative Search - Användarhantering");
+		listener.setMainWindowCaption("Missing People - Användarhantering");
 		
 		fragment.saveButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {

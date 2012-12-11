@@ -58,6 +58,14 @@ public class SMSService {
 		}
 	}
 
+	/**
+	 * Sends the included message to the listed phone numbers using the Twilio REST API. 
+	 * Failed deliveries are returned as a list of phone numbers.
+	 * @param searcherList the list of SearcherInfo objects containing phone numbers for searchers to be contacted.
+	 * @param message The message to be sent out. Must be less than or equal to 140 characters.
+	 * @return an List containing the numbers to which the SMS was undeliverable.
+	 * @throws Exception
+	 */
 	public List<String> sendSMSToSearchers(List<SearcherInfo> searcherList,
 			SMSMessage message) throws Exception {
 		Validate.notEmpty(searcherList);
@@ -67,17 +75,22 @@ public class SMSService {
 		
 		final List<String> undeliverableNumbers = new ArrayList<String>(0);
 		
+		if (client == null) {
+			throw new Exception("SMS kan ej skickas eftersom SMS-tjänsten ej är konfigurerad");
+		}
 		final Account mainAccount = client.getAccount();
 		final SmsFactory smsFactory = mainAccount.getSmsFactory();
 		final Map<String, String> smsParams = new HashMap<String, String>();
 		for (SearcherInfo searcherInfo : searcherList) {
-			String receiverNumber = searcherInfo.getTele();
-			receiverNumber = receiverNumber.replace("-", "").replace(" ", "");
-			smsParams.put("To", "+46" + receiverNumber);
+			String toNumber = searcherInfo.getTele();
+			toNumber = toNumber.replace("-", "").replace(" ", "");
+			toNumber = toNumber.startsWith("+46") ? toNumber : "+46" + toNumber;
+			smsParams.put("To", toNumber);
 			smsParams.put("From", CALLER_NUMBER); //TODO Replace with a valid phone number in config-file
 			smsParams.put("Body", messageString);
 			try {
 				Sms sms = smsFactory.create(smsParams);
+//				System.out.println("Sending SMS to +46" + toNumber);
 			} catch (TwilioRestException e) {
 				undeliverableNumbers.add(searcherInfo.getName() + " : " + searcherInfo.getTele());
 				e.printStackTrace();

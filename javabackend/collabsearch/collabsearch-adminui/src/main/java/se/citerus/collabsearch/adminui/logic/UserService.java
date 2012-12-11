@@ -17,7 +17,7 @@ import se.citerus.collabsearch.model.exceptions.UserNotFoundException;
 import se.citerus.collabsearch.store.facades.UserDAO;
 
 @Service
-public class UserService { //TODO refactor into spring service
+public class UserService {
 
 	@Autowired
 	private UserDAO userDAO;

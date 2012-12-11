@@ -216,7 +216,7 @@ public class SearchOperationService {
 		return list;
 	}
 
-	public String getDefaultSMSBody() { //TODO replace with user-defined string
+	public String getDefaultSMSBody() { //TODO replace with user-defined/external string
 		String bodyMsg = "Du är kallad till skallgång.";
 		return bodyMsg;
 	}

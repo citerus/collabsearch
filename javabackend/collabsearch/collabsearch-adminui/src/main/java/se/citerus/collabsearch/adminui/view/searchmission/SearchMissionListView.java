@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import org.apache.commons.lang.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +41,7 @@ import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.DateField;
 import com.vaadin.ui.Embedded;
 import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.InlineDateField;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.Table;
@@ -116,7 +118,7 @@ public class SearchMissionListView extends CustomComponent {
 	
 	public void init() {
 		buildMainLayout();
-		listener.setMainWindowCaption("Collaborative Search - Sökuppdrag");
+		listener.setMainWindowCaption("Missing People - Sökuppdrag");
 		
 		homeButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
@@ -754,7 +756,7 @@ public class SearchMissionListView extends CustomComponent {
 			
 			SearchOperation op = opService.getSearchOp(opId);
 			
-			smsDateField.setValue(op.getDate().getTime()); //FIXME date format not recognized
+			smsDateField.setValue(op.getDate());
 			smsLocField.setValue(op.getLocation());
 			smsOpTitleField.setValue(op.getTitle());
 			smsContactField.setValue(opService.getOpOrganizerContactInfo());
@@ -767,7 +769,14 @@ public class SearchMissionListView extends CustomComponent {
 		}
 	}
 	
-	private void handleSendSMSButtonClick(SMSMessage message) {
+	private void handleSendSMSButtonClick() {
+		SMSMessage message = new SMSMessage(
+			((Date)smsDateField.getValue()).getTime(), 
+			smsLocField.getValue().toString(), 
+			smsBodyField.getValue().toString(), 
+			smsOpTitleField.getValue().toString(), 
+			smsContactField.getValue().toString());
+		
 		String messageString = message.toString();
 		if (messageString.length() > 140) {
 			listener.displayError("Fel vid SMS-utskick", 
@@ -811,15 +820,15 @@ public class SearchMissionListView extends CustomComponent {
 							"Följande nummer gick ej att nå: " + sb.toString());
 				}
 			} catch (Exception e) {
-				listener.displayError("Fel", e.getMessage());
+				listener.displayError("Fel vid SMS-utskick", e.getMessage());
 				e.printStackTrace();
 			}
-			
 		}
 	}
 	
 	private void buildPopupWindow() {
-		popupWindow = new Window("Meddelande");
+		popupWindow = new Window("Skapa SMS-utskick");
+		popupWindow.setWidth("250px");
 		popupWindow.setModal(true);
 		popupWindow.center();
 
@@ -827,32 +836,38 @@ public class SearchMissionListView extends CustomComponent {
 		layout.setMargin(true);
 		layout.setSpacing(true);
 
-		Label popupMessage = new Label("Skapa SMS-utskick");
-		layout.addComponent(popupMessage);
-
 		VerticalLayout formLayout = new VerticalLayout();
 		formLayout.setWidth("100%");
 		formLayout.setSpacing(true);
 
 		smsDateField = new DateField("Datum för sökoperation");
+		smsDateField.setWidth("100%");
+		smsDateField.setImmediate(true);
+		smsDateField.setLocale(new Locale("sv", "SE"));
+		smsDateField.setResolution(InlineDateField.RESOLUTION_MIN);
 		formLayout.addComponent(smsDateField);
 
 		smsLocField = new TextField("Ort för sökoperation");
+		smsLocField.setWidth("100%");
 		formLayout.addComponent(smsLocField);
 
 		smsOpTitleField = new TextField("Operationsnamn");
+		smsOpTitleField.setWidth("100%");
 		formLayout.addComponent(smsOpTitleField);
 
 		smsContactField = new TextField("Kontaktinfo för översta sökbefäl");
+		smsContactField.setWidth("100%");
 		formLayout.addComponent(smsContactField);
 
 		smsBodyField = new TextField("Meddelandekropp");
+		smsBodyField.setWidth("100%");
+		smsBodyField.setHeight("75px");
 		formLayout.addComponent(smsBodyField);
 
 		layout.addComponent(formLayout);
 
 		HorizontalLayout buttonLayout = new HorizontalLayout();
-		buttonLayout.setWidth("100%");
+		buttonLayout.setSpacing(true);
 
 		Button closePopupButton = new Button("Avbryt");
 		closePopupButton.addListener(new Button.ClickListener() {
@@ -861,21 +876,13 @@ public class SearchMissionListView extends CustomComponent {
 			}
 		});
 		buttonLayout.addComponent(closePopupButton);
-		buttonLayout.setComponentAlignment(closePopupButton,
-				Alignment.BOTTOM_RIGHT);
 
 		Button sendSMSButton = new Button("Skicka");
 		sendSMSButton.addListener(new ClickListener() {
 			@Override
 			public void buttonClick(ClickEvent event) {
 				try {
-					SMSMessage message = new SMSMessage(
-							new Date((Long) smsDateField.getValue()).toString(), 
-							smsLocField.getValue().toString(), 
-							smsBodyField.getValue().toString(), 
-							smsOpTitleField.getValue().toString(), 
-							smsContactField.getValue().toString());
-					handleSendSMSButtonClick(message);
+					handleSendSMSButtonClick();
 				} catch (Exception e) {
 					e.printStackTrace();
 				} finally {
@@ -884,10 +891,9 @@ public class SearchMissionListView extends CustomComponent {
 			}
 		});
 		buttonLayout.addComponent(sendSMSButton);
-		buttonLayout.setComponentAlignment(sendSMSButton,
-				Alignment.BOTTOM_RIGHT);
 
 		layout.addComponent(buttonLayout);
+		layout.setComponentAlignment(buttonLayout, Alignment.BOTTOM_RIGHT);
 	}
 	
 }

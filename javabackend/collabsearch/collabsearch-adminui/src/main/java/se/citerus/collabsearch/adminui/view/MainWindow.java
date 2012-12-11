@@ -30,7 +30,7 @@ public class MainWindow extends Window implements ViewSwitchController {
 	private NewUserView newUserView;
 
 	public MainWindow() {
-		setCaption("Collaborative Search - Inloggning");
+		setCaption("Missing People - Inloggning");
 		
 		addListener(new ResizeListener() {
 			@Override

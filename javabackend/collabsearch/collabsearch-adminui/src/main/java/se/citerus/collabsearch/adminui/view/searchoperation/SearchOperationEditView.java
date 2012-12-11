@@ -140,6 +140,8 @@ public class SearchOperationEditView extends CustomComponent {
 	}
 
 	private void buildMainLayout() {
+		listener.setMainWindowCaption("Missing People - Sökoperation");
+		
 		mainLayout.setSizeFull();
 		mainLayout.setMargin(true);
 		mainLayout.setSpacing(true);

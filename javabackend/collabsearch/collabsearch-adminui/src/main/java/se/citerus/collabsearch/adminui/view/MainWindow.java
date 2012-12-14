@@ -35,9 +35,9 @@ public class MainWindow extends Window implements ViewSwitchController {
 		addListener(new ResizeListener() {
 			@Override
 			public void windowResized(ResizeEvent e) {
-				System.out.println(
-					"New height: " + e.getWindow().getBrowserWindowHeight() + " " + 
-					"New width: " + e.getWindow().getBrowserWindowWidth());
+//				System.out.println(
+//					"New height: " + e.getWindow().getBrowserWindowHeight() + " " + 
+//					"New width: " + e.getWindow().getBrowserWindowWidth());
 			}
 		});
 	}

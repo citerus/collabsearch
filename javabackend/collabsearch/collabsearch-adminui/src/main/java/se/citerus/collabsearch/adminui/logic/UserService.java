@@ -40,8 +40,12 @@ public class UserService {
 		return userDAO.getAllUsers();
 	}
 
-	public User findUser(String selectedUser) throws IOException, UserNotFoundException {
-		return userDAO.getUserByUsername(selectedUser);
+	public User findUserByName(String username) throws IOException, UserNotFoundException {
+		return userDAO.getUserByUsername(username);
+	}
+	
+	public User findUserById(String userId) throws UserNotFoundException, IOException {
+		return userDAO.findUserById(userId);
 	}
 
 	public void removeUser(String username) throws IOException, UserNotFoundException {
@@ -57,14 +61,15 @@ public class UserService {
 		return null;
 	}
 
-	public void editUser(String username, String email, String tele, String role)
+	public void editUser(String userId, String username, String email, String tele, String role)
 			throws IOException, UserNotFoundException, DuplicateUserDataException {
+		notEmpty(userId);
 		notEmpty(username);
 		notEmpty(email);
 		notEmpty(tele);
 		notEmpty(role);
-		User user = new User(username, email, tele, role);
-		userDAO.editExistingUser(user);
+		User user = new User(username, null, email, tele, role);
+		userDAO.editExistingUser(userId, user);
 	}
 
 	public String addUser(String username, String password, String email, String tele,
@@ -88,10 +93,10 @@ public class UserService {
 		return hashedPassword;
 	}
 	
-	public void changePassword(String username, String newPassword) throws IOException {
-		notEmpty(username);
+	public void changePassword(String userId, String newPassword) throws IOException {
+		notEmpty(userId);
 		notEmpty(newPassword);
-		userDAO.changePasswordForUser(username, hashPassword(newPassword));
+		userDAO.changePasswordForUser(userId, hashPassword(newPassword));
 	}
 
 }

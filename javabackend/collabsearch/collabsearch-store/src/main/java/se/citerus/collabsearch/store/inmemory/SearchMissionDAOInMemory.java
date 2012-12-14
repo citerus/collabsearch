@@ -5,7 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.Date;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -14,8 +13,6 @@ import java.util.Random;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Transformer;
 import org.springframework.stereotype.Repository;
 
 import se.citerus.collabsearch.model.FileMetadata;
@@ -40,14 +37,12 @@ import se.citerus.collabsearch.store.facades.SearchOperationDAO;
 public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperationDAO {
 	private static List<SearchMission> missionsList;
 	private static List<Status> statusList;
-	private List<Rank> ranksList;
 	private List<Status> opStatusList;
 
 	public SearchMissionDAOInMemory() {
 		if (missionsList == null) {
 			missionsList = new ArrayList<SearchMission>();
 			statusList = new ArrayList<Status>();
-			ranksList = new ArrayList<Rank>();
 			
 			Random r = new Random();
 			addMockStatuses();
@@ -64,7 +59,7 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 	}
 	
 	@PostConstruct
-	private void init() {
+	protected void init() {
 		System.out.println("Initiated inmem db");
 	}
 
@@ -356,6 +351,7 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 				}
 			}
 		}
+		throw new IOException("Operationen med id " + opId + " ej funnen!");
 	}
 	
 	@Override
@@ -516,11 +512,20 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 
 	@Override
 	public SearchOperationWrapper[] getAllSearchOpsInShortForm() throws IOException {
-		Random r = new Random();
-		SearchOperationWrapper[] array = new SearchOperationWrapper[3];
-		array[0] = new SearchOperationWrapper("" + r.nextLong(), "Sökoperation 1", "text...");
-		array[1] = new SearchOperationWrapper("" + r.nextLong(), "Sökoperation 2", "text...");
-		array[2] = new SearchOperationWrapper("" + r.nextLong(), "Sökoperation 3", "text...");
+		SearchOperationWrapper[] array = null;
+		ArrayList<SearchOperation> list = new ArrayList<SearchOperation>();
+		for (SearchMission mission : missionsList) {
+			for (SearchOperation op : mission.getOpsList()) {
+				if (mission.getStatus().getId() != 0) {
+					list.add(op);
+				}
+			}
+		}
+		array = new SearchOperationWrapper[list.size()];
+		for (int j = 0; j < array.length; j++) {
+			SearchOperation op = list.get(j);
+			array[j] = new SearchOperationWrapper(op.getId(), op.getTitle(), op.getDescr());
+		}
 		return array;
 	}
 
@@ -585,7 +590,45 @@ public class SearchMissionDAOInMemory implements SearchMissionDAO, SearchOperati
 	public SearchOperationWrapper[] getSearchOpsByFilter(String title,
 			String location, String startDate, String endDate)
 			throws IOException {
-		return null;
+		SearchOperationWrapper[] array = null;
+		ArrayList<SearchOperation> list = new ArrayList<SearchOperation>();
+		for (SearchMission mission : missionsList) {
+			for (SearchOperation op : mission.getOpsList()) {
+				if (mission.getStatus().getId() != 0) {
+					if (matchesQuery(op, title, location, startDate, endDate)) {
+						list.add(op);
+					}
+				}
+			}
+		}
+		array = new SearchOperationWrapper[list.size()];
+		for (int j = 0; j < array.length; j++) {
+			SearchOperation op = list.get(j);
+			array[j] = new SearchOperationWrapper(op.getId(), op.getTitle(), op.getDescr());
+		}
+		return array;
+	}
+
+	private boolean matchesQuery(SearchOperation op, String title,
+			String location, String startDate, String endDate) {
+		boolean isMatch = false;
+		if (title != null) {
+			isMatch = op.getTitle().equals(title);
+		}
+		if (location != null) {
+			isMatch = op.getLocation().equals(location);
+		}
+		if (startDate != null) {
+			Date parsedDate = new Date(Long.parseLong(startDate));
+			int result = op.getDate().compareTo(parsedDate);
+			isMatch = result >= 0; //gte, same date or after
+		}
+		if (endDate != null) {
+			Date parsedDate = new Date(Long.parseLong(endDate));
+			int result = op.getDate().compareTo(parsedDate);
+			isMatch = result <= 0; //lte, same date or before
+		}
+		return isMatch;
 	}
 
 	@Override

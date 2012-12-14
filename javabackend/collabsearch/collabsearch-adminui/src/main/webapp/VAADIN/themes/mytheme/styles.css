@@ -165,3 +165,8 @@ div .v-panel-content-group-tree-panel {
 .textfield-layout > div {
 	margin: 9px 0px 0px !important;
 }
+
+.tree-help-label {
+	text-align: right;
+	font-style: italic;
+}

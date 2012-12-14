@@ -1,21 +1,16 @@
 package se.citerus.collabsearch.store.mongodb;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
-import java.util.Random;
 import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import org.bson.types.ObjectId;
-import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
@@ -34,11 +29,9 @@ import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
-import com.mongodb.DBPort;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 import com.mongodb.MongoOptions;
-import com.mongodb.QueryBuilder;
 import com.mongodb.ServerAddress;
 import com.mongodb.WriteResult;
 
@@ -65,27 +58,6 @@ public class UserDAOMongoDB implements UserDAO {
 		String dbUser = "";
 		String dbPass = "";
 		String dbAddr = "";
-		
-		//Obsolete properties-file-based config
-//		try {
-//			Properties prop = new Properties();
-//			InputStream stream;
-//			stream = UserDAOMongoDB.class.getResourceAsStream(
-//				"/db-server-config.properties");
-//			if (stream != null) {
-//				prop.load(stream);
-//				dbName = prop.getProperty("DBNAME", "lookingfor");
-//				dbPort = prop.getProperty("DBPORT", "27017");
-//				dbUser = prop.getProperty("DBUSER", "");
-//				dbPass = prop.getProperty("DBPASS", "");
-//				dbAddr = prop.getProperty("DBADDR", "localhost");
-//			}
-//			System.out.println("Found MongoDB database name: " + dbName);
-//		} catch (FileNotFoundException e) {
-//			e.printStackTrace();
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
 		
 		//New envvar-based config
 		try {
@@ -121,7 +93,7 @@ public class UserDAOMongoDB implements UserDAO {
 			boolean authenticated = db.authenticate(dbUser, dbPass.toCharArray());
 			if (authenticated) {
 				initCollections(db);
-				System.out.println("MongoDB successfully initialized");
+				System.out.println("MongoDB successfully initialized for UserDAO");
 			} else {
 				throw new IOException("Authentication failure for user " + dbUser);
 			}
@@ -182,7 +154,7 @@ public class UserDAOMongoDB implements UserDAO {
 			list = new ArrayList<User>();
 			while (cursor.hasNext()) {
 				BasicDBObject result = (BasicDBObject) cursor.next();
-				User user = new User(result.getString("username"),result.getString("role"));
+				User user = new User(result.getString("username"), null, null, result.getString("role"));
 				list.add(user);
 			}
 		}
@@ -196,6 +168,7 @@ public class UserDAOMongoDB implements UserDAO {
 			throw new UserNotFoundException(username);
 		}
 		User user = new User(
+			result.getObjectId("_id").toString(),
 			result.getString("username"), 
 			result.getString("password"), 
 			result.getString("email"), 
@@ -254,10 +227,11 @@ public class UserDAOMongoDB implements UserDAO {
 		}
 	}
 
-	public void editExistingUser(User user) throws IOException, UserNotFoundException, DuplicateUserDataException {
-		BasicDBObject query = new BasicDBObject("username", user.getUsername());
-		BasicDBObject userObject = makeUserDBO(user);
-		WriteResult result = userColl.update(query, userObject);
+	public void editExistingUser(String userId, User user) throws IOException, UserNotFoundException, DuplicateUserDataException {
+		BasicDBObject query = new BasicDBObject("_id", new ObjectId(userId));
+		BasicDBObject userObject = makeUserDBO(user, false);
+		BasicDBObject updateObject = new BasicDBObject("$set", userObject);
+		WriteResult result = userColl.update(query, updateObject);
 		if (result.getField("code") != null) {
 			int code = Integer.parseInt(result.getField("code").toString());
 			if (code == 11000 || code == 11001) {
@@ -267,7 +241,7 @@ public class UserDAOMongoDB implements UserDAO {
 	}
 
 	public String addNewUser(User user) throws IOException, DuplicateUserDataException {
-		BasicDBObject userObject = makeUserDBO(user);
+		BasicDBObject userObject = makeUserDBO(user, true);
 //		userObject.append("authref", generateSaltForUser()); //TODO use salt for passwords?
 		WriteResult result = userColl.insert(userObject);
 		if (result.getField("code") != null) {
@@ -277,13 +251,15 @@ public class UserDAOMongoDB implements UserDAO {
 			}
 		}
 		checkResult(result, OpType.INSERT);
-		return userObject.getString("username");
+		return userObject.getObjectId("_id").toString();
 	}
 
-	private BasicDBObject makeUserDBO(User user) {
+	private BasicDBObject makeUserDBO(User user, boolean includePassword) {
 		BasicDBObject userObject = new BasicDBObject();
 		userObject.put("username", user.getUsername());
-		userObject.put("password", user.getPassword());
+		if (includePassword) {
+			userObject.put("password", user.getPassword());
+		}
 		userObject.put("email", user.getEmail());
 		userObject.put("tele", user.getTele());
 		userObject.put("role", user.getRole());
@@ -338,10 +314,27 @@ public class UserDAOMongoDB implements UserDAO {
 		String role = dbo.getString("role");
 		return new DbUser(username, password, role);
 	}
+	
+	@Override
+	public User findUserById(String userId) throws UserNotFoundException, IOException {
+		DBObject query = new BasicDBObject("_id", new ObjectId(userId));
+		BasicDBObject dbo = (BasicDBObject) userColl.findOne(query);
+		if (dbo != null) {
+			String id = dbo.getObjectId("_id").toString();
+			String username = dbo.getString("username");
+			String password = dbo.getString("password");
+			String email = dbo.getString("email");
+			String tele = dbo.getString("tele");
+			String role = dbo.getString("role");
+			return new User(id, username, password, email, tele, role);
+		} else {
+			throw new UserNotFoundException(userId);
+		}
+	}
 
 	@Override
-	public void changePasswordForUser(String username, String hashedPassword) throws IOException {
-		BasicDBObject query = new BasicDBObject("username", username);
+	public void changePasswordForUser(String userId, String hashedPassword) throws IOException {
+		BasicDBObject query = new BasicDBObject("_id", new ObjectId(userId));
 		BasicDBObject pwDBO = new BasicDBObject("password", hashedPassword);
 		BasicDBObject update = new BasicDBObject("$set", pwDBO);
 		WriteResult result = userColl.update(query, update);

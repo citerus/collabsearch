@@ -1,7 +1,6 @@
 package se.citerus.collabsearch.adminui.logic;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -35,11 +34,6 @@ public class SearchMissionService {
 	}
 
 	public void cleanUp() {
-		try {
-			searchMissionDAO.disconnect();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 	}
 
 	public void endMission(String missionId) throws Exception, SearchMissionNotFoundException {
@@ -61,7 +55,7 @@ public class SearchMissionService {
 		return searchMission;
 	}
 
-	public void addOrModifyMission(String name, String description, int prio,
+	public String addOrModifyMission(String name, String description, int prio,
 			Status status, String missionId) throws Exception {
 		Validate.notEmpty(name);
 		Validate.notEmpty(description);
@@ -71,7 +65,7 @@ public class SearchMissionService {
 		Validate.notEmpty(status.getName());
 		Validate.notEmpty(status.getDescr());
 		SearchMission mission = new SearchMission(missionId, name, description, prio, status);
-		addOrModifyMission(mission, missionId);
+		return addOrModifyMission(mission, missionId);
 	}
 	
 	public String addOrModifyMission(SearchMission mission, String missionId) throws Exception {

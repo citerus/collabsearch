@@ -5,7 +5,6 @@ import java.util.Date;
 import java.util.Locale;
 
 public class SMSMessage {
-	private static final String NEWLINE = "\n";
 	private static final Locale SV_SE = new Locale("sv", "SE");
 	
 	private final long date;

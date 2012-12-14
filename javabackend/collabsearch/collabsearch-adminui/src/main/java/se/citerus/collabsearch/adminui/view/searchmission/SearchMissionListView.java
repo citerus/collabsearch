@@ -25,9 +25,11 @@ import se.citerus.collabsearch.model.SearcherInfo;
 import se.citerus.collabsearch.model.exceptions.SearchMissionNotFoundException;
 import se.citerus.collabsearch.model.exceptions.SearchOperationNotFoundException;
 
+import com.vaadin.data.Container.Hierarchical;
 import com.vaadin.data.Item;
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
+import com.vaadin.data.util.HierarchicalContainer;
 import com.vaadin.event.Action;
 import com.vaadin.event.Action.Handler;
 import com.vaadin.terminal.FileResource;
@@ -36,7 +38,6 @@ import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
-import com.vaadin.ui.Component;
 import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.DateField;
 import com.vaadin.ui.Embedded;
@@ -171,7 +172,6 @@ public class SearchMissionListView extends CustomComponent {
 				}
 				
 				endButton.setEnabled(false);
-				addButton.setEnabled(false);
 				editButton.setEnabled(false);
 				removeButton.setEnabled(false);
 				composeSMSButton.setEnabled(false);
@@ -327,6 +327,11 @@ public class SearchMissionListView extends CustomComponent {
 		
 		innerLayout.addComponent(headerLayout);
 		
+		Label treeHelpLabel = new Label("Klicka på pilarna till vänster " +
+				"om sökuppdragen för att visa deras innehåll.");
+		treeHelpLabel.setStyleName("tree-help-label");
+		innerLayout.addComponent(treeHelpLabel);
+		
 		treeTable = new TreeTable();
 		treeTable.setSelectable(true);
 		treeTable.setSizeFull();
@@ -340,6 +345,9 @@ public class SearchMissionListView extends CustomComponent {
 		treeTable.setColumnHeaders(new String[]{"Namn", "Beskrivning", "Prioritet", "Status"});
 		treeTable.setImmediate(true);
 		treeTable.setColumnWidth(DESCR, 145);
+		treeTable.setDescription("Tryck på pilarna för att veckla ut " +
+				"eller veckla ihop sökuppdragets innehåll");
+		treeTable.setSortDisabled(true);
 		innerLayout.addComponent(treeTable);
 		
 		treeTable.addGeneratedColumn(DESCR, new ColumnGenerator() {
@@ -401,7 +409,7 @@ public class SearchMissionListView extends CustomComponent {
 		rightButtonLayout.addComponent(editButton);
 		
 		addButton = new Button("Lägg till");
-		addButton.setEnabled(false);
+		addButton.setEnabled(true); //missions should be creatable even in an emtpy table
 		rightButtonLayout.addComponent(addButton);
 		
 		buttonLayout.addComponent(rightButtonLayout);
@@ -429,13 +437,16 @@ public class SearchMissionListView extends CustomComponent {
 	}
 	
 	private void populateTreeTable() {
+//		HierarchicalContainer cont = new HierarchicalContainer();
+//		cont.setItemSorter(null);
+//		HierarchicalContainer containerDataSource = (HierarchicalContainer) treeTable.getContainerDataSource();
+		
 		treeTable.removeAllItems();
 		
 		List<SearchMission> list = null;
 		try {
 			list = service.getListOfSearchMissions();
 			if (list == null) {
-//				listener.displayError("Fel", "Inga sökuppdrag hittade");
 				return;
 			}
 			
@@ -620,10 +631,6 @@ public class SearchMissionListView extends CustomComponent {
 			} catch (Exception e) {
 				e.printStackTrace();
 				listener.displayError("Operationsborttagningen misslyckades", e.getMessage());
-			} finally {
-				if (service != null) {
-					service.cleanUp();
-				}
 			}
 		} else if (type == NodeType.ZONE) {
 			String zoneId = item.getItemProperty(ID).getValue().toString();
@@ -633,10 +640,6 @@ public class SearchMissionListView extends CustomComponent {
 			} catch (Exception e) {
 				e.printStackTrace();
 				listener.displayError("Zonborttagningen misslyckades", e.getMessage());
-			} finally {
-				if (service != null) {
-					service.cleanUp();
-				}
 			}
 		} else if (type == NodeType.GROUP) {
 			String groupId = item.getItemProperty(ID).getValue().toString();
@@ -646,10 +649,6 @@ public class SearchMissionListView extends CustomComponent {
 			} catch (Exception e) {
 				e.printStackTrace();
 				listener.displayError("Gruppborttagningen misslyckades", e.getMessage());
-			} finally {
-				if (service != null) {
-					service.cleanUp();
-				}
 			}
 		}
 	}
@@ -675,10 +674,6 @@ public class SearchMissionListView extends CustomComponent {
 			} catch (Exception e) {
 				e.printStackTrace();
 				listener.displayError("Fel", e.getMessage());
-			} finally {
-				if (service != null) {
-					service.cleanUp();
-				}
 			}
 		} else {
 			listener.displayNotification("Ogiltig markering", 
@@ -716,7 +711,7 @@ public class SearchMissionListView extends CustomComponent {
 			Item item = treeTable.getItem(itemId);
 			NodeType type = (NodeType) item.getItemProperty(TYPE).getValue();
 			handleAddActions((Integer)itemId, type);
-		} else if (treeTable.getItemIds().isEmpty()) {
+		} else {
 			handleAddActions(-1, NodeType.MISSION);
 		}
 	}

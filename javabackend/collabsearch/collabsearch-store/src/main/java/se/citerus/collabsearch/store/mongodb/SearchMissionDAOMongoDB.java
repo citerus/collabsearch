@@ -4,7 +4,6 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Point2D.Double;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,7 +12,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -84,25 +82,6 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 		String dbPass = "";
 		String dbAddr = "";
 		
-//		try {
-//			Properties prop = new Properties();
-//			InputStream stream;
-//			stream = SearchMissionDAOMongoDB.class.getResourceAsStream(
-//				"/db-server-config.properties");
-//			if (stream != null) {
-//				prop.load(stream);
-//				dbName = prop.getProperty("DBNAME", "lookingfor");
-//				dbPort = prop.getProperty("DBPORT", "27017");
-//				dbUser = prop.getProperty("DBUSER", "");
-//				dbPass = prop.getProperty("DBPASS", "");
-//				dbAddr = prop.getProperty("DBADDR", "localhost");
-//			}
-//			System.out.println("Found database name: " + dbName);
-//		} catch (FileNotFoundException e) {
-//			e.printStackTrace();
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
 		//New envvar-based config
 		try {
 			String envVarJsonString = System.getenv("VCAP_SERVICES");
@@ -137,7 +116,7 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 			boolean authenticated = db.authenticate(dbUser, dbPass.toCharArray());
 			if (authenticated) {
 				initCollections(db);
-				System.out.println("MongoDB successfully initialized");
+				System.out.println("MongoDB successfully initialized for SearchMissionDAO");
 			} else {
 				throw new IOException("Authentication failure for user " + dbUser);
 			}
@@ -483,6 +462,8 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 		BasicDBObject query = makeObjectIdQuery(searchOpId);
 		WriteResult result = operationsColl.remove(query);
 		checkResult(result, OpType.REMOVE);
+		result = zonesColl.remove(new BasicDBObject("parentop", new ObjectId(searchOpId)));
+		result = groupsColl.remove(new BasicDBObject("parentop", new ObjectId(searchOpId)));
 	}
 
 	@Override
@@ -652,13 +633,85 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 	public SearchOperationWrapper[] getAllSearchOpsInShortForm() throws IOException {
 		SearchOperationWrapper[] array = null;
 		try {
-			DBObject query = new BasicDBObject(); //query for all
+			BasicDBObject missionQuery = new BasicDBObject("status", new BasicDBObject("$ne", 0));
+			DBObject fields = new BasicDBObject("_id", 1);
+			DBCursor cursor2 = missionColl.find(missionQuery, fields);
+			ArrayList<ObjectId> idList = new ArrayList<ObjectId>();
+			while (cursor2.hasNext()) {
+				BasicDBObject dbo = (BasicDBObject) cursor2.next();
+				idList.add(dbo.getObjectId("_id"));
+			}
+			DBObject opQuery = new BasicDBObject("status", 2);
 			DBObject limit = new BasicDBObject("_id", 1)
 									.append("title", 1)
-									.append("descr", 1);
-			DBCursor cursor = operationsColl.find(query, limit);
+									.append("descr", 1)
+									.append("mission", 1);
+			DBCursor cursor = operationsColl.find(opQuery, limit);
 			if (cursor != null) {
-				array = makeOpsIntroArrayFromCursor(cursor);
+				ArrayList<BasicDBObject> list = new ArrayList<BasicDBObject>();
+				while (cursor.hasNext()) {
+					BasicDBObject dbo = (BasicDBObject) cursor.next();
+					if (inListOfActiveMissions(idList, dbo.getObjectId("mission"))) {
+						list.add(dbo);
+					}
+				}
+				array = makeOpsIntroArrayFromCursor(list);
+			}
+		} catch (Exception e) {
+			throw new IOException("Kontakt med databasen kunde ej upprättas", e);
+		}
+		return array;
+	}
+	
+	@Override
+	public SearchOperationWrapper[] getSearchOpsByFilter(String title, String location, 
+			String startDate, String endDate) throws IOException {
+		SearchOperationWrapper[] array = null;
+		try {
+			BasicDBObject missionQuery = new BasicDBObject("status", new BasicDBObject("$ne", 0));
+			DBObject fields = new BasicDBObject("_id", 1);
+			DBCursor cursor2 = missionColl.find(missionQuery, fields);
+			if (cursor2 != null) {
+				ArrayList<ObjectId> idList = new ArrayList<ObjectId>();
+				while (cursor2.hasNext()) {
+					BasicDBObject dbo = (BasicDBObject) cursor2.next();
+					idList.add(dbo.getObjectId("_id"));
+				}
+				
+				BasicDBObject query = new BasicDBObject("status", 2);
+				BasicDBObject limit = new BasicDBObject("_id", 1)
+											.append("title", 1)
+											.append("descr", 1)
+											.append("mission", 1);
+				
+				if (title != null && !title.equals("")) {
+					query.append("title", title);
+				}
+				if (location != null && !location.equals("")) {
+					query.append("location", location);
+				}
+				BasicDBObject dateQuery = new BasicDBObject();
+				if (startDate != null && !startDate.equals("")) {
+					dateQuery.append("$gte", Long.parseLong(startDate));
+				}
+				if (endDate != null && !endDate.equals("")) {
+					dateQuery.append("$lte", Long.parseLong(endDate));
+				}
+				if (!dateQuery.isEmpty()) {
+					query.append("date", dateQuery);
+				}
+				
+				DBCursor cursor = operationsColl.find(query, limit);
+				if (cursor != null) {
+					ArrayList<BasicDBObject> list = new ArrayList<BasicDBObject>();
+					while (cursor.hasNext()) {
+						BasicDBObject dbo = (BasicDBObject) cursor.next();
+						if (inListOfActiveMissions(idList, dbo.getObjectId("mission"))) {
+							list.add(dbo);
+						}
+					}
+					array = makeOpsIntroArrayFromCursor(list);
+				}
 			}
 		} catch (Exception e) {
 			throw new IOException("Kontakt med databasen kunde ej upprättas", e);
@@ -666,16 +719,24 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 		return array;
 	}
 
-	private SearchOperationWrapper[] makeOpsIntroArrayFromCursor(DBCursor cursor) {
+	private boolean inListOfActiveMissions(ArrayList<ObjectId> list, ObjectId oid) {
+		for (ObjectId otherId : list) {
+			if (otherId.equals(oid)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private SearchOperationWrapper[] makeOpsIntroArrayFromCursor(List<BasicDBObject> dboList) {
 		SearchOperationWrapper[] array;
-		int count = cursor.count();
+		int count = dboList.size();
 		if (count == 0) {
 			array = new SearchOperationWrapper[0];
 		} else {
 			array = new SearchOperationWrapper[count];
 			int i = 0;
-			while (cursor.hasNext()) {
-				BasicDBObject dbo = (BasicDBObject) cursor.next();
+			for (BasicDBObject dbo : dboList) {
 				String id = dbo.getString("_id");
 				String title = dbo.getString("title");
 				String descr = dbo.getString("descr");
@@ -751,43 +812,6 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 		}
 	}
 
-	@Override
-	public SearchOperationWrapper[] getSearchOpsByFilter(String title, String location, 
-			String startDate, String endDate) throws IOException {
-		SearchOperationWrapper[] array = null;
-		try {
-			BasicDBObject query = new BasicDBObject();
-			BasicDBObject limit = new BasicDBObject("_id", 1)
-										.append("title", 1)
-										.append("descr", 1);
-			
-			if (title != null && !title.equals("")) {
-				query.append("title", title);
-			}
-			if (location != null && !location.equals("")) {
-				query.append("location", location);
-			}
-			BasicDBObject dateQuery = new BasicDBObject();
-			if (startDate != null && !startDate.equals("")) {
-				dateQuery.append("$gte", Long.parseLong(startDate));
-			}
-			if (endDate != null && !endDate.equals("")) {
-				dateQuery.append("$lte", Long.parseLong(endDate));
-			}
-			if (!dateQuery.isEmpty()) {
-				query.append("date", dateQuery);
-			}
-			
-			DBCursor cursor = operationsColl.find(query, limit);
-			if (cursor != null) {
-				array = makeOpsIntroArrayFromCursor(cursor);
-			}
-		} catch (Exception e) {
-			throw new IOException("Kontakt med databasen kunde ej upprättas", e);
-		}
-		return array; 
-	}
-	
 	@Override
 	public List<Status> getAllSearchOpStatuses() throws IOException {
 		DBCursor cursor = opStatusColl.find();
@@ -1071,6 +1095,9 @@ public class SearchMissionDAOMongoDB implements SearchMissionDAO, SearchOperatio
 				for (String collectionName : collectionNames) {
 					DBCollection collection = db.getCollection(collectionName);
 					CommandResult stats = collection.getStats();
+					if (stats == null) {
+						throw new IOException();
+					}
 				}
 			}
 			return true;

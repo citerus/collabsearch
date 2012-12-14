@@ -15,6 +15,8 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 
+import junit.framework.Assert;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -28,6 +30,7 @@ import se.citerus.collabsearch.model.Rank.Title;
 import se.citerus.collabsearch.model.SearchGroup;
 import se.citerus.collabsearch.model.SearchMission;
 import se.citerus.collabsearch.model.SearchOperation;
+import se.citerus.collabsearch.model.SearchOperationWrapper;
 import se.citerus.collabsearch.model.SearchZone;
 import se.citerus.collabsearch.model.Status;
 import se.citerus.collabsearch.model.exceptions.SearchGroupNotFoundException;
@@ -35,32 +38,39 @@ import se.citerus.collabsearch.model.exceptions.SearchOperationNotFoundException
 import se.citerus.collabsearch.model.exceptions.SearchZoneNotFoundException;
 import se.citerus.collabsearch.store.facades.SearchOperationDAO;
 import se.citerus.collabsearch.store.inmemory.SearchMissionDAOInMemory;
+import se.citerus.collabsearch.store.mongodb.SearchMissionDAOMongoDB;
 
 public class SearchOperationTest {
 
-	private static final Status DEFAULT_STATUS = new Status(0);
+	private static final Status DEFAULT_STATUS_ENDED = new Status(0, "Avslutat", "beskrivn");
+	private static final Status STATUS_NOT_BEGUN = new Status(2, "Ej inledd", "beskrivn");
+	
 	private static SearchOperationService service;
+	private static SearchMissionService missionService;
+
 	private static SearchMission testMission;
 	
 	final int testZoomLvl = 7;
 	final String testPrio = "1";
 	final Double testCenter = new Double(0, 0);
 
-	static ApplicationContext context;
-
 	@BeforeClass
 	public static void setUpBeforeClass() {
 //		context = new AnnotationConfigApplicationContext(
 //				"se.citerus.collabsearch.adminui",
 //				"se.citerus.collabsearch.store");
-		context = new AnnotationConfigApplicationContext(SearchOperationService.class, SearchMissionDAOInMemory.class, SearchMissionService.class);
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
+				SearchOperationService.class,
+				SearchMissionDAOInMemory.class,
+//				SearchMissionDAOMongoDB.class,
+				SearchMissionService.class);
 		service = context.getBean(SearchOperationService.class);
 		service.setDebugMode();
 		
 		try {
-			testMission = new SearchMission("testMission1", "blab", 1, DEFAULT_STATUS);
-			SearchMissionService searchMissionService = context.getBean(SearchMissionService.class);
-			String id = searchMissionService.addOrModifyMission(testMission, null);
+			testMission = new SearchMission("testMission1", "blab", 1, DEFAULT_STATUS_ENDED);
+			missionService = context.getBean(SearchMissionService.class);
+			String id = missionService.addOrModifyMission(testMission, null);
 			testMission.setId(id);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -74,7 +84,7 @@ public class SearchOperationTest {
 	@Test
 	public void testCreateOperation() throws Exception {
 		SearchOperation operation = new SearchOperation(null, 
-				"testOp1", "blab", new Date(), "plats X", DEFAULT_STATUS);
+				"testOp1", "blab", new Date(), "plats X", DEFAULT_STATUS_ENDED);
 		String id = service.editSearchOp(operation , null, testMission.getId());
 		assertNotNull(id);
 	}
@@ -82,7 +92,7 @@ public class SearchOperationTest {
 	@Test
 	public void testFindOperation() throws Exception {
 		SearchOperation operation = new SearchOperation(null, 
-				"testOp2", "blab", new Date(), "plats X", DEFAULT_STATUS);
+				"testOp2", "blab", new Date(), "plats X", DEFAULT_STATUS_ENDED);
 		String id = service.editSearchOp(operation , null, testMission.getId());
 		assertNotNull(id);
 		
@@ -101,7 +111,7 @@ public class SearchOperationTest {
 	@Test
 	public void testEditSearchOp() throws Exception {
 		SearchOperation originalOp = new SearchOperation(null, 
-				"testOp3", "blab", new Date(), "plats X", DEFAULT_STATUS);
+				"testOp3", "blab", new Date(), "plats X", DEFAULT_STATUS_ENDED);
 		String id = service.editSearchOp(originalOp, null, testMission.getId());
 		originalOp = new SearchOperation(null, "testOp3v2", 
 			"blab2", new Date(System.currentTimeMillis()+1000), 
@@ -120,7 +130,7 @@ public class SearchOperationTest {
 	@Test(expected=SearchOperationNotFoundException.class)
 	public void testDeleteSearchOp() throws Exception {
 		SearchOperation op = new SearchOperation(null, "testOp3.5", "blab",
-			new Date(), "blab", DEFAULT_STATUS);
+			new Date(), "blab", DEFAULT_STATUS_ENDED);
 		String id = service.editSearchOp(op, null, testMission.getId());
 		assertNotNull(id);
 		service.deleteSearchOp(id);
@@ -167,7 +177,7 @@ public class SearchOperationTest {
 	@Test
 	public void testCreateZone() throws Exception {
 		SearchOperation op = new SearchOperation(null, "testOp5", 
-			"blab", new Date(), "plats x", DEFAULT_STATUS);
+			"blab", new Date(), "plats x", DEFAULT_STATUS_ENDED);
 		String opId = service.editSearchOp(op , null, testMission.getId());
 		Double[] points = new Double[3];
 		points[0] = new Double(1.01, 2.02);
@@ -182,7 +192,7 @@ public class SearchOperationTest {
 		final String testName = "zone1";
 		
 		SearchOperation op = new SearchOperation(null, "testOp6", "blab",
-				new Date(), "plats x", DEFAULT_STATUS);
+				new Date(), "plats x", DEFAULT_STATUS_ENDED);
 		String opId = service.editSearchOp(op, null, testMission.getId());
 		SearchGroup group = new SearchGroup(null, "Grupp A", null);
 		String groupId = service.addOrModifySearchGroup(group , null, opId);
@@ -210,7 +220,7 @@ public class SearchOperationTest {
 	@Test
 	public void testEditZone() throws Exception {
 		SearchOperation op = new SearchOperation(null, "testOp7", "blab",
-				new Date(), "plats x", DEFAULT_STATUS);
+				new Date(), "plats x", DEFAULT_STATUS_ENDED);
 		String opId = service.editSearchOp(op, null, testMission.getId());
 		Double[] points = new Double[3];
 		points[0] = new Double(1, 2);
@@ -241,7 +251,7 @@ public class SearchOperationTest {
 	@Test(expected=SearchZoneNotFoundException.class)
 	public void testDeleteZone() throws Exception {
 		SearchOperation op = new SearchOperation(null, "testOp8", "blab",
-				new Date(), "plats x", DEFAULT_STATUS);
+				new Date(), "plats x", DEFAULT_STATUS_ENDED);
 		String opId = service.editSearchOp(op, null, testMission.getId());
 		Double[] points = new Double[3];
 		points[0] = new Double(1, 2);
@@ -256,7 +266,7 @@ public class SearchOperationTest {
 	@Test
 	public void testCreateSearchGroup() throws Exception {
 		SearchOperation op = new SearchOperation(null, "testOp9", "blab",
-				new Date(), "plats x", DEFAULT_STATUS);
+				new Date(), "plats x", DEFAULT_STATUS_ENDED);
 		String opId = service.editSearchOp(op, null, testMission.getId());
 		
 		addSampleSearchers(opId);
@@ -279,7 +289,7 @@ public class SearchOperationTest {
 	@Test
 	public void testGetSearchGroup() throws Exception {
 		SearchOperation op = new SearchOperation(null, "testOp9", "blab",
-				new Date(), "plats x", DEFAULT_STATUS);
+				new Date(), "plats x", DEFAULT_STATUS_ENDED);
 		String opId = service.editSearchOp(op, null, testMission.getId());
 		
 		addSampleSearchers(opId);
@@ -320,7 +330,7 @@ public class SearchOperationTest {
 	@Test(expected=SearchGroupNotFoundException.class)
 	public void testDeleteGroup() throws Exception {
 		SearchOperation op = new SearchOperation(null, "testOp10", "blab",
-				new Date(), "plats x", DEFAULT_STATUS);
+				new Date(), "plats x", DEFAULT_STATUS_ENDED);
 		String opId = service.editSearchOp(op, null, testMission.getId());
 		SearchGroup group = new SearchGroup(null, "sökgrupp1", null);
 		String groupId = service.addOrModifySearchGroup(group, null, opId);
@@ -331,7 +341,7 @@ public class SearchOperationTest {
 	@Test
 	public void testEditSearchGroup() throws Exception {
 		SearchOperation op = new SearchOperation(null, "testOp11", "blab",
-				new Date(), "plats x", DEFAULT_STATUS);
+				new Date(), "plats x", DEFAULT_STATUS_ENDED);
 		String opId = service.editSearchOp(op, null, testMission.getId());
 		
 		addSampleSearchers(opId);
@@ -370,7 +380,7 @@ public class SearchOperationTest {
 	@Test
 	public void testGetSearchersByOp() throws Exception {
 		SearchOperation op = new SearchOperation(null, "testOp12", "blab",
-				new Date(), "plats x", DEFAULT_STATUS);
+				new Date(), "plats x", DEFAULT_STATUS_ENDED);
 		String opId = service.editSearchOp(op, null, testMission.getId());
 		
 		addSampleSearchers(opId);
@@ -391,6 +401,49 @@ public class SearchOperationTest {
 		assertTrue(!list.isEmpty());
 	}
 	
+	@Test
+	public void testGetAllSearchOpsInShortForm() throws Exception {
+		String missionId1 = missionService.addOrModifyMission("testMission2", "testing", 1, STATUS_NOT_BEGUN, null);
+		String missionId2 = missionService.addOrModifyMission("testMission3", "testing", 2, DEFAULT_STATUS_ENDED, null);
+		SearchOperation op1 = new SearchOperation(null, "testop13", "blab", new Date(), "plats x", STATUS_NOT_BEGUN);
+		String op1id = service.editSearchOp(op1 , null, missionId1);
+		SearchOperation op2 = new SearchOperation(null, "testop14", "blab", new Date(), "plats x", DEFAULT_STATUS_ENDED);
+		String op2id = service.editSearchOp(op2 , null, missionId2);
+		
+		SearchOperationWrapper[] array = service.getAllSearchOpsInShortForm();
+		boolean foundMatchingOp = false;
+		for (SearchOperationWrapper op : array) {
+			if (op.getId().equals(op1id)) {
+				foundMatchingOp = true;
+			}
+			Assert.assertFalse("Operation from ended mission found", op.getId().equals(op2id));
+		}
+		Assert.assertTrue(foundMatchingOp);
+	}
+
+	@Test
+	public void testGetFilteredSearchOpsInShortForm() throws Exception {
+		String mission2id = missionService.addOrModifyMission("testMission4", "testing", 1, STATUS_NOT_BEGUN, null);
+		String mission3id = missionService.addOrModifyMission("testMission5", "testing", 2, DEFAULT_STATUS_ENDED, null);
+		SearchOperation op1 = new SearchOperation(null, "testop15", "blab", new Date(), "plats x", STATUS_NOT_BEGUN);
+		String op1id = service.editSearchOp(op1 , null, mission2id);
+		SearchOperation op2 = new SearchOperation(null, "testop16", "blab", new Date(), "plats y", STATUS_NOT_BEGUN);
+		String op2id = service.editSearchOp(op2 , null, mission2id);
+		SearchOperation op3 = new SearchOperation(null, "testop17", "blab", new Date(), "plats x", STATUS_NOT_BEGUN);
+		String op3id = service.editSearchOp(op3 , null, mission3id);
+		
+		SearchOperationWrapper[] array = service.getFilteredSearchOpsInShortForm(null, "plats x", null, null);
+		boolean foundMatchingOp = false;
+		for (SearchOperationWrapper op : array) {
+			if (op.getId().equals(op1id)) {
+				foundMatchingOp = true;
+			}
+			Assert.assertFalse("Operation matching filter found", op.getId().equals(op2id));
+			Assert.assertFalse("Operation from ended mission found", op.getId().equals(op3id));
+		}
+		Assert.assertTrue(foundMatchingOp);
+	}
+	
 	private void traverseTree(GroupNode node) throws Exception {
 		assertNotNull(node);
 		List<GroupNode> children = node.getChildren();
@@ -401,10 +454,8 @@ public class SearchOperationTest {
 	
 	private void addSampleSearchers(String opId)
 			throws SearchOperationNotFoundException, IOException {
-		SearchOperationDAO dao = context.getBean("searchMissionDAOInMemory", 
-				SearchOperationDAO.class);
-		dao.assignUserToSearchOp(opId, "Person A", "pa@mail.se", "12319052871");
-		dao.assignUserToSearchOp(opId, "Person B", "pb@mail.se", "12319052872");
-		dao.assignUserToSearchOp(opId, "Person C", "pc@mail.se", "12319052873");
+		service.assignSearcherToSearchOp(opId, "Person A", "pa@mail.se", "12319052871");
+		service.assignSearcherToSearchOp(opId, "Person B", "pb@mail.se", "12319052872");
+		service.assignSearcherToSearchOp(opId, "Person C", "pc@mail.se", "12319052873");
 	}
 }

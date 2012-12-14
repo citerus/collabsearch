@@ -10,7 +10,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import se.citerus.collabsearch.store.facades.SearchOperationDAO;
 
 
-public class DBSmokeTest {
+public class DbSmokeTest {
 
 	private static final int NOT_FOUND = 404;
 	private static final int INTERNAL_SERVER_ERROR = 500;

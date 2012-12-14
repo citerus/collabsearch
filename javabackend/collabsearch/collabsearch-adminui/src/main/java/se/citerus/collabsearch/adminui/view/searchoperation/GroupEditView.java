@@ -199,6 +199,7 @@ public class GroupEditView extends CustomComponent {
 		buttonLayout.setMargin(true, false, false, false);
 		
 		Button cancelButton = new Button("Avbryt");
+		cancelButton.setDescription("Förkastar ändringarna och återgår till sökuppdragslistan");
 		cancelButton.addListener(new ClickListener() {
 			@Override
 			public void buttonClick(ClickEvent event) {
@@ -209,6 +210,7 @@ public class GroupEditView extends CustomComponent {
 		buttonLayout.setComponentAlignment(cancelButton, Alignment.TOP_LEFT);
 		
 		Button confirmButton = new Button("Spara");
+		confirmButton.setDescription("Sparar ändringarna permanent och återgår till sökuppdragslistan");
 		confirmButton.addListener(new ClickListener() {
 			@Override
 			public void buttonClick(ClickEvent event) {

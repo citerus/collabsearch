@@ -66,6 +66,7 @@ public class SMSService {
 	 * @return an List containing the numbers to which the SMS was undeliverable.
 	 * @throws Exception
 	 */
+	@SuppressWarnings("unchecked")
 	public List<String> sendSMSToSearchers(List<SearcherInfo> searcherList,
 			SMSMessage message) throws Exception {
 		Validate.notEmpty(searcherList);
@@ -90,7 +91,8 @@ public class SMSService {
 			smsParams.put("Body", messageString);
 			try {
 				Sms sms = smsFactory.create(smsParams);
-//				System.out.println("Sending SMS to +46" + toNumber);
+				sms.getProperty("");
+				System.out.println("Sending SMS to " + toNumber);
 			} catch (TwilioRestException e) {
 				undeliverableNumbers.add(searcherInfo.getName() + " : " + searcherInfo.getTele());
 				e.printStackTrace();

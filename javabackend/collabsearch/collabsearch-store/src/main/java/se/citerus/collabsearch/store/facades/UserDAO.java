@@ -28,7 +28,7 @@ public interface UserDAO {
 
 	public boolean checkForDuplicateUserData(String username, String tele, String email) throws IOException;
 
-	public void editExistingUser(User user) throws IOException, UserNotFoundException, DuplicateUserDataException;
+	public void editExistingUser(String userId, User user) throws IOException, UserNotFoundException, DuplicateUserDataException;
 
 	public String addNewUser(User user) throws IOException, DuplicateUserDataException;
 
@@ -37,5 +37,7 @@ public interface UserDAO {
 	public DbUser findUserByName(String username) throws UserNotFoundException;
 
 	public void changePasswordForUser(String username, String hashedPassword) throws IOException;
+
+	public User findUserById(String userId) throws UserNotFoundException, IOException;
 
 }

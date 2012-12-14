@@ -2,8 +2,8 @@ package se.citerus.collabsearch.store.inmemory;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 
 import javax.annotation.PostConstruct;
 
@@ -18,13 +18,14 @@ import se.citerus.collabsearch.store.facades.UserDAO;
 @Repository
 public class UserDAOInMemory implements UserDAO {
 	
+	private static final Random RANDOM = new Random();
 	private static List<User> allUsers;
 	private static List<String> allRoles;
 	
 	public UserDAOInMemory() {
 		if (allUsers == null) {
 			allUsers = new ArrayList<User>(1);
-			User testUser = new User("admin","test","test@test.test","123456789","admin");
+			User testUser = new User("1337","admin","test","test@test.test","123456789","admin");
 			allUsers.add(testUser);
 			
 			allRoles = new ArrayList<String>(2);
@@ -34,7 +35,7 @@ public class UserDAOInMemory implements UserDAO {
 	}
 	
 	@PostConstruct
-	private void init() {
+	protected void init() {
 		System.out.println("Initiated inmem db");
 	}
 
@@ -102,17 +103,21 @@ public class UserDAOInMemory implements UserDAO {
 		return result;
 	}
 
-	public void editExistingUser(User user) throws IOException, DuplicateUserDataException {
+	public void editExistingUser(String userId, User user) throws IOException, DuplicateUserDataException {
 		for (int i = 0; i < allUsers.size(); i++) {
 			User existingUser = allUsers.get(i);
 			if (existingUser.getEmail().equals(user.getEmail()) 
 					|| existingUser.getTele().equals(user.getTele())) {
+//				if (existingUser.getUsername().equals(user.getUsername())) {
+//					continue;
+//				}
 				throw new DuplicateUserDataException();
 			}
 		}
 		for (int i = 0; i < allUsers.size(); i++) {
 			User existingUser = allUsers.get(i);
-			if (existingUser.getUsername().equals(user.getUsername())) {
+			if (existingUser.getId().equals(userId)) {
+				user = new User(userId, user.getUsername(), existingUser.getPassword(), user.getEmail(), user.getTele(), user.getRole());
 				allUsers.set(i, user);
 				return;
 			}
@@ -128,8 +133,10 @@ public class UserDAOInMemory implements UserDAO {
 				throw new DuplicateUserDataException();
 			}
 		}
-		allUsers.add(user);
-		return user.getUsername();
+		String id = "" + RANDOM.nextLong();
+		User newUser = new User(id, user.getUsername(), user.getPassword(), user.getEmail(), user.getTele(), user.getRole());
+		allUsers.add(newUser);
+		return newUser.getId();
 	}
 
 	@Override
@@ -152,6 +159,17 @@ public class UserDAOInMemory implements UserDAO {
 				allUsers.set(allUsers.indexOf(user), user2);
 			}
 		}
+	}
+
+	@Override
+	public User findUserById(String userId) throws UserNotFoundException {
+		for (int j = 0; j < allUsers.size(); j++) {
+			User user = allUsers.get(j);
+			if (user.getId().equals(userId)) {
+				return user;
+			}
+		}
+		throw new UserNotFoundException(userId);
 	}
 
 }

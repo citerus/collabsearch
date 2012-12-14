@@ -29,6 +29,7 @@ public class EditUserView extends CustomComponent {
 	
 	@Autowired
 	private UserService service;
+	private String userId;
 
 	public EditUserView(final ViewSwitchController listener) {
 		this.listener = listener;
@@ -46,6 +47,7 @@ public class EditUserView extends CustomComponent {
 		mainLayout.addComponent(fragment);
 		
 		fragment.removePasswordField();
+		fragment.nameField.setReadOnly(true); //TODO keep or remove?
 		
 		listener.setMainWindowCaption("Missing People - Användarhantering");
 		
@@ -84,12 +86,18 @@ public class EditUserView extends CustomComponent {
 
 	private void populateForms(String selectedUser) {
 		try {
-			User userData = service.findUser(selectedUser);
-			
+			User userData = service.findUserByName(selectedUser);
+			userId = userData.getId();
+			if (userId == null) {
+				throw new NullPointerException("Användaren " + selectedUser + " har inget id");
+			}
 			fragment.nameField.setValue(userData.getUsername());
 			fragment.emailField.setValue(userData.getEmail());
 			fragment.teleField.setValue(userData.getTele());
 			fragment.roleField.setValue(userData.getRole());
+		} catch (NullPointerException e) {
+			e.printStackTrace();
+			listener.displayError("Användarhanteringsfel", e.getMessage());
 		} catch (Exception e) {
 			listener.displayError("Fel: Användare ej funnen", 
 				"Användare " + selectedUser + " ej funnen.");
@@ -130,7 +138,7 @@ public class EditUserView extends CustomComponent {
 				String email = (String)fragment.emailField.getValue(); 
 				String tele = (String)fragment.teleField.getValue(); 
 				String role = (String)fragment.roleField.getValue();
-				service.editUser(name, email, tele, role);
+				service.editUser(userId, name, email, tele, role);
 			} catch (UserNotFoundException e) {
 				listener.displayError("Fel", "Användaren ej funnen");
 			} catch (Exception e) {

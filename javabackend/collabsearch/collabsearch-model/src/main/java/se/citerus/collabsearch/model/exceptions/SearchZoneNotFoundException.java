@@ -1,5 +1,6 @@
 package se.citerus.collabsearch.model.exceptions;
 
+@SuppressWarnings("serial")
 public class SearchZoneNotFoundException extends Exception {
 
 	public SearchZoneNotFoundException() {

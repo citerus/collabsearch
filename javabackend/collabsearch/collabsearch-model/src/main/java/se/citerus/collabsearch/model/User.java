@@ -6,6 +6,7 @@ public class User implements Serializable {
 
 	private static final long serialVersionUID = 8232887479981262455L;
 	
+	private String id;
 	private String username;
 	private String password;
 	private String email;
@@ -16,7 +17,8 @@ public class User implements Serializable {
 		//intentionally left empty
 	}
 
-	public User(String username, String password, String email, String tele, String role) {
+	public User(String id, String username, String password, String email, String tele, String role) {
+		this.id = id;
 		this.username = username;
 		this.password = password;
 		this.email = email;
@@ -24,21 +26,16 @@ public class User implements Serializable {
 		this.role = role;
 	}
 	
+	public User(String username, String password, String email, String tele, String role) {
+		this(null, username, password, email, tele, role);
+	}
+	
 	public User(String username, String email, String tele, String role) {
-		this.username = username;
-		this.email = email;
-		this.tele = tele;
-		this.role = role;
+		this(null, username, null, email, tele, role);
 	}
 
-	public User(String username, char[] password) {
-		this.username = username;
-		this.password = String.valueOf(password);
-	}
-
-	public User(String username, String role) {
-		this.username = username;
-		this.role = role;
+	public String getId() {
+		return id;
 	}
 
 	public String getUsername() {

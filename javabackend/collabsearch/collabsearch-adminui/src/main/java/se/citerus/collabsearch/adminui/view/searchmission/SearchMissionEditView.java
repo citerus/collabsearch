@@ -47,6 +47,7 @@ public class SearchMissionEditView extends CustomComponent {
 	private SearchMissionService service;
 	
 	private String missionId;
+	private Label headerLabel;
 
 	public SearchMissionEditView(final ViewSwitchController listener) {
 		this.listener = listener;
@@ -76,13 +77,16 @@ public class SearchMissionEditView extends CustomComponent {
 		if (missionId != null) { //edit mission mode
 			this.missionId = missionId;
 			populateForms(missionId);
-			listener.setMainWindowCaption("Missing People - Redigera sökuppdrag");
+			
+			listener.setMainWindowCaption("Missing People - Sökuppdrag");
+			headerLabel = new Label("<h1><b>Redigera sökuppdrag</b></h1>");
 		} else { //new mission mode
 			titleField.setValue(null);
 			descrField.setValue(descrField.getNullRepresentation());
 			prioField.setValue(prioField.getNullRepresentation());
 			statusField.setValue(null);
-			listener.setMainWindowCaption("Missing People - Nytt sökuppdrag");
+			listener.setMainWindowCaption("Missing People - Sökuppdrag");
+			headerLabel = new Label("<h1><b>Nytt sökuppdrag</b></h1>");
 		}
 	}
 
@@ -123,7 +127,7 @@ public class SearchMissionEditView extends CustomComponent {
 		headerLayout.addComponent(logo);
 		headerLayout.setComponentAlignment(logo, Alignment.TOP_LEFT);
 		
-		Label headerLabel = new Label("<h1><b>Redigera sökuppdrag</b></h1>");
+		headerLabel = new Label("<h1><b>Redigera sökuppdrag</b></h1>");
 		headerLabel.setContentMode(Label.CONTENT_XHTML);
 		headerLabel.setStyleName("logo-header");
 		headerLayout.addComponent(headerLabel);
@@ -171,9 +175,11 @@ public class SearchMissionEditView extends CustomComponent {
 		HorizontalLayout buttonLayout = new HorizontalLayout();
 		buttonLayout.setSpacing(true);
 		cancelButton = new Button("Avbryt");
+		cancelButton.setDescription("Förkastar ändringarna och återgår till sökuppdragslistan");
 		buttonLayout.addComponent(cancelButton);
 		
 		saveButton = new Button("Spara");
+		saveButton.setDescription("Sparar ändringarna permanent och återgår till sökuppdragslistan");
 		buttonLayout.addComponent(saveButton);
 		
 		leftFormLayout.addComponent(buttonLayout);

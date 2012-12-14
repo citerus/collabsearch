@@ -123,10 +123,12 @@ public class ZoneViewFragment extends CustomComponent {
 		textFieldLayout.setComponentAlignment(bottomRightLayout, MIDDLE_RIGHT);
 		
 		backButton = new Button("Avbryt");
+		backButton.setDescription("Förkastar ändringarna och återgår till sökuppdragslistan");
 		bottomRightLayout.addComponent(backButton);
 		bottomRightLayout.setComponentAlignment(backButton, Alignment.BOTTOM_RIGHT);
 		
 		saveButton = new Button("Spara");
+		saveButton.setDescription("Sparar ändringarna permanent och återgår till sökuppdragslistan");
 		bottomRightLayout.addComponent(saveButton);
 		bottomRightLayout.setComponentAlignment(saveButton, Alignment.BOTTOM_RIGHT);
 		

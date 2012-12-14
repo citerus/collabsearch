@@ -36,6 +36,7 @@ public class UserViewFragment extends CustomComponent {
 	protected Label headerLabel;
 	private Label passwordLabel;
 	private Panel mainPanel;
+	private VerticalLayout formLayout;
 	
 	public UserViewFragment() {
 		mainLayout = new VerticalLayout();
@@ -54,6 +55,10 @@ public class UserViewFragment extends CustomComponent {
 		mainPanel = new Panel();
 		mainPanel.setWidth("25%");
 		
+		VerticalLayout panelLayout = new VerticalLayout();
+		panelLayout.setWidth("100%");
+		mainPanel.addComponent(panelLayout);
+		
 		HorizontalLayout headerLayout = new HorizontalLayout();
 		headerLayout.setSpacing(true);
 		
@@ -69,11 +74,15 @@ public class UserViewFragment extends CustomComponent {
 		headerLayout.addComponent(headerLabel);
 		headerLayout.setComponentAlignment(headerLabel, Alignment.TOP_LEFT);
 		
-		mainPanel.addComponent(headerLayout);
+		panelLayout.addComponent(headerLayout);
 		
-		mainPanel.addComponent(new Label("Namn"));
+		formLayout = new VerticalLayout();
+		formLayout.setStyleName("userfragment-form-layout");
+		formLayout.setMargin(false, false, false, true);
+		
+		formLayout.addComponent(new Label("Namn"));
 		nameField = new TextField();
-		mainPanel.addComponent(nameField);
+		formLayout.addComponent(nameField);
 		nameField.addValidator(new StringLengthValidator(
 				"Invalid username, must be between 1-99 characters", 1, 99, false));
 		nameField.setRequired(true);
@@ -81,50 +90,57 @@ public class UserViewFragment extends CustomComponent {
 		nameField.setNullRepresentation("");
 		
 		passwordLabel = new Label("Lösenord");
-		mainPanel.addComponent(passwordLabel);
+		formLayout.addComponent(passwordLabel);
 		passwordField = new PasswordField();
-		mainPanel.addComponent(passwordField);
+		formLayout.addComponent(passwordField);
 		passwordField.addValidator(new StringLengthValidator(
 				"Ogiltigt lösenord, måste vara mellan 1-99 tecken", 1, 99, false));
 		passwordField.setRequired(true);
 		passwordField.setImmediate(true);
 		passwordField.setNullRepresentation("");
 		
-		mainPanel.addComponent(new Label("Epost"));
+		formLayout.addComponent(new Label("Epost"));
 		emailField = new TextField();
-		mainPanel.addComponent(emailField);
+		formLayout.addComponent(emailField);
 		emailField.addValidator(new EmailValidator("Ogiltig mailadress"));
 		emailField.setRequired(true);
 		emailField.setImmediate(true);
 		emailField.setNullRepresentation("");
 		
-		mainPanel.addComponent(new Label("Telefon"));
+		formLayout.addComponent(new Label("Telefon"));
 		teleField = new TextField();
-		mainPanel.addComponent(teleField);
+		formLayout.addComponent(teleField);
 		teleField.addValidator(new PhoneNumberValidator(
 				"Ogiltigt telefonnummer, får bara innehålla siffror"));
 		teleField.setRequired(true);
 		teleField.setImmediate(true);
 		teleField.setNullRepresentation("");
 		
-		mainPanel.addComponent(new Label("Roll"));
+		formLayout.addComponent(new Label("Roll"));
 		roleField = new ComboBox(null, Collections.EMPTY_LIST);
-		mainPanel.addComponent(roleField);
+		formLayout.addComponent(roleField);
 		roleField.setNullSelectionAllowed(false);
 		roleField.setRequired(true);
 		roleField.setImmediate(true);
 		
 		HorizontalLayout subLayout = new HorizontalLayout();
 		subLayout.setSpacing(true);
-		subLayout.setMargin(true, false, false, false);
+		subLayout.setMargin(true, true, false, false);
 		
 		cancelButton = new Button("Avbryt");
+		cancelButton.setDescription("Förkastar ändringarna och återgår till användarlistan");
 		subLayout.addComponent(cancelButton);
 		
 		saveButton = new Button("Spara");
+		saveButton.setDescription("Sparar ändringarna permanent och återgår till användarlistan");
 		subLayout.addComponent(saveButton);
 		
-		mainPanel.addComponent(subLayout);
+		formLayout.addComponent(subLayout);
+		formLayout.setComponentAlignment(subLayout, Alignment.TOP_CENTER);
+		
+		panelLayout.addComponent(formLayout);
+		panelLayout.setComponentAlignment(formLayout, Alignment.TOP_CENTER);
+		
 		mainLayout.addComponent(mainPanel);
 		mainLayout.setComponentAlignment(mainPanel, Alignment.TOP_CENTER);
 	}
@@ -151,7 +167,7 @@ public class UserViewFragment extends CustomComponent {
 	}
 
 	public void removePasswordField() {
-		mainPanel.removeComponent(passwordLabel);
-		mainPanel.removeComponent(passwordField);
+		formLayout.removeComponent(passwordLabel);
+		formLayout.removeComponent(passwordField);
 	}
 }

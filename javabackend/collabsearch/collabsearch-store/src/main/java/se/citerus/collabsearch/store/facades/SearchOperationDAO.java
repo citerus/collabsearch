@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import se.citerus.collabsearch.model.FileMetadata;
-import se.citerus.collabsearch.model.SearchFinding;
 import se.citerus.collabsearch.model.SearchGroup;
 import se.citerus.collabsearch.model.SearchOperation;
 import se.citerus.collabsearch.model.SearchOperationWrapper;

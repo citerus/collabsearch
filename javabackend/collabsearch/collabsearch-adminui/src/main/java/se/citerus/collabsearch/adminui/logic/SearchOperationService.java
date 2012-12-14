@@ -12,11 +12,13 @@ import java.util.Properties;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import se.citerus.collabsearch.model.SearchGroup;
 import se.citerus.collabsearch.model.SearchOperation;
+import se.citerus.collabsearch.model.SearchOperationWrapper;
 import se.citerus.collabsearch.model.SearchZone;
 import se.citerus.collabsearch.model.SearcherInfo;
 import se.citerus.collabsearch.model.Status;
@@ -143,6 +145,14 @@ public class SearchOperationService {
 		searchOperationDAO.deleteSearchOperation(searchOpId);
 	}
 
+	/**
+	 * Creates (if opId is null) or edits a SearchOperation.
+	 * @param operation
+	 * @param opId
+	 * @param missionId
+	 * @return the operation id of the created op or null if op was edited.
+	 * @throws Exception
+	 */
 	public String editSearchOp(SearchOperation operation, String opId, String missionId) throws Exception {
 		//TODO break into two methods 
 		if (opId == null && missionId != null) {
@@ -223,5 +233,24 @@ public class SearchOperationService {
 
 	public String getOpOrganizerContactInfo() {
 		return ORGANIZER_TELE;
+	}
+
+	public SearchOperationWrapper[] getAllSearchOpsInShortForm() throws IOException {
+		return searchOperationDAO.getAllSearchOpsInShortForm();
+	}
+
+	public void assignSearcherToSearchOp(String opId, String name,
+			String email, String tele) throws IOException, SearchOperationNotFoundException {
+		notEmpty(opId);
+		notEmpty(name);
+		notEmpty(email);
+		notEmpty(tele);
+		searchOperationDAO.assignUserToSearchOp(opId, name, email, tele);
+	}
+
+	public SearchOperationWrapper[] getFilteredSearchOpsInShortForm(
+			String title, String location, String startDate, String endDate) throws IOException {
+		Validate.isTrue(!(title == null && location == null && startDate == null && endDate == null));
+		return searchOperationDAO.getSearchOpsByFilter(title, location, startDate, endDate);
 	}
 }

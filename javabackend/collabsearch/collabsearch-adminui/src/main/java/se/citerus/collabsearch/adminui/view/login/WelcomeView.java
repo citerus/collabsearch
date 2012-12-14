@@ -87,10 +87,15 @@ public class WelcomeView extends CustomComponent {
 		
 		HorizontalLayout innerHorizontalLayout = new HorizontalLayout();
 		innerHorizontalLayout.setSpacing(true);
+		
 		userButton = new Button("Användare");
+		userButton.setDescription("Hantera administrativa användare");
+		
 		logoutButton = new Button("Logga ut");
+		logoutButton.setDescription("Logga ut från administrationsgränssnittet");
 		
 		searchMissionButton = new Button("Sökuppdrag");
+		searchMissionButton.setDescription("Hantera sökuppdrag och sökoperationer");
 		innerHorizontalLayout.addComponent(userButton);
 		innerHorizontalLayout.addComponent(logoutButton);
 		innerHorizontalLayout.addComponent(searchMissionButton);

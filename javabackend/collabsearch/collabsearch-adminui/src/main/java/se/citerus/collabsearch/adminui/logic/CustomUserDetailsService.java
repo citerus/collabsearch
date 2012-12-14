@@ -44,7 +44,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 			);
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new UsernameNotFoundException("Error in retrieving user");
+			throw new UsernameNotFoundException("Error in retrieving user " + username);
 		}
 		return user;
 	}

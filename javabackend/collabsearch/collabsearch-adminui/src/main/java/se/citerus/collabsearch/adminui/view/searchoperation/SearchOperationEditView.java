@@ -89,7 +89,6 @@ public class SearchOperationEditView extends CustomComponent {
 		});
 		cancelButton.addListener(new ClickListener() {
 			public void buttonClick(ClickEvent event) {
-//				listener.returnToSearchMissionEditView();
 				listener.switchToSearchMissionListView();
 			}
 		});
@@ -217,10 +216,12 @@ public class SearchOperationEditView extends CustomComponent {
 		lowerButtonLayout.setSpacing(true);
 		
 		cancelButton = new Button("Avbryt");
+		cancelButton.setDescription("Förkastar ändringarna och återgår till sökuppdragslistan");
 		lowerButtonLayout.addComponent(cancelButton);
 		lowerButtonLayout.setComponentAlignment(cancelButton, Alignment.TOP_RIGHT);
 		
 		saveButton = new Button("Spara");
+		saveButton.setDescription("Sparar ändringarna permanent och återgår till sökuppdragslistan");
 		lowerButtonLayout.addComponent(saveButton);
 		lowerButtonLayout.setComponentAlignment(saveButton, Alignment.TOP_RIGHT);
 		

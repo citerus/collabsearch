@@ -27,9 +27,6 @@ public class UserService {
 	
 	@PostConstruct
 	public void init() {
-		if (userDAO == null) {
-			
-		}
 	}
 	
 	public void setDebugMode() {

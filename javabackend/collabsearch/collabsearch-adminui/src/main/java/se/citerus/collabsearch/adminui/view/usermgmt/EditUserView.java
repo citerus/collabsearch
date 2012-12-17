@@ -47,7 +47,7 @@ public class EditUserView extends CustomComponent {
 		mainLayout.addComponent(fragment);
 		
 		fragment.removePasswordField();
-		fragment.nameField.setReadOnly(true); //TODO keep or remove?
+//		fragment.nameField.setReadOnly(true); //TODO keep or remove?
 		
 		listener.setMainWindowCaption("Missing People - Användarhantering");
 		
@@ -98,9 +98,12 @@ public class EditUserView extends CustomComponent {
 		} catch (NullPointerException e) {
 			e.printStackTrace();
 			listener.displayError("Användarhanteringsfel", e.getMessage());
-		} catch (Exception e) {
+		} catch (UserNotFoundException e) {
+			e.printStackTrace();
 			listener.displayError("Fel: Användare ej funnen", 
-				"Användare " + selectedUser + " ej funnen.");
+					"Användare " + selectedUser + " ej funnen.");
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 	

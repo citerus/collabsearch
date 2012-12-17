@@ -34,9 +34,10 @@ public class SMSService {
 	
 	@PostConstruct
 	public void init() {
-		Properties prop = new Properties();
+		InputStream stream = null;
 		try {
-			InputStream stream = SearchMissionDAOMongoDB.class.getResourceAsStream(
+			Properties prop = new Properties();
+			stream = SearchMissionDAOMongoDB.class.getResourceAsStream(
 					"/sms-config.properties");
 			if (stream != null) {
 				prop.load(stream);
@@ -55,6 +56,14 @@ public class SMSService {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} finally {
+			if (stream != null) {
+				try {
+					stream.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 

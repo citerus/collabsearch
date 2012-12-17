@@ -19,7 +19,6 @@ import se.citerus.collabsearch.store.facades.SearchMissionDAO;
 public class SearchMissionService {
 
 	@Autowired
-//	@Qualifier("searchMissionDAOMongoDB")
 	private SearchMissionDAO searchMissionDAO;
 
 	public SearchMissionService() {

@@ -40,8 +40,8 @@ public class UserMgmtTest {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		AnnotationConfigApplicationContext context;
-//		context = new AnnotationConfigApplicationContext(UserService.class, UserDAOInMemory.class);
-		context = new AnnotationConfigApplicationContext(UserService.class, UserDAOMongoDB.class);
+		context = new AnnotationConfigApplicationContext(UserService.class, UserDAOInMemory.class);
+//		context = new AnnotationConfigApplicationContext(UserService.class, UserDAOMongoDB.class);
 		service = context.getBean(UserService.class);
 		service.setDebugMode();
 		

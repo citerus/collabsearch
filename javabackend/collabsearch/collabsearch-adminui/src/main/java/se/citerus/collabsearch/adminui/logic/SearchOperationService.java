@@ -41,9 +41,10 @@ public class SearchOperationService {
 
 	@PostConstruct
 	public void init() {
+		InputStream stream = null;
 		try {
 			Properties prop = new Properties();
-			InputStream stream = SearchMissionDAOMongoDB.class.getResourceAsStream(
+			stream = SearchMissionDAOMongoDB.class.getResourceAsStream(
 					"/sms-config.properties");
 			if (stream != null) {
 				prop.load(stream);
@@ -51,6 +52,14 @@ public class SearchOperationService {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+		}  finally {
+			if (stream != null) {
+				try {
+					stream.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 

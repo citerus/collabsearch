@@ -15,6 +15,10 @@
  */
 package se.citerus.collabsearch.publicwebsite.logic;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -38,10 +42,41 @@ public class MainApplication extends Application {
 		setMainWindow(mainWindow);
 		setTheme("mytheme");
 		
-		Controller controller = new Controller(mainWindow);
+		String restServerUrl = loadServerUrlFromPropFile();
+		
+		Controller controller = new Controller(mainWindow, restServerUrl);
 		controller.startup();
 	}
 	
+	private String loadServerUrlFromPropFile() {
+		String url = "http://missingpeople-api.cloudfoundry.com/";
+		InputStream stream = null;
+		try {
+			Properties prop = new Properties();
+			stream = MainApplication.class.getResourceAsStream(
+					"/sms-config.properties");
+			if (stream != null) {
+				prop.load(stream);
+				url = prop.getProperty("ACCOUNT_SID");
+			} else {
+				System.err.println("Property file stream was null, using default URL: " + url);
+			}
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			if (stream != null) {
+				try {
+					stream.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return url;
+	}
+
 	public static MainApplication getInstance() {
 		return threadLocal.get();
 	}

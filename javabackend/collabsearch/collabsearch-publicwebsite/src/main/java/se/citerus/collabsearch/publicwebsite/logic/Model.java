@@ -9,9 +9,9 @@ public class Model {
 	private ControllerListener listener;
 	private RestClient restClient;
 
-	public Model(ControllerListener listener) {
+	public Model(ControllerListener listener, String url) {
 		this.listener = listener;
-		restClient = new RestClient();
+		restClient = new RestClient(url);
 	}
 
 	public SearchOperation getSearchOpById(String searchOpId){

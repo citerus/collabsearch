@@ -22,18 +22,16 @@ import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 public class RestClient {
 	
+	private static final String REST_SERVER_URL = "http://missingpeople-api.cloudfoundry.com/";
 	private static final int OK = 200;
 	private static final int NOT_FOUND = 404;
 	private WebResource basicPath;
 
-	public RestClient() {
+	public RestClient(String url) {
 		ClientConfig config = new DefaultClientConfig();
 		Client client = Client.create(config);
-		String uri;
-//		uri = "http://localhost:8080/collabsearch-api";
-		uri = "http://missingpeople-ws.cloudfoundry.com/";
 		WebResource service = client.resource(
-			UriBuilder.fromUri(uri).build());
+			UriBuilder.fromUri(url).build());
 		basicPath = service.path("rest").path("ws");
 	}
 

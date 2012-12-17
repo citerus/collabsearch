@@ -12,8 +12,8 @@ public class Controller implements ControllerListener {
 	private final Model model;
 	private final View view;
 
-	public Controller(Window mainWindow) {
-		model = new Model(this);
+	public Controller(Window mainWindow, String url) {
+		model = new Model(this, url);
 		view = new View(this, mainWindow);
 	}
 

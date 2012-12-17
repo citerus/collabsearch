@@ -32,7 +32,7 @@ public class OpsListViewTest {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		controller = new MockupController();
-		model = new Model(controller);
+		model = new Model(controller, "http://localhost:8080/collabsearch-api");
 	}
 
 	@AfterClass

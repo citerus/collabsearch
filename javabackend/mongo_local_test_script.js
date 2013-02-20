@@ -3,7 +3,7 @@
 //});
 
 //insert users
-db.users.update({username : "admin"}, {"$set" : {username : "test", password : "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08", email : "ola.rende@citerus.se", tele : "1458373883", role : "admin"}}, true, false);
+db.users.update({username : "admin"}, {"$set" : {username : "test", password : "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08", email : "test@test.se", tele : "1458373883", role : "admin"}}, true, false);
 //db.users.update({username : "testuser"}, {username : "alfa", password : "beta", email : "alfa@beta.com", tele : "123", role : "user"}, true, false);
 
 //insert searchmissions

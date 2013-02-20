@@ -1,4 +1,4 @@
-db.users.insert({username : "admin", password : "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08", email : "test@test.se", tele : "1458373883", role : "admin"});
+db.users.insert({username : "admin", password : "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08", email : "test@test.se", tele : "12345", role : "admin"});
 db.opstatuses.insert([
 {statusid : 0, name : "Sökning avslutad", descr : "Sökoperationen har avslutats."},
 {statusid : 1, name : "Sökning inledd", descr : "Sökoperationen har inletts."},

@@ -20,29 +20,29 @@ public class MainApplication extends Application {
 	private Window mainWindow;
 
 	private static ThreadLocal<MainApplication> threadLocal = new ThreadLocal<MainApplication>();
-	
+
 	@Override
 	public void init() {
 		mainWindow = new Window("Missing People");
 		setMainWindow(mainWindow);
 		setTheme("mytheme");
-		
+
 		String restServerUrl = loadServerUrlFromPropFile();
-		
+
 		Controller controller = new Controller(mainWindow, restServerUrl);
 		controller.startup();
 	}
-	
+
 	private String loadServerUrlFromPropFile() {
 		String url = "http://missingpeople-api.cloudfoundry.com/";
 		InputStream stream = null;
 		try {
 			Properties prop = new Properties();
 			stream = MainApplication.class.getResourceAsStream(
-					"/sms-config.properties");
+					"/rest-config.properties");
 			if (stream != null) {
 				prop.load(stream);
-				url = prop.getProperty("ACCOUNT_SID");
+				url = prop.getProperty("SERVER_URL");
 			} else {
 				System.err.println("Property file stream was null, using default URL: " + url);
 			}
@@ -65,15 +65,15 @@ public class MainApplication extends Application {
 	public static MainApplication getInstance() {
 		return threadLocal.get();
 	}
-	
+
 	public static void setInstance(MainApplication mainApplication) {
 		threadLocal.set(mainApplication);
 	}
-	
+
 	public void onRequestStart(HttpServletRequest request, HttpServletResponse response) {
 		MainApplication.setInstance(this);
 	}
-	
+
 	public void onRequestEnd(HttpServletRequest request, HttpServletResponse response) {
 		threadLocal.remove();
 	}
